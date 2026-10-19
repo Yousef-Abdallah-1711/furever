@@ -138,7 +138,7 @@ skeleton (constitution III, VII; D00 scope rule).
   and the Phase 1 enums from `data-model.md`, plus a unit test
   `packages/shared/src/schemas/base.test.ts` asserting the phone schema rejects `"0123"` and accepts
   `"+201012345678"`.
-- [ ] T026 [D00c] Write the i18n key-parity check `packages/i18n/scripts/check-parity.ts` comparing
+- [x] T026 [D00c] Write the i18n key-parity check `packages/i18n/scripts/check-parity.ts` comparing
   `packages/i18n/ar.json` and `packages/i18n/en.json`'s key sets, exiting non-zero and naming the missing
   key on mismatch.
 - [ ] T027 [D00c] Seed `packages/i18n/en.json` and `packages/i18n/ar.json` with an identical placeholder
