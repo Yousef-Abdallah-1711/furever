@@ -36,3 +36,5 @@ Checked: 2026-10-19 (official npm package pages)
 | @commitlint/cli | 21.2.3 | https://www.npmjs.com/package/@commitlint/cli | 2026-10-19 |
 | @commitlint/config-conventional | 21.2.3 | https://www.npmjs.com/package/@commitlint/config-conventional | 2026-10-19 |
 | lint-staged | 17.6.0 | https://www.npmjs.com/package/lint-staged | 2026-10-19 |
+| tsx | 4.23.15 | https://www.npmjs.com/package/tsx | 2026-10-19 |
+| @types/node | 26.6.5 | https://www.npmjs.com/package/@types/node | 2026-10-19 |

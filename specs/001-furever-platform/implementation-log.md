@@ -1,5 +1,13 @@
 # Implementation Log — FurEver Platform (specs/001-furever-platform)
 
+## D00c — Packages: tokens, i18n, shared, test runners
+
+| Task | Worker | Retries | Commands run | Result | Commit |
+| --- | --- | --- | --- | --- | --- |
+| T024 | codex | 1 | `pnpm.cmd --filter backend exec supabase start`; `pnpm.cmd types:gen`; `pnpm.cmd --filter backend exec supabase stop`; `pnpm.cmd exec tsc --noEmit -p packages/shared/tsconfig.json`; raw-byte and `git diff --check` checks | PASS — local types generated from the running Supabase stack; strict package typecheck passed. Initial typecheck exposed missing Node declarations; added the exact typed-script dependency and enabled Node types only for shared. | pending (filled in follow-up logging commit) |
+
+**Dependency rationale (T024)**: `tsx@4.23.15` runs the required TypeScript generator scripts without compiling them to JavaScript; `@types/node@26.6.5` supplies strict Node APIs for that script. Both versions were checked from the npm registry on 2026-10-19 and are pinned in `COMPATIBILITY.md`.
+
 Delegation model: OpenAI Codex CLI (`gpt-6-luna`, effort `high`, service_tier `priority` via ambient
 `~/.codex/config.toml`), orchestrated through the `codex-delegate` skill (`relay.mjs`). The orchestrator
 (Claude Code) never writes implementation code — it writes briefs, dispatches, reviews diffs, re-runs

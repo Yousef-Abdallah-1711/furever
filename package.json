@@ -11,14 +11,17 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "types:gen": "tsx packages/shared/scripts/gen-types.ts",
     "prepare": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "@commitlint/cli": "21.2.3",
     "@commitlint/config-conventional": "21.2.3",
+    "@types/node": "26.6.5",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
+    "tsx": "4.23.15",
     "turbo": "2.10.13",
     "typescript": "7.0.2"
   }

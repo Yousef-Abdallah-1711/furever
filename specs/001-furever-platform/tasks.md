@@ -130,7 +130,7 @@ skeleton (constitution III, VII; D00 scope rule).
 
 ## D00c — Packages: tokens, i18n, shared, test runners
 
-- [ ] T024 [P] [D00c] Scaffold `packages/shared/` (`package.json`, `src/index.ts`) and the
+- [x] T024 [P] [D00c] Scaffold `packages/shared/` (`package.json`, `src/index.ts`) and the
   `supabase gen types typescript` wiring script `packages/shared/scripts/gen-types.ts` writing to
   `packages/shared/src/database.types.ts`.
 - [ ] T025 [P] [D00c] Add base Zod primitives to `packages/shared/src/schemas/base.ts`: phone regex
