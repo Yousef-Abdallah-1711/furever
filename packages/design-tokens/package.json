@@ -1,5 +1,8 @@
 {
   "name": "@furever/design-tokens",
   "private": true,
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "scripts": {
+    "tokens:build": "tsx scripts/build.ts"
+  }
 }

@@ -148,7 +148,7 @@ skeleton (constitution III, VII; D00 scope rule).
   `[data-theme="dark"]` = dark), and **precomputing every `color-mix()` expression to a static hex value
   for both themes** (`--success-bg`, `--warning-bg`, `--danger-bg`, `--info-bg`, `--primary-bg`,
   `--shadow-card`, `--shadow-sheet` — PRD amendment 7). Depends on T011.
-- [ ] T029 [D00c] Extend `packages/design-tokens/scripts/build.ts` to emit
+- [x] T029 [D00c] Extend `packages/design-tokens/scripts/build.ts` to emit
   `packages/design-tokens/dist/tailwind-preset.js` (NativeWind/Tailwind preset) and
   `packages/design-tokens/dist/variables.css` (web CSS variables) from the resolved values. Depends on
   T028.

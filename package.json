@@ -12,6 +12,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "i18n:check": "tsx packages/i18n/scripts/check-parity.ts",
+    "tokens:build": "tsx packages/design-tokens/scripts/build.ts",
     "types:gen": "tsx packages/shared/scripts/gen-types.ts",
     "prepare": "husky"
   },
