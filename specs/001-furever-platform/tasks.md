@@ -66,7 +66,7 @@ fire, not one task per event.
   expo.dev / reactnative.dev / nativewind.dev, and current stable Next.js + React from nextjs.org; write
   the compatibility matrix with source URLs and today's date to `COMPATIBILITY.md` at the repo root. No
   other task may pin a version before this one (research.md §1-2; constitution X).
-- [ ] T002 [D00a] Pin the exact versions from `COMPATIBILITY.md` into `package.json` (root),
+- [x] T002 [D00a] Pin the exact versions from `COMPATIBILITY.md` into `package.json` (root),
   `backend/package.json`, `mobile/package.json`, `web/package.json`, `packages/shared/package.json`,
   `packages/i18n/package.json`, `packages/design-tokens/package.json`, and set `.nvmrc` to the matrix's
   Node version. Depends on T001.
