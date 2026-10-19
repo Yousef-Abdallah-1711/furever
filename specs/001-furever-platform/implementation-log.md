@@ -191,3 +191,8 @@ sections. No further action needed before T002.
 - **Next**: complete D00d checkpoint evidence, then make the official Tailwind major-version decision before any D00e scaffold work.
 - **Risks**: one dynamic `/complete-profile` translation needs a manual key; screen inventory attribution needs a documentation update. T063 still requires four actual mobile screenshots from an emulator/device.
 - **Working commands**: `pnpm.cmd exec tsx design/scripts/extract-built.ts`; `pnpm.cmd exec tsx design/scripts/extract-i18n.ts`; `pnpm.cmd i18n:check`; `pnpm.cmd exec tsx design/scripts/verify-screen-count.ts`.
+
+## D00e Tailwind decision
+
+- **Decision (2026-10-19):** mobile stays on Tailwind CSS 3.x for stable NativeWind 4.2.7; web uses Tailwind CSS 4.x with the official Next.js PostCSS/CSS-first setup. tailwind-preset.js serves mobile. Web uses variables.css and @theme inline mappings where utility tokens are needed. Although Tailwind 4 can explicitly load legacy JS configs, it no longer auto-detects them; no compatibility bridge is needed for web. The sources and decision are recorded in COMPATIBILITY.md.
+- **Next:** run the requested isolated NativeWind smoke test before editing the D00e app scaffolds.

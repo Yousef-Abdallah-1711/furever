@@ -41,3 +41,10 @@ Checked: 2026-10-19 (official npm package pages)
 | vitest | 5.0.5 | https://www.npmjs.com/package/vitest | 2026-10-19 |
 | jest-expo | 58.0.11 | https://www.npmjs.com/package/jest-expo | 2026-10-19 |
 | jest | 30.5.2 | https://www.npmjs.com/package/jest | 2026-10-19 |
+
+## Tailwind major-version decision (2026-10-19)
+
+- **Mobile:** NativeWind 4.2.7 requires Tailwind CSS 3.x. Pin Tailwind 3.4.x in the mobile workspace and use the generated tailwind-preset.js with the standard JavaScript presets configuration. NativeWind's stable installation guide specifies tailwindcss@^3.4.17 and states v4.2.7 keeps Tailwind CSS 3 configuration.
+- **Web:** use Tailwind CSS 4.x, matching Tailwind's current official Next.js setup (@tailwindcss/postcss and CSS @import "tailwindcss"). Consume packages/design-tokens/dist/variables.css and map its CSS custom properties through Tailwind 4 @theme inline definitions where utility classes are needed. The web app does not consume the v3 tailwind-preset.js.
+- **Preset compatibility:** Tailwind 4 can load legacy JavaScript configs explicitly with @config, and its documentation says config support remains for backward compatibility; config files are no longer auto-detected. The design-system generator's preset is a Tailwind 3 preset, so it is intentionally used only by mobile. The generated CSS variables serve web independently of Tailwind's preset format.
+- **Official sources:** [NativeWind stable installation](https://www.nativewind.dev/docs/getting-started/installation) (2026-10-19); [Tailwind CSS Next.js installation](https://tailwindcss.com/docs/installation/framework-guides/nextjs) (2026-10-19); [Tailwind CSS upgrade guide: JavaScript config compatibility](https://tailwindcss.com/docs/upgrade-guide) (2026-10-19); [Tailwind CSS directives: @config](https://tailwindcss.com/docs/functions-and-directives) (2026-10-19).
