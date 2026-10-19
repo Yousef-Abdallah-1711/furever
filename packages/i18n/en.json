@@ -344,7 +344,20 @@
       "iAgreeToTheTermsAndPrivacyPolicy": "I agree to the Terms and Privacy Policy",
       "save": "Save",
       "phoneNumberOptional": "Phone number (optional)",
-      "weLlOnlyUseThisIfAClinicNeedsToReachYouAboutAnAppointment": "We'll only use this if a clinic needs to reach you about an appointment."
+      "weLlOnlyUseThisIfAClinicNeedsToReachYouAboutAnAppointment": "We'll only use this if a clinic needs to reach you about an appointment.",
+      "enterYourFullName": "Enter your full name",
+      "chooseYourCity": "Choose your city",
+      "pleaseAcceptTheTermsAndPrivacyPolicy": "Please accept the Terms and Privacy Policy",
+      "completeYourProfile": "Complete your profile",
+      "nameFilledFromYourStSocialAccountCityIsStillRequired": "Name filled from your '+st.social+' account. City is still required.",
+      "eGSarahAhmed": "e.g. Sarah Ahmed",
+      "selectCity": "Select city",
+      "saveAndContinue": "Save and continue",
+      "profilePhoto": "Profile photo",
+      "photoAdded": "Photo added",
+      "photoRemoved": "Photo removed",
+      "chooseFromLibrary": "Choose from library",
+      "removePhoto": "Remove photo"
     },
     "emergency": {
       "emergency": "Emergency",
@@ -356,7 +369,9 @@
       "call": "Call",
       "directions": "Directions"
     },
-    "language": {},
+    "language": {
+      "youCanChangeThisLaterInSettings": "You can change this later in Settings."
+    },
     "login": {
       "twoStepVerification": "Two-step verification",
       "signInToDashboard": "Sign in to dashboard",
@@ -424,7 +439,28 @@
       "verifyYourEmail": "Verify your email",
       "enterTheCodeSentToEmail": "Enter the code sent to {email}",
       "didnTGetItCheckSpamOrTryAgainInAMinute": "Didn't get it? Check spam, or try again in a minute.",
-      "thisEmailAddressIsTemporarilyLockedTryAgainAtTime": "This email address is temporarily locked. Try again at {time}."
+      "thisEmailAddressIsTemporarilyLockedTryAgainAtTime": "This email address is temporarily locked. Try again at {time}.",
+      "newCodeSent": "New code sent",
+      "enterThe6DigitCodeSentTo": "Enter the 6-digit code sent to",
+      "verificationCode": "Verification code",
+      "verifying": "Verifying…",
+      "codeVerifiedSigningYouIn": "Code verified. Signing you in…",
+      "incorrectCode": "Incorrect code. ",
+      "attemptsLeft": "attempts left.",
+      "thisCodeHasExpiredRequestANewOne": "This code has expired. Request a new one.",
+      "tooManyAttemptsRequestANewCodeOrChangeYourNumber": "Too many attempts. Request a new code or change your number.",
+      "resendCode": "Resend code",
+      "prototype": "Prototype",
+      "simulatedSMS": "Simulated SMS",
+      "succeeds": "succeeds",
+      "expired": "expired",
+      "anyOtherCodeIsIncorrect": "any other code is incorrect",
+      "mode": "Mode:",
+      "newAccountOnboarding": "new account → onboarding",
+      "returningUserHome": "returning user → Home",
+      "skipTimer": "Skip timer",
+      "autofill123456": "Autofill 123456",
+      "changeEmail": "Change email"
     },
     "permissions": {
       "stayOnTopOfCare": "Stay on top of care",
@@ -603,7 +639,53 @@
       "welcomeToFurEver": "Welcome to FurEver!",
       "getStarted": "Get Started",
       "iHaveAnAccount": "I Have an Account",
-      "signInWithEmailGoogleOrApple": "Sign in with email, Google, or Apple"
+      "signInWithEmailGoogleOrApple": "Sign in with email, Google, or Apple",
+      "theBestCareForYourFurFamily": "The best care for your fur family."
+    },
+    "slides": {
+      "digitalHealthPassport": "Digital health passport",
+      "vaccinesAndRecordsForEveryPetInOnePlace": "Vaccines and records for every pet, in one place.",
+      "bookingWithLiveQueue": "Booking with live queue",
+      "bookAVisitAndWatchYourTurnInRealTime": "Book a visit and watch your turn in real time.",
+      "emergencyCare": "Emergency care",
+      "find24HourVetsNearYouFast": "Find 24-hour vets near you, fast.",
+      "skip": "Skip",
+      "next": "Next",
+      "getStarted": "Get Started",
+      "email": "Email"
+    },
+    "perms": {
+      "allowFurEverToSendYouNotifications": "Allow FurEver to send you notifications?",
+      "prototypeSystemPromptNoRealPermissionIsRequested": "Prototype system prompt. No real permission is requested.",
+      "allow": "Allow",
+      "donTAllow": "Don't allow",
+      "stayOnTopOfCare": "Stay on top of care",
+      "vaccinationReminders": "Vaccination reminders",
+      "7Days1DayAndOnTheDueDate": "7 days, 1 day and on the due date.",
+      "nearbyClinics": "Nearby clinics",
+      "locationFindsClinicsNearYou": "Location finds clinics near you.",
+      "theAppWorksWithoutEither": "The app works without either.",
+      "notNow": "Not now"
+    },
+    "phone": {
+      "enterAValidEmailAddressEG1001234567": "Enter a valid email address, e.g. 100 123 4567",
+      "terms": "Terms",
+      "privacyPolicy": "Privacy Policy",
+      "createYourAccount": "Create your account",
+      "welcomeBack": "Welcome back",
+      "emailAddress": "Email address",
+      "continue": "Continue",
+      "or": "or",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithApple": "Continue with Apple",
+      "byContinuingYouAgreeToThe": "By continuing you agree to the ",
+      "and": " and ",
+      "alreadyHaveAnAccountSignIn": "Already have an account? Sign in",
+      "newToFurEverCreateAnAccount": "New to FurEver? Create an account",
+      "sendCode": "Send code",
+      "orContinueWith": "Or continue with",
+      "weLlEmailYouA6DigitCode": "We'll email you a 6-digit code",
+      "enterAValidEmailAddress": "Enter a valid email address"
     }
   }
 }

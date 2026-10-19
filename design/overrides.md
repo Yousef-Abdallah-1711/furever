@@ -32,6 +32,8 @@ Decision 11) before shipping.
 | --- | --- | --- |
 | Primary CTA | "Get Started" → phone entry | "Get Started" → `/sign-in` (unchanged label, new destination) |
 | Secondary CTA | "I Have an Account" → phone entry | "I Have an Account" → `/sign-in` (same screen serves both; AUTH-01) |
+| Prototype sub-copy (EN) | "The best care for your fur family." | "Sign in with email, Google, or Apple" |
+| Prototype sub-copy (AR, draft) | "أحسن رعاية لعيلتك الصغيرة." | "سجّل الدخول بالبريد الإلكتروني أو Google أو Apple" *(draft)* |
 | Sub-copy (EN) | "Sign up with your phone number" | "Sign in with email, Google, or Apple" |
 | Sub-copy (AR, draft) | "سجّل باستخدام رقم هاتفك" | "سجّل الدخول بالبريد الإلكتروني أو Google أو Apple" *(draft)* |
 
@@ -39,6 +41,10 @@ Decision 11) before shipping.
 
 | | Kit (phone era) | Override (email era) |
 | --- | --- | --- |
+| Field label (EN) | "Phone number" | "Email address" |
+| Field label (AR, draft) | "رقم الموبايل" | "البريد الإلكتروني" *(draft)* |
+| Prototype helper (EN) | "We will send a 6-digit code by SMS." | "We'll email you a 6-digit code" |
+| Prototype helper (AR, draft) | "هنبعتلك كود من 6 أرقام برسالة." | "سنرسل لك رمزًا مكونًا من 6 أرقام بالبريد الإلكتروني" *(draft)* |
 | Field | Phone number (`PhoneInput`, Egyptian-format validation) | Email address (`Input`, `type="email"`, format validation only — no Egyptian-number rule applies) |
 | Primary button (EN) | "Send code" | "Send code" (unchanged label, now sends to email via `verify-otp-guard`'s `send-code` action) |
 | Primary button (AR, draft) | "إرسال الرمز" | "إرسال الرمز" *(unchanged, draft)* |
@@ -53,6 +59,12 @@ Decision 11) before shipping.
 
 | | Kit (phone era) | Override (email era) |
 | --- | --- | --- |
+| Prototype title (EN) | "Verify code" | "Verify your email" |
+| Prototype title (AR, draft) | "تأكيد الكود" | "تحقق من بريدك الإلكتروني" *(draft)* |
+| Prototype sub-copy (EN) | "Enter the 6-digit code sent to" | "Enter the code sent to {email}" |
+| Prototype sub-copy (AR, draft) | "اكتب الكود المكوّن من 6 أرقام اللي اتبعت على" | "أدخل الرمز المرسل إلى {email}" *(draft)* |
+| Prototype edit action (EN) | "Change number" | "Change email" |
+| Prototype edit action (AR, draft) | "تغيير الرقم" | "تغيير البريد الإلكتروني" *(draft)* |
 | Title (EN) | "Verify your phone" | "Verify your email" |
 | Title (AR, draft) | "تحقق من هاتفك" | "تحقق من بريدك الإلكتروني" *(draft)* |
 | Sub-copy (EN) | "Enter the code sent to {phone}" | "Enter the code sent to {email}" |

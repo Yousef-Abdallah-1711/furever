@@ -1,9 +1,39 @@
+// Rule: merge generated screens into packages/i18n; never replace the screens
+// object. Hand-added keys and older generated keys are retained on every run.
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 type Pair = { en: string; ar: string };
 type ScreenCopy = { route: string; component: string; source: string };
+type Dictionary = Record<string, unknown>;
+
+// Generated screen values merge into existing namespaces; hand-added keys and
+// older generated keys remain available across extractor runs.
+export function mergeScreenDictionaries(
+  existing: Dictionary,
+  generated: Record<string, Record<string, string>>,
+): Dictionary {
+  const oldScreens = (existing.screens ?? {}) as Record<
+    string,
+    Record<string, unknown>
+  >;
+  const screens = { ...oldScreens };
+  for (const [screen, entries] of Object.entries(generated)) {
+    screens[screen] = { ...(screens[screen] ?? {}), ...entries };
+  }
+  return { ...existing, screens };
+}
+
+export function mergeDraftKeys(
+  existing: unknown,
+  generated: string[],
+): string[] {
+  const previous = Array.isArray(existing)
+    ? existing.filter((key): key is string => typeof key === "string")
+    : [];
+  return [...new Set([...previous, ...generated])].sort();
+}
 
 const repositoryRoot = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -19,7 +49,7 @@ function decodeLiteral(value: string): string {
   return value.replace(/\\([\\'"`])/g, "$1").replaceAll("\\n", "\n");
 }
 
-function componentBody(source: string, component: string): string {
+export function componentBody(source: string, component: string): string {
   const start = source.search(new RegExp(`\\bfunction\\s+${component}\\s*\\(`));
   if (start < 0) throw new Error(`Kit component ${component} was not found`);
   const rest = source.slice(start);
@@ -31,13 +61,52 @@ function componentBody(source: string, component: string): string {
 
 function extractPairs(source: string): Pair[] {
   const call =
-    /\bt\(\s*(['"])((?:\\.|[^\\])*?)\1\s*,\s*(['"])((?:\\.|[^\\])*?)\3\s*\)/g;
+    /\bt\(\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)')\s*,\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)')\s*\)/g;
   const unique = new Map<string, Pair>();
   for (const match of source.matchAll(call)) {
-    const pair = { en: decodeLiteral(match[2]), ar: decodeLiteral(match[4]) };
+    const pair = {
+      en: decodeLiteral(match[1] ?? match[2]),
+      ar: decodeLiteral(match[3] ?? match[4]),
+    };
     if (pair.en && pair.ar) unique.set(`${pair.en}\u0000${pair.ar}`, pair);
   }
   return [...unique.values()];
+}
+
+export function unextractedCalls(source: string): string[] {
+  const calls: string[] = [];
+  const starts = /\bt\s*\(/g;
+  for (const match of source.matchAll(starts)) {
+    const opening = source.indexOf("(", match.index);
+    let depth = 0;
+    let quote = "";
+    let escaped = false;
+    let end = opening;
+    for (; end < source.length; end += 1) {
+      const character = source[end];
+      if (quote) {
+        if (escaped) escaped = false;
+        else if (character === "\\") escaped = true;
+        else if (character === quote) quote = "";
+        continue;
+      }
+      if (character === "'" || character === '"' || character === "`") {
+        quote = character;
+        continue;
+      }
+      if (character === "(") depth += 1;
+      if (character === ")" && --depth === 0) break;
+    }
+    const call = source.slice(match.index, Math.min(end + 1, source.length));
+    if (
+      !/^t\s*\(\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')\s*,\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')\s*\)$/.test(
+        call,
+      )
+    ) {
+      calls.push(call.replace(/\s+/g, " ").slice(0, 180));
+    }
+  }
+  return calls;
 }
 
 function quotedValues(value: string): string[] {
@@ -85,7 +154,13 @@ function overrideMaps(markdown: string): Map<string, Map<string, string>> {
       if (cells.length < 4) continue;
       const before = quotedValues(cells[2]);
       const after = quotedValues(cells[3]);
-      if (before.length === 1 && after.length === 1 && before[0] !== after[0]) {
+      if (before.length === 1 && after.length === 0) {
+        replacements.set(before[0], "");
+      } else if (
+        before.length === 1 &&
+        after.length === 1 &&
+        before[0] !== after[0]
+      ) {
         replacements.set(before[0], after[0]);
       }
     }
@@ -225,6 +300,7 @@ async function main() {
   const englishScreens: Record<string, Record<string, string>> = {};
   const arabicScreens: Record<string, Record<string, string>> = {};
   const draftKeys: string[] = [];
+  const dynamicCalls = new Set<string>();
 
   for (const screen of screenRecords) {
     const baseSlug = screenKey(screen.route, screen.component);
@@ -238,27 +314,25 @@ async function main() {
     );
     const slug = (slugCounts.get(baseSlug) ?? 0) > 1 ? routeSlug : baseSlug;
     const body = componentBody(screen.source, screen.component);
+    for (const call of unextractedCalls(body)) dynamicCalls.add(call);
     const routeAliases =
       screen.route === "/login" ? ["/login", "/mfa"] : [screen.route];
     const routeReplacements = routeAliases.flatMap((route) => [
       ...(replacements.get(route)?.entries() ?? []),
     ]);
-    let pairs = extractPairs(body).map((pair) => {
-      for (const [before, after] of routeReplacements) {
-        pair.en = pair.en.replaceAll(before, after);
-        pair.ar = pair.ar.replaceAll(before, after);
-      }
-      return pair;
-    });
-    if (screen.route === "/welcome") {
-      pairs = pairs.filter(
-        (pair) => pair.en !== "The best care for your fur family.",
-      );
-    } else if (screen.route === "/sign-in") {
+    let pairs = extractPairs(body)
+      .map((pair) => {
+        for (const [before, after] of routeReplacements) {
+          pair.en = pair.en.replaceAll(before, after);
+          pair.ar = pair.ar.replaceAll(before, after);
+        }
+        return pair;
+      })
+      .filter((pair) => pair.en && pair.ar);
+    if (screen.route === "/sign-in") {
       pairs = pairs.filter(
         (pair) => !/phone number|sms|text you/i.test(pair.en),
       );
-      pairs.push({ en: "Email address", ar: "البريد الإلكتروني" });
     } else if (screen.route === "/otp") {
       pairs = pairs.filter((pair) => pair.en !== "Verify code");
     } else if (screen.route === "/profile/account") {
@@ -298,25 +372,37 @@ async function main() {
     }
   }
 
-  const outputEn = { ...en, screens: englishScreens };
-  const outputAr = { ...ar, screens: arabicScreens };
+  const existingDraftKeys = await readFile(draftPath, "utf8")
+    .then((value) => JSON.parse(value) as unknown)
+    .catch(() => []);
+  const outputEn = mergeScreenDictionaries(en, englishScreens);
+  const outputAr = mergeScreenDictionaries(ar, arabicScreens);
+  const mergedDraftKeys = mergeDraftKeys(existingDraftKeys, draftKeys);
   await Promise.all([
     writeFile(enPath, `${JSON.stringify(outputEn, null, 2)}\n`, "utf8"),
     writeFile(arPath, `${JSON.stringify(outputAr, null, 2)}\n`, "utf8"),
     writeFile(
       draftPath,
-      `${JSON.stringify(draftKeys.sort(), null, 2)}\n`,
+      `${JSON.stringify(mergedDraftKeys, null, 2)}\n`,
       "utf8",
     ),
   ]);
   process.stdout.write(
-    `Extracted ${draftKeys.length} screen translation keys from ${screenRecords.length} Built screens; wrote ${draftKeys.length} Arabic draft keys\n`,
+    `Extracted ${draftKeys.length} screen translation keys from ${screenRecords.length} Built screens; draft list now has ${mergedDraftKeys.length} keys\n`,
+  );
+  process.stdout.write(
+    `Unextracted dynamic/template t() calls: ${dynamicCalls.size}\n${[...dynamicCalls].map((call) => `- ${call}`).join("\n")}\n`,
   );
 }
 
-main().catch((error: unknown) => {
-  process.stderr.write(
-    `${error instanceof Error ? error.message : String(error)}\n`,
-  );
-  process.exitCode = 1;
-});
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
+  main().catch((error: unknown) => {
+    process.stderr.write(
+      `${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exitCode = 1;
+  });
+}

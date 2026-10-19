@@ -344,7 +344,20 @@
       "iAgreeToTheTermsAndPrivacyPolicy": "موافق على الشروط وسياسة الخصوصية",
       "save": "حفظ",
       "phoneNumberOptional": "رقم الهاتف (اختياري)",
-      "weLlOnlyUseThisIfAClinicNeedsToReachYouAboutAnAppointment": "سنستخدمه فقط إذا احتاجت العيادة للتواصل معك بخصوص موعدك."
+      "weLlOnlyUseThisIfAClinicNeedsToReachYouAboutAnAppointment": "سنستخدمه فقط إذا احتاجت العيادة للتواصل معك بخصوص موعدك.",
+      "enterYourFullName": "اكتب اسمك بالكامل",
+      "chooseYourCity": "اختار مدينتك",
+      "pleaseAcceptTheTermsAndPrivacyPolicy": "لازم توافق على الشروط وسياسة الخصوصية",
+      "completeYourProfile": "أكمل بياناتك",
+      "nameFilledFromYourStSocialAccountCityIsStillRequired": "الاسم اتملّى من حساب '+st.social+'. لسه لازم تختار المدينة.",
+      "eGSarahAhmed": "مثلًا سارة أحمد",
+      "selectCity": "اختار المدينة",
+      "saveAndContinue": "حفظ ومتابعة",
+      "profilePhoto": "صورة الحساب",
+      "photoAdded": "تمت إضافة الصورة",
+      "photoRemoved": "تم حذف الصورة",
+      "chooseFromLibrary": "اختار من المعرض",
+      "removePhoto": "حذف الصورة"
     },
     "emergency": {
       "emergency": "الطوارئ",
@@ -356,7 +369,9 @@
       "call": "اتصال",
       "directions": "الاتجاهات"
     },
-    "language": {},
+    "language": {
+      "youCanChangeThisLaterInSettings": "تقدر تغيّرها بعدين من الإعدادات."
+    },
     "login": {
       "twoStepVerification": "التحقق بخطوتين",
       "signInToDashboard": "تسجيل الدخول للوحة التحكم",
@@ -424,7 +439,28 @@
       "verifyYourEmail": "تحقق من بريدك الإلكتروني",
       "enterTheCodeSentToEmail": "أدخل الرمز المرسل إلى {email}",
       "didnTGetItCheckSpamOrTryAgainInAMinute": "لم يصلك الرمز؟ تحقّق من البريد غير المرغوب فيه، أو أعد المحاولة بعد دقيقة.",
-      "thisEmailAddressIsTemporarilyLockedTryAgainAtTime": "تم قفل البريد الإلكتروني مؤقتًا. حاول مرة أخرى في {time}."
+      "thisEmailAddressIsTemporarilyLockedTryAgainAtTime": "تم قفل البريد الإلكتروني مؤقتًا. حاول مرة أخرى في {time}.",
+      "newCodeSent": "اتبعت كود جديد",
+      "enterThe6DigitCodeSentTo": "اكتب الكود المكوّن من 6 أرقام اللي اتبعت على",
+      "verificationCode": "كود التأكيد",
+      "verifying": "جاري التأكيد…",
+      "codeVerifiedSigningYouIn": "تم التأكيد. جاري تسجيل الدخول…",
+      "incorrectCode": "الكود غلط. ",
+      "attemptsLeft": "محاولات متبقية.",
+      "thisCodeHasExpiredRequestANewOne": "الكود انتهت صلاحيته. اطلب كود جديد.",
+      "tooManyAttemptsRequestANewCodeOrChangeYourNumber": "محاولات كتير. اطلب كود جديد أو غيّر الرقم.",
+      "resendCode": "إعادة إرسال الكود",
+      "prototype": "نموذج",
+      "simulatedSMS": "رسالة محاكاة",
+      "succeeds": "ينجح",
+      "expired": "منتهي",
+      "anyOtherCodeIsIncorrect": "أي كود تاني غلط",
+      "mode": "الوضع:",
+      "newAccountOnboarding": "حساب جديد ← الإعداد",
+      "returningUserHome": "مستخدم قديم ← الرئيسية",
+      "skipTimer": "تخطي المؤقت",
+      "autofill123456": "املا 123456",
+      "changeEmail": "تغيير البريد الإلكتروني"
     },
     "permissions": {
       "stayOnTopOfCare": "خليك مطمّن على حيوانك",
@@ -603,7 +639,53 @@
       "welcomeToFurEver": "أهلاً بيك في فيرايفر!",
       "getStarted": "يلا نبدأ",
       "iHaveAnAccount": "عندي حساب",
-      "signInWithEmailGoogleOrApple": "سجّل الدخول بالبريد الإلكتروني أو Google أو Apple"
+      "signInWithEmailGoogleOrApple": "سجّل الدخول بالبريد الإلكتروني أو Google أو Apple",
+      "theBestCareForYourFurFamily": "أحسن رعاية لعيلتك الصغيرة."
+    },
+    "slides": {
+      "digitalHealthPassport": "جواز صحة رقمي",
+      "vaccinesAndRecordsForEveryPetInOnePlace": "تطعيمات وسجلات كل حيوان في مكان واحد.",
+      "bookingWithLiveQueue": "حجز مع طابور مباشر",
+      "bookAVisitAndWatchYourTurnInRealTime": "احجز زيارة وتابع دورك لحظة بلحظة.",
+      "emergencyCare": "رعاية الطوارئ",
+      "find24HourVetsNearYouFast": "لاقي أقرب دكتور شغال 24 ساعة بسرعة.",
+      "skip": "تخطي",
+      "next": "التالي",
+      "getStarted": "يلا نبدأ",
+      "email": "البريد الإلكتروني"
+    },
+    "perms": {
+      "allowFurEverToSendYouNotifications": "تسمح لفيرايفر يبعتلك إشعارات؟",
+      "prototypeSystemPromptNoRealPermissionIsRequested": "رسالة نظام تجريبية. مفيش طلب صلاحية حقيقي.",
+      "allow": "سماح",
+      "donTAllow": "عدم السماح",
+      "stayOnTopOfCare": "خليك مطمّن على حيوانك",
+      "vaccinationReminders": "تذكير بالتطعيمات",
+      "7Days1DayAndOnTheDueDate": "قبلها بـ 7 أيام ويوم وفي يوم الموعد.",
+      "nearbyClinics": "عيادات قريبة",
+      "locationFindsClinicsNearYou": "الموقع بيلاقيلك عيادات قريبة.",
+      "theAppWorksWithoutEither": "التطبيق بيشتغل من غير الاتنين.",
+      "notNow": "مش دلوقتي"
+    },
+    "phone": {
+      "enterAValidEmailAddressEG1001234567": "اكتب رقم موبايل مصري صحيح، مثلًا 100 123 4567",
+      "terms": "الشروط",
+      "privacyPolicy": "سياسة الخصوصية",
+      "createYourAccount": "أنشئ حسابك",
+      "welcomeBack": "أهلاً بيك تاني",
+      "emailAddress": "البريد الإلكتروني",
+      "continue": "متابعة",
+      "or": "أو",
+      "continueWithGoogle": "المتابعة بحساب Google",
+      "continueWithApple": "المتابعة بحساب Apple",
+      "byContinuingYouAgreeToThe": "بالمتابعة إنت موافق على ",
+      "and": " و",
+      "alreadyHaveAnAccountSignIn": "عندك حساب؟ سجّل دخولك",
+      "newToFurEverCreateAnAccount": "جديد على فيرايفر؟ أنشئ حساب",
+      "sendCode": "إرسال الرمز",
+      "orContinueWith": "أو الاستمرار باستخدام",
+      "weLlEmailYouA6DigitCode": "سنرسل لك رمزًا مكونًا من 6 أرقام بالبريد الإلكتروني",
+      "enterAValidEmailAddress": "أدخل بريدًا إلكترونيًا صالحًا"
     }
   }
 }
