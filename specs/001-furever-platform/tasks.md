@@ -173,7 +173,7 @@ skeleton (constitution III, VII; D00 scope rule).
   **Spec** row in `spec.md`'s Screen Coverage (Phase 1 only), emit `design/screens/<ID>.md` with
   `status: spec` and a `pattern:` field naming the nearest Built screen (per `spec.md`'s Design Gaps
   section). Depends on T034.
-- [ ] T036 [D00d] Write `design/scripts/build-screen-map.ts` combining T034+T035's outputs into
+- [x] T036 [D00d] Write `design/scripts/build-screen-map.ts` combining T034+T035's outputs into
   `design/screen-map.md` with columns: screen ID, route, kit source or pattern, delivery phase (looked up
   from `plan.md`'s Coverage Table). Depends on T035.
 - [ ] T037 [D00d] Write the i18n extractor `design/scripts/extract-i18n.ts`: pull every `t('EN','AR')`
