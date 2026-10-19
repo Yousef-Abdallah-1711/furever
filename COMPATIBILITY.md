@@ -1,4 +1,4 @@
-﻿# FurEver Platform Compatibility Pins
+# FurEver Platform Compatibility Pins
 
 Checked: 2026-10-19 (live fetches of official documentation)
 
@@ -22,3 +22,17 @@ Expo’s SDK 58 changelog says SDK 58 is released and includes React Native 0.88
 - Nativewind’s docs identify 4.2.7 as stable, say it adds Expo SDK 57 support, and say it supports Reanimated 3 and 4. They do not explicitly state SDK 58 / React Native 0.88 compatibility. Nativewind v5 is labeled a release candidate, so it is not substituted as a stable pin.
 - Expo’s SDK 58 changelog sets Node requirements by major line: Node 22.13 or newer on 22.x; 24.3 or newer on 24.x; or Node 26 and later. Odd-numbered 23 and 25 are unsupported. The 22.13.0 entry above records the minimum binding floor on a supported line, not the latest Node.js patch release.
 - Next.js 16.4’s official release post says it ships with React 19.3. The Next.js release documentation discusses App Router React Canary behavior; 19.3 here is the release’s stated React version, not an independently checked npm patch build.
+
+## Tooling
+
+Checked: 2026-10-19 (official npm package pages)
+
+| Package | Pinned version | Official source URL | Date checked |
+|---|---|---|---|
+| turbo | 2.10.13 | https://www.npmjs.com/package/turbo | 2026-10-19 |
+| @biomejs/biome | 2.5.15 | https://www.npmjs.com/package/@biomejs/biome | 2026-10-19 |
+| typescript | 7.0.2 | https://www.npmjs.com/package/typescript | 2026-10-19 |
+| husky | 9.1.7 | https://www.npmjs.com/package/husky | 2026-10-19 |
+| @commitlint/cli | 21.2.3 | https://www.npmjs.com/package/@commitlint/cli | 2026-10-19 |
+| @commitlint/config-conventional | 21.2.3 | https://www.npmjs.com/package/@commitlint/config-conventional | 2026-10-19 |
+| lint-staged | 17.6.0 | https://www.npmjs.com/package/lint-staged | 2026-10-19 |

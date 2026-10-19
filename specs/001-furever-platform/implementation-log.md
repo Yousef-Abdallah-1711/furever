@@ -43,6 +43,33 @@ Columns: Task ID | Worker | Retries | Commands run (orchestrator's own re-verifi
   the original path directly) and T078 (amended PRD replaces the `docs/PRD.md` placeholder). **Do not
   delete anything now.**
 
+## Gap-fills (not numbered in tasks.md)
+
+| Gap-fill | Worker | Retries | Commands run | Result | Commit |
+| --- | --- | --- | --- | --- | --- |
+| .gitignore (D00a) | codex (gpt-6-luna, effort high) | 0 | `git check-ignore -v`; raw-byte check | PASS | 3c3fcec |
+| G2 (root tooling) | codex (gpt-6-luna, effort high) for research/scripts/COMPATIBILITY.md; orchestrator (direct) for the actual installs | 2 (both exhausted, then owner-approved orchestrator fallback) | `pnpm exec {biome,turbo,tsc,commitlint,lint-staged} --version`; `pnpm exec biome check biome.json package.json`; `echo <msg> \| pnpm exec commitlint` for one invalid-type message (rejected, exit 1), one empty-type message (rejected, exit 1), and one valid message (accepted, exit 0); confirmed biome.json's `$schema` already matches the installed 2.5.15 (no change needed); `git diff --stat pnpm-lock.yaml` (986 insertions) | PASS, after an infrastructure blocker (below) | (pending) |
+
+**G2 retry history**: attempt 0 (Codex, workspace-write sandbox) correctly researched all 7 exact
+versions and wrote `COMPATIBILITY.md`'s Tooling section + root `package.json` scripts, but every
+`pnpm add -D` failed with `EACCES` against the npm registry — nothing installed. Retry 1 (same
+session, diagnosing the EACCES) found a store-path mismatch, worked around it with a project-local
+`.npmrc` (`store-dir`/`cache-dir` inside the repo), but installs still failed with
+`ERR_PNPM_META_FETCH_FAIL` against `registry.npmjs.org` — a different symptom of the same root cause.
+Diagnosis: Codex's own web-fetch tool calls (used successfully for T001's and this task's version
+research) reach the internet fine, but raw shell-level network sockets opened by a subprocess (pnpm)
+inside Codex's sandbox do not — the same split observed independently in the orchestrator's own
+environment (WebFetch worked against biomejs.dev; raw `curl` via Bash did not). A second retry with
+`--sandbox danger-full-access` (a documented relay.mjs option for exactly this class of problem, not an
+approval bypass) was blocked by the orchestrator's own tool-permission classifier ("Create Unsafe
+Agents") before it could even run. Per the "stop and report, don't guess" rule, this was presented to
+the owner rather than worked around silently; **owner decision**: the orchestrator runs the install
+directly (same mechanism as T012's `pnpm install` checkpoint, which already proved this environment's
+own shell has working registry access). Cleaned up the dead `.npmrc`/`.pnpm-store` left by the blocked
+retry, reinstalled cleanly, then ran `pnpm add -D -w <7 pins> --save-exact` directly — succeeded in
+25.2s with the same one pre-existing peer-dependency warning as T012 (RN 0.88-rc vs. metro-config
+0.88.0 — Risk (a), unrelated to this task).
+
 ## D00a — Repo and tooling
 
 | Task | Worker | Retries | Commands run | Result | Commit |
