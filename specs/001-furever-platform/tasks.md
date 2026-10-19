@@ -124,7 +124,7 @@ skeleton (constitution III, VII; D00 scope rule).
   constitution X).
 - [x] T022 [P] [D00b] Write `docs/environments.md` documenting local/staging/production (PRD section 8,
   constitution VIII), each with its intended Supabase project-reference placeholder.
-- [ ] T023 [D00b] **Checkpoint**: run D00b's exit check — `supabase start` succeeds locally;
+- [x] T023 [D00b] **Checkpoint**: run D00b's exit check — `supabase start` succeeds locally;
   `supabase test db` passes `000_rls_check.test.sql`'s negative case (T019) and positive case (T020). Do
   not start D00c until this passes.
 

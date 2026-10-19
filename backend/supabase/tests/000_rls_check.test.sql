@@ -1,7 +1,23 @@
-BEGIN;
-SELECT plan(1);
+CREATE OR REPLACE FUNCTION public.tables_missing_rls()
+RETURNS TABLE (table_name text)
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog
+AS $function$
+    SELECT format('%I.%I', n.nspname, c.relname)::text
+    FROM pg_catalog.pg_class AS c
+    JOIN pg_catalog.pg_namespace AS n
+        ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relkind IN ('r', 'p')
+      AND c.relrowsecurity = false
+    ORDER BY c.relname;
+$function$;
 
--- Create a scratch table without RLS; the transaction rollback removes it.
+BEGIN;
+SELECT plan(2);
+
+-- Negative case: a scratch table without RLS.
 CREATE TABLE public._check_rls_fixture_negative (id int);
 
 SELECT ok(
@@ -9,12 +25,7 @@ SELECT ok(
   'tables_missing_rls() flags a public table with RLS disabled'
 );
 
-SELECT * FROM finish();
-ROLLBACK;
-BEGIN;
-SELECT plan(1);
-
--- Create a scratch table with RLS enabled; the transaction rollback removes it.
+-- Positive case: a different scratch table, with RLS enabled.
 CREATE TABLE public._check_rls_fixture_positive (id int);
 ALTER TABLE public._check_rls_fixture_positive ENABLE ROW LEVEL SECURITY;
 
