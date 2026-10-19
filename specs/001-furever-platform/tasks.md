@@ -169,7 +169,7 @@ skeleton (constitution III, VII; D00 scope rule).
   marked **Built** in `FurEver Design System/guidelines/screen-inventory.md`, read its `.babel`/
   `index.html` kit source and emit `design/screens/<ID>.md` (route, kit source file, states present,
   components used). Depends on T011.
-- [ ] T035 [D00d] Write the Spec-screen stub generator `design/scripts/extract-spec-stubs.ts`: for every
+- [x] T035 [D00d] Write the Spec-screen stub generator `design/scripts/extract-spec-stubs.ts`: for every
   **Spec** row in `spec.md`'s Screen Coverage (Phase 1 only), emit `design/screens/<ID>.md` with
   `status: spec` and a `pattern:` field naming the nearest Built screen (per `spec.md`'s Design Gaps
   section). Depends on T034.
