@@ -176,7 +176,7 @@ skeleton (constitution III, VII; D00 scope rule).
 - [x] T036 [D00d] Write `design/scripts/build-screen-map.ts` combining T034+T035's outputs into
   `design/screen-map.md` with columns: screen ID, route, kit source or pattern, delivery phase (looked up
   from `plan.md`'s Coverage Table). Depends on T035.
-- [ ] T037 [D00d] Write the i18n extractor `design/scripts/extract-i18n.ts`: pull every `t('EN','AR')`
+- [x] T037 [D00d] Write the i18n extractor `design/scripts/extract-i18n.ts`: pull every `t('EN','AR')`
   call out of the `.babel` kit files, generate a key per screen (e.g. `screens.addPet.title`) grouped
   under that screen in `packages/i18n/en.json`/`ar.json`, and record every Arabic key's draft status as an
   entry in `packages/i18n/draft-keys.json` (a flat list of keys), not as a sibling marker inside
