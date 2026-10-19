@@ -105,6 +105,8 @@ minutes; per-email/per-IP throttling; no-enumeration). Confirmed already correct
 | T018 | codex (gpt-6-luna, effort high) | 0 | Raw-byte check; structural SQL review (reusable `tables_missing_rls()` function pgTAP can call directly, plus a standalone `DO` block raising on violation for CI) | PASS, real-database proof deferred to T023's checkpoint | (pending) |
 | T019 | codex (gpt-6-luna, effort high) | 0 | Raw-byte check; content re-read | PASS, pgTAP execution proof deferred to T023 | (pending) |
 | T020 | codex (gpt-6-luna, effort high) | 0 | Raw-byte check; confirmed T019's first block byte-identical, second block appended correctly, two independent BEGIN/ROLLBACK blocks each with matching plan(1)/assertion count | PASS, pgTAP execution proof deferred to T023 | (pending) |
+| T021 | codex (gpt-6-luna, effort high) for content/research; orchestrator (direct) for the zod install | 0 | Raw-byte check on all 4 files; independently re-confirmed zod 4.6.7 is current stable (github.com/colinhacks/zod/releases); `pnpm --filter @furever/shared add zod@4.6.7 --save-exact`; **`pnpm exec tsc --noEmit` inside packages/shared — exit 0, env.ts typechecks cleanly against the real installed zod** | PASS | (pending) |
+| T022 | codex (gpt-6-luna, effort high) | 0 | Raw-byte check; grepped for mojibake after an internal Codex patch-retry (one self-corrected `apply_patch` error mid-run, final file clean); confirmed only labeled placeholders, no real project refs/secrets | PASS | (pending) |
 
 ## D00a — Repo and tooling
 

@@ -118,11 +118,11 @@ skeleton (constitution III, VII; D00 scope rule).
   RLS enabled, runs `check-rls.sql`'s query, asserts it flags that table, then `ROLLBACK`s. Depends on T018.
 - [x] T020 [D00b] Extend `000_rls_check.test.sql` with the positive case: the same scratch table with RLS
   enabled, in its own transaction, asserting zero violations before `ROLLBACK`. Depends on T019.
-- [ ] T021 [P] [D00b] Create `backend/.env.example` (SMTP host/port/user/password/sender placeholders —
+- [x] T021 [P] [D00b] Create `backend/.env.example` (SMTP host/port/user/password/sender placeholders —
   **no Twilio variables**, since Phase 1 has no SMS path), `mobile/.env.example`, `web/.env.example`, and
   the validated env-loader `packages/shared/src/env.ts` (Zod schema, fails fast on a missing var —
   constitution X).
-- [ ] T022 [P] [D00b] Write `docs/environments.md` documenting local/staging/production (PRD section 8,
+- [x] T022 [P] [D00b] Write `docs/environments.md` documenting local/staging/production (PRD section 8,
   constitution VIII), each with its intended Supabase project-reference placeholder.
 - [ ] T023 [D00b] **Checkpoint**: run D00b's exit check — `supabase start` succeeds locally;
   `supabase test db` passes `000_rls_check.test.sql`'s negative case (T019) and positive case (T020). Do
