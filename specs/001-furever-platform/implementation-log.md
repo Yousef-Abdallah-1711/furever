@@ -21,6 +21,28 @@ Columns: Task ID | Worker | Retries | Commands run (orchestrator's own re-verifi
   change T060's lint rule to read it from the original `FurEver Design System/` path instead. Not
   blocking now; flagged for whoever picks up D00e.
 
+## Risks and follow-ups
+
+- **(a) Expo SDK 58 / React Native 0.88.0-rc.0 / NativeWind SDK-57-only / unmet metro-config peer**:
+  Expo SDK 58 is paired with React Native 0.88.0-rc.0, and NativeWind 4.2.7 is documented only for SDK
+  57; `pnpm install` reported an unmet peer (`@react-native/metro-config` rc.0 vs found 0.88.0). At
+  T040/T041 (D00e), first scaffold a minimal app and run a smoke test of NativeWind with the generated
+  token preset BEFORE building anything else. If it fails, stop and ask the owner; the fallback is
+  Expo SDK 57.
+- **(b) .nvmrc vs. dev-machine Node version**: `.nvmrc` says `22.13.0` but the dev machine that ran
+  D00a's tasks runs Node 24.16 (confirmed: `node --version` → v24.16.0). CI and Docker must use the
+  `.nvmrc` version, not whatever's ambient on a given machine.
+- **(c) T002's version strings are not all exact semver**: T002 asked for exact versions, but
+  `web/package.json` has `"next": "16.4"`, `"react": "19.3"` (no patch component) and `mobile`'s
+  `package.json` has `"expo": "^58.0.0"` (a caret range, not an exact pin) because `COMPATIBILITY.md`
+  itself only states those forms. Convert to fully exact versions when the apps are actually scaffolded
+  in D00e, once `expo install`/`create-next-app`-equivalent tooling resolves the real patch versions.
+- **(d) Duplicated sources, cleanup deferred**: `FurEver Design System/` (original) vs. `design/system/`
+  (T011's ported copy of 4 subdirs), and the root-level PRD vs. `docs/PRD.md` (T010's placeholder copy).
+  Decide the cleanup (delete the originals? keep both permanently?) after T034 (design extraction, reads
+  the original path directly) and T078 (amended PRD replaces the `docs/PRD.md` placeholder). **Do not
+  delete anything now.**
+
 ## D00a — Repo and tooling
 
 | Task | Worker | Retries | Commands run | Result | Commit |
