@@ -157,7 +157,7 @@ skeleton (constitution III, VII; D00 scope rule).
   precomputed tint/shadow in both themes. Depends on T029.
 - [x] T031 [P] [D00c] Configure Vitest for `web/` and every `packages/*` workspace (`vitest.config.ts`
   each) with one trivial passing test per workspace.
-- [ ] T032 [P] [D00c] Configure `jest-expo` for `mobile/` (`mobile/jest.config.js`) with one trivial
+- [x] T032 [P] [D00c] Configure `jest-expo` for `mobile/` (`mobile/jest.config.js`) with one trivial
   passing test.
 - [ ] T033 [D00c] **Checkpoint**: run D00c's exit check — `pnpm types:gen`, `pnpm tokens:build`, and
   `pnpm i18n:check` each succeed against the current skeleton state; `pnpm vitest run` and

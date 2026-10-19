@@ -39,3 +39,5 @@ Checked: 2026-10-19 (official npm package pages)
 | tsx | 4.23.15 | https://www.npmjs.com/package/tsx | 2026-10-19 |
 | @types/node | 26.6.5 | https://www.npmjs.com/package/@types/node | 2026-10-19 |
 | vitest | 5.0.5 | https://www.npmjs.com/package/vitest | 2026-10-19 |
+| jest-expo | 58.0.11 | https://www.npmjs.com/package/jest-expo | 2026-10-19 |
+| jest | 30.5.2 | https://www.npmjs.com/package/jest | 2026-10-19 |
