@@ -159,7 +159,7 @@ skeleton (constitution III, VII; D00 scope rule).
   each) with one trivial passing test per workspace.
 - [x] T032 [P] [D00c] Configure `jest-expo` for `mobile/` (`mobile/jest.config.js`) with one trivial
   passing test.
-- [ ] T033 [D00c] **Checkpoint**: run D00c's exit check — `pnpm types:gen`, `pnpm tokens:build`, and
+- [x] T033 [D00c] **Checkpoint**: run D00c's exit check — `pnpm types:gen`, `pnpm tokens:build`, and
   `pnpm i18n:check` each succeed against the current skeleton state; `pnpm vitest run` and
   `pnpm --filter mobile test` each report ≥1 passing test. Do not start D00d until this passes.
 
