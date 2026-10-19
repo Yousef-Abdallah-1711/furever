@@ -1,2 +1,45 @@
 # Claude Code local state (may contain credentials/auth tokens)
 .claude/settings.local.json
+
+# Dependencies
+node_modules/
+
+# Build and test output
+dist/
+.next/
+.turbo/
+.expo/
+.expo-shared/
+build/
+coverage/
+out/
+.output/
+web-build/
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor settings and project files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Supabase CLI local state (keep config, migrations, and seeds)
+**/supabase/.temp/
+**/supabase/.branches/
+
+# Expo and EAS local/generated files
+expo-env.d.ts
+google-services.json
+GoogleService-Info.plist
+*.jks
+*.p8
+*.p12
+*.mobileprovision

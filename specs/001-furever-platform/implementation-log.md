@@ -35,7 +35,22 @@ Columns: Task ID | Worker | Retries | Commands run (orchestrator's own re-verifi
 | T008 | codex (gpt-6-luna, effort high), parallel batch of 3 | 0 | Raw-byte check; confirmed exact required line `* text=auto eol=lf` present | PASS | (pending) |
 | T009 | codex (gpt-6-luna, effort high) | 0 | `node --check` on both JS configs; raw-byte check; `git ls-files -s` on the husky hook | PASS, with one orchestrator-side fix (not sent back to Codex): `.husky/commit-msg` had no executable bit (`-rw-r--r--`) — git hooks silently don't run without it on Linux/macOS/CI. `core.filemode=false` on this Windows checkout, so `chmod` was a no-op; fixed via `git update-index --chmod=+x` to force mode 100755 in the git index/commit directly | 730142d |
 | T010 | codex (gpt-6-luna, effort high) | 0 | SHA-256 + byte-length comparison between the root PRD and `docs/PRD.md` (Node, independent of Codex's self-report) | PASS, byte-identical (106,085 bytes, same SHA-256) | (pending) |
-| T011 | codex (gpt-6-luna, effort high) | 0 | Recursive per-file SHA-256 comparison (Node script, path-aware) between `FurEver Design System/{tokens,components,ui_kits,guidelines}` and `design/system/{...}`; confirmed `design/overrides.md` untouched | PASS, 5/56/19/9 files all match | (pending) |
+| T011 | codex (gpt-6-luna, effort high) | 0 | Recursive per-file SHA-256 comparison (Node script, path-aware) between `FurEver Design System/{tokens,components,ui_kits,guidelines}` and `design/system/{...}`; confirmed `design/overrides.md` untouched | PASS, 5/56/19/9 files all match | be16337 |
+| T012 | orchestrator (run directly, not delegated) | 0 | `pnpm install` (exit 0, 520 packages); `git check-attr text eol -- '*.ts' tsconfig.json package.json` (`text: auto`, `eol: lf` on all) | PASS — **D00a complete, D00b may begin** | (pending) |
+
+**Orchestrator gap-fill (not a numbered task)**: `.gitignore` is never mentioned anywhere in plan.md or
+tasks.md — a real omission, discovered when T012's `pnpm install` created untracked `node_modules/`
+dirs with nothing to stop an accidental broad `git add` from pulling them in. Delegated to Codex
+(gpt-6-luna, effort high) same as any other task; verified via `git check-ignore -v` (node_modules
+ignored at every depth, pnpm-lock.yaml and .env.example correctly NOT ignored) and a raw-byte check.
+Committed alongside T012. Flagged here so a future `/speckit-tasks` pass can fold it in formally.
+
+**Known issue, not blocking (T012)**: `pnpm install` emits one peer-dependency warning —
+`mobile > react-native@0.88.0-rc.0 > @react-native/community-cli-plugin@0.88.0-rc.0` expects
+`@react-native/metro-config@0.88.0-rc.0` but pnpm resolved the stable `0.88.0`. Direct consequence of
+the T001 decision (pin Expo SDK 58 / RN 0.88.0-rc.0 as-is). Not a failure — `pnpm install` still exits
+0 — but worth re-checking when D00e (T041, NativeWind/Metro config) actually wires up the mobile
+Metro bundler, in case the stable/RC mismatch causes a real runtime problem then.
 
 **Decision recorded (2026-10-19, T001)**: Expo's current stable SDK (58) bundles React Native 0.88,
 which upstream reactnative.dev still lists as "Future" (release-candidate, not tagged stable); NativeWind's

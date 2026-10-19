@@ -89,7 +89,7 @@ fire, not one task per event.
   (blocking task T078 in D00g).
 - [x] T011 [D00a] Copy `FurEver Design System/` (tokens, components, ui_kits, guidelines) into
   `design/system/` per the constitution's "Precedence and Source of Truth" and PRD amendment 7.
-- [ ] T012 [D00a] **Checkpoint**: run D00a's exit check — `pnpm install` succeeds from a clean clone;
+- [x] T012 [D00a] **Checkpoint**: run D00a's exit check — `pnpm install` succeeds from a clean clone;
   `COMPATIBILITY.md` is committed with source URLs and a date; `git check-attr text -- '*.ts'` reports
   `eol: lf`. Do not start D00b until this passes.
 
