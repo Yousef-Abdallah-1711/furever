@@ -5,8 +5,10 @@
 | Task | Worker | Retries | Commands run | Result | Commit |
 | --- | --- | --- | --- | --- | --- |
 | T024 | codex | 1 | `pnpm.cmd --filter backend exec supabase start`; `pnpm.cmd types:gen`; `pnpm.cmd --filter backend exec supabase stop`; `pnpm.cmd exec tsc --noEmit -p packages/shared/tsconfig.json`; raw-byte and `git diff --check` checks | PASS — local types generated from the running Supabase stack; strict package typecheck passed. Initial typecheck exposed missing Node declarations; added the exact typed-script dependency and enabled Node types only for shared. | 05d44a9 |
+| T025 | codex | 0 | `pnpm.cmd exec vitest run packages/shared/src/schemas/base.test.ts`; `pnpm.cmd exec tsc --noEmit -p packages/shared/tsconfig.json`; raw-byte and `git diff --check` checks | PASS — 1 test file, 2 tests passed; shared package typecheck passed. | pending (filled in follow-up logging commit) |
 
 **Dependency rationale (T024)**: `tsx@4.23.15` runs the required TypeScript generator scripts without compiling them to JavaScript; `@types/node@26.6.5` supplies strict Node APIs for that script. Both versions were checked from the npm registry on 2026-10-19 and are pinned in `COMPATIBILITY.md`.
+**Dependency rationale (T025)**: `vitest@5.0.5` runs the required shared-package unit test and will be configured for every web/package workspace in T031; its version was checked from the npm registry on 2026-10-19 and is pinned in `COMPATIBILITY.md`.
 
 Delegation model: OpenAI Codex CLI (`gpt-6-luna`, effort `high`, service_tier `priority` via ambient
 `~/.codex/config.toml`), orchestrated through the `codex-delegate` skill (`relay.mjs`). The orchestrator

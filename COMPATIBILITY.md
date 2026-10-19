@@ -38,3 +38,4 @@ Checked: 2026-10-19 (official npm package pages)
 | lint-staged | 17.6.0 | https://www.npmjs.com/package/lint-staged | 2026-10-19 |
 | tsx | 4.23.15 | https://www.npmjs.com/package/tsx | 2026-10-19 |
 | @types/node | 26.6.5 | https://www.npmjs.com/package/@types/node | 2026-10-19 |
+| vitest | 5.0.5 | https://www.npmjs.com/package/vitest | 2026-10-19 |

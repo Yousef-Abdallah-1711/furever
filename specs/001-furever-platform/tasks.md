@@ -133,7 +133,7 @@ skeleton (constitution III, VII; D00 scope rule).
 - [x] T024 [P] [D00c] Scaffold `packages/shared/` (`package.json`, `src/index.ts`) and the
   `supabase gen types typescript` wiring script `packages/shared/scripts/gen-types.ts` writing to
   `packages/shared/src/database.types.ts`.
-- [ ] T025 [P] [D00c] Add base Zod primitives to `packages/shared/src/schemas/base.ts`: phone regex
+- [x] T025 [P] [D00c] Add base Zod primitives to `packages/shared/src/schemas/base.ts`: phone regex
   `^\+[1-9][0-9]{7,14}$`, money (`price_minor: z.number().int().nonnegative()`, `currency: z.literal('EGP')`),
   and the Phase 1 enums from `data-model.md`, plus a unit test
   `packages/shared/src/schemas/base.test.ts` asserting the phone schema rejects `"0123"` and accepts
