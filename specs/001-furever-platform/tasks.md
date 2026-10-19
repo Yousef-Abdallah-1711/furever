@@ -184,7 +184,7 @@ skeleton (constitution III, VII; D00 scope rule).
 - [x] T038 [D00d] Write `design/scripts/verify-screen-count.ts` comparing `design/screen-map.md`'s row
   count against `plan.md`'s Coverage Table total (70, including D02's T197 Setup Summary screen task; the
   script compares against whatever `plan.md` currently states, not a hardcoded number). Depends on T036.
-- [ ] T039 [D00d] **Checkpoint**: run D00d's exit check — `design/screen-map.md` covers every Phase 1
+- [x] T039 [D00d] **Checkpoint**: run D00d's exit check — `design/screen-map.md` covers every Phase 1
   screen `plan.md`'s Coverage Table lists (T038 reports a match); `pnpm i18n:check` still passes after
   T037's extraction. Do not start D00e until this passes.
 
