@@ -48,7 +48,8 @@ Columns: Task ID | Worker | Retries | Commands run (orchestrator's own re-verifi
 | Gap-fill | Worker | Retries | Commands run | Result | Commit |
 | --- | --- | --- | --- | --- | --- |
 | .gitignore (D00a) | codex (gpt-6-luna, effort high) | 0 | `git check-ignore -v`; raw-byte check | PASS | 3c3fcec |
-| G2 (root tooling) | codex (gpt-6-luna, effort high) for research/scripts/COMPATIBILITY.md; orchestrator (direct) for the actual installs | 2 (both exhausted, then owner-approved orchestrator fallback) | `pnpm exec {biome,turbo,tsc,commitlint,lint-staged} --version`; `pnpm exec biome check biome.json package.json`; `echo <msg> \| pnpm exec commitlint` for one invalid-type message (rejected, exit 1), one empty-type message (rejected, exit 1), and one valid message (accepted, exit 0); confirmed biome.json's `$schema` already matches the installed 2.5.15 (no change needed); `git diff --stat pnpm-lock.yaml` (986 insertions) | PASS, after an infrastructure blocker (below) | (pending) |
+| G2 (root tooling) | codex (gpt-6-luna, effort high) for research/scripts/COMPATIBILITY.md; orchestrator (direct) for the actual installs | 2 (both exhausted, then owner-approved orchestrator fallback) | `pnpm exec {biome,turbo,tsc,commitlint,lint-staged} --version`; `pnpm exec biome check biome.json package.json`; `echo <msg> \| pnpm exec commitlint` for one invalid-type message (rejected, exit 1), one empty-type message (rejected, exit 1), and one valid message (accepted, exit 0); confirmed biome.json's `$schema` already matches the installed 2.5.15 (no change needed); `git diff --stat pnpm-lock.yaml` (986 insertions) | PASS, after an infrastructure blocker (below) | 44b7274 |
+| G3 (Supabase CLI) | codex (gpt-6-luna, effort high, read-only) for version research only; orchestrator (direct) for the install, applying G2's resolution proactively | 0 | `pnpm --filter backend exec supabase --version` → `2.121.0`; raw-byte check on backend/package.json | PASS | (pending) |
 
 **G2 retry history**: attempt 0 (Codex, workspace-write sandbox) correctly researched all 7 exact
 versions and wrote `COMPATIBILITY.md`'s Tooling section + root `package.json` scripts, but every
@@ -69,6 +70,13 @@ own shell has working registry access). Cleaned up the dead `.npmrc`/`.pnpm-stor
 retry, reinstalled cleanly, then ran `pnpm add -D -w <7 pins> --save-exact` directly — succeeded in
 25.2s with the same one pre-existing peer-dependency warning as T012 (RN 0.88-rc vs. metro-config
 0.88.0 — Risk (a), unrelated to this task).
+
+**G3**: applied G2's resolution proactively instead of re-hitting the same wall — delegated only the
+version research (read-only Codex dispatch, confirmed `2.121.0` is current stable from
+github.com/supabase/cli/releases/latest, and that Supabase's own docs recommend a project
+devDependency install over global npm install), then ran `pnpm --filter backend add -D
+supabase@2.121.0 --save-exact` directly. Docker Desktop confirmed running (`docker info` exit 0)
+before proceeding, per the task's own prerequisite.
 
 ## D00a — Repo and tooling
 
