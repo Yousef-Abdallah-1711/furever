@@ -103,6 +103,8 @@ minutes; per-email/per-IP throttling; no-enumeration). Confirmed already correct
 | T016 | orchestrator (CLI) + codex (gpt-6-luna, effort high) | 0 | Raw-byte check; **independently re-fetched** supabase.com/docs/guides/auth/auth-hooks myself and confirmed the GRANT/REVOKE statements match Supabase's own documented pattern exactly (grant usage+execute to `supabase_auth_admin`, revoke execute from `authenticated, anon, public`) | PASS | (pending) |
 | T017 | codex (gpt-6-luna, effort high) | 0 | Raw-byte check; confirmed only comments, no SQL statements | PASS | (pending) |
 | T018 | codex (gpt-6-luna, effort high) | 0 | Raw-byte check; structural SQL review (reusable `tables_missing_rls()` function pgTAP can call directly, plus a standalone `DO` block raising on violation for CI) | PASS, real-database proof deferred to T023's checkpoint | (pending) |
+| T019 | codex (gpt-6-luna, effort high) | 0 | Raw-byte check; content re-read | PASS, pgTAP execution proof deferred to T023 | (pending) |
+| T020 | codex (gpt-6-luna, effort high) | 0 | Raw-byte check; confirmed T019's first block byte-identical, second block appended correctly, two independent BEGIN/ROLLBACK blocks each with matching plan(1)/assertion count | PASS, pgTAP execution proof deferred to T023 | (pending) |
 
 ## D00a — Repo and tooling
 

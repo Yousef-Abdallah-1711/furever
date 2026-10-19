@@ -113,10 +113,10 @@ skeleton (constitution III, VII; D00 scope rule).
   noting it is populated per later delivery phase.
 - [x] T018 [D00b] Write the RLS-check script `backend/supabase/scripts/check-rls.sql` (fails the build if
   any `public` table lacks RLS — constitution III, VII).
-- [ ] T019 [D00b] Write the RLS-check test **first**, as a failing fixture:
+- [x] T019 [D00b] Write the RLS-check test **first**, as a failing fixture:
   `backend/supabase/tests/000_rls_check.test.sql` creates a scratch table inside a transaction **without**
   RLS enabled, runs `check-rls.sql`'s query, asserts it flags that table, then `ROLLBACK`s. Depends on T018.
-- [ ] T020 [D00b] Extend `000_rls_check.test.sql` with the positive case: the same scratch table with RLS
+- [x] T020 [D00b] Extend `000_rls_check.test.sql` with the positive case: the same scratch table with RLS
   enabled, in its own transaction, asserting zero violations before `ROLLBACK`. Depends on T019.
 - [ ] T021 [P] [D00b] Create `backend/.env.example` (SMTP host/port/user/password/sender placeholders —
   **no Twilio variables**, since Phase 1 has no SMS path), `mobile/.env.example`, `web/.env.example`, and
