@@ -1,0 +1,31 @@
+(()=>{
+const DS=window.FurEverDesignSystem_f25da7;const {Button,Icon,IconButton,Avatar,Banner,Input,EmptyState,PhaseTag,Chip}=DS;
+const DCtx=React.createContext({});const useD=()=>React.useContext(DCtx);
+function Shell({nav,page,setPage,children,title,actions}){
+  const {t,lang,setLang,theme,setTheme,portal,role,setRole,logout}=useD();
+  return <div style={{display:'flex',height:'100%',background:'var(--background)'}}>
+    <aside style={{width:232,flex:'none',background:'var(--surface)',borderInlineEnd:'1px solid var(--border)',display:'flex',flexDirection:'column',padding:'16px 12px',gap:4}}>
+      <div style={{padding:'4px 10px 14px'}}><div style={{fontSize:22,fontWeight:700,color:'var(--primary)'}}>FurEver</div><div className="t-cap">{portal==='clinic'?t('Clinic portal','بوابة العيادة'):t('Admin portal','بوابة الإدارة')}</div></div>
+      {nav.map(([id,ic,l,ph])=><button key={id} onClick={()=>setPage(id)} style={{display:'flex',gap:10,alignItems:'center',height:40,padding:'0 10px',border:0,borderRadius:10,background:page===id?'var(--surface-secondary)':'transparent',color:page===id?'var(--primary)':'var(--text-primary)',fontFamily:'inherit',fontSize:'var(--fs-body)',fontWeight:page===id?600:400,cursor:'pointer',textAlign:'start'}}><Icon name={ic} size={18}/><span style={{flex:1}}>{l}</span>{ph&&<span className="fe-phase" style={{height:18,fontSize:10}}>P{ph}</span>}</button>)}
+    </aside>
+    <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0}}>
+      <header style={{height:60,flex:'none',display:'flex',alignItems:'center',gap:12,padding:'0 24px',borderBottom:'1px solid var(--border)',background:'var(--surface)'}}>
+        <div className="fe-input" style={{maxWidth:340,height:38,display:'flex',alignItems:'center',gap:8,color:'var(--text-secondary)',background:'var(--surface-secondary)',borderColor:'transparent',fontSize:'var(--fs-body)'}}><Icon name="search" size={16}/><span style={{flex:1}}>{t('Search','بحث')}</span><kbd dir="ltr" style={{fontSize:11,border:'1px solid var(--border)',borderRadius:4,padding:'0 4px'}}>Ctrl K</kbd></div>
+        <div style={{flex:1}}/>
+        <select value={role} onChange={e=>setRole(e.target.value)} aria-label="role" style={{height:34,borderRadius:8,border:'1px solid var(--border)',background:'var(--surface)',color:'var(--text-primary)',fontFamily:'inherit',padding:'0 8px'}}>{(portal==='clinic'?[['manager',t('Manager','مدير')],['vet',t('Vet','دكتور')],['receptionist',t('Receptionist','استقبال')]]:[['admin',t('Admin','أدمن')],['super_admin',t('Super admin','سوبر أدمن')]]).map(([k,l])=><option key={k} value={k}>{l}</option>)}</select>
+        <IconButton plain icon="languages" label="Language" onClick={()=>setLang(lang==='en'?'ar':'en')}/><IconButton plain icon={theme==='dark'?'sun':'moon'} label="Theme" onClick={()=>setTheme(theme==='dark'?'light':'dark')}/><IconButton plain icon="bell" label="Notifications" badge={3}/>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}><Avatar name={portal==='clinic'?'MA':'FA'} size={34}/><IconButton plain icon="log-out" label={t('Sign out','تسجيل خروج')} onClick={logout}/></div>
+      </header>
+      <main style={{flex:1,overflow:'auto',padding:24,display:'flex',flexDirection:'column',gap:18}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}><h1 className="t-h1" style={{margin:0,flex:1}}>{title}</h1>{actions}</div>{children}</main></div></div>;
+}
+function Table({cols,rows,empty}){
+  const {t}=useD();
+  if(!rows.length)return <div className="fe-card"><EmptyState icon="inbox" title={empty||t('Nothing here yet','مفيش حاجة لسه')}/></div>;
+  return <div className="fe-card" style={{padding:0,overflow:'hidden'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:'var(--fs-body)'}}><thead><tr>{cols.map(c=><th key={c} style={{textAlign:'start',padding:'12px 16px',fontWeight:600,color:'var(--text-secondary)',fontSize:'var(--fs-caption)',background:'var(--surface-secondary)'}}>{c}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i} style={{borderTop:'1px solid var(--border)'}}>{r.map((c,j)=><td key={j} style={{padding:'12px 16px'}}>{c}</td>)}</tr>)}</tbody></table></div>;
+}
+function Modal({title,children,onClose}){return <div onClick={onClose} style={{position:'absolute',inset:0,background:'var(--overlay)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:30}}><div className="fe-card" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" style={{width:440,padding:24,display:'flex',flexDirection:'column',gap:14,boxShadow:'0 20px 60px rgba(0,0,0,.3)'}}><div className="t-h2">{title}</div>{children}</div></div>}
+function Restricted({need}){const {t}=useD();return <div className="fe-card" style={{padding:0}}><EmptyState icon="lock" title={t('You do not have access','مفيش عندك صلاحية')} body={t('This page needs '+need+' access. Ask a manager or super admin.','الصفحة دي محتاجة صلاحية '+need+'. اطلب من المدير.')}/></div>}
+const Stat=({l,v,s,tone})=><div className="fe-card" style={{flex:1,minWidth:150,display:'flex',flexDirection:'column',gap:4}}><span className="t-cap">{l}</span><span style={{fontSize:30,fontWeight:700,color:tone?'var(--'+tone+')':'var(--text-primary)'}} dir="ltr">{v}</span>{s&&<span className="t-cap">{s}</span>}</div>;
+Object.assign(window,{DCtx,useD,Shell,Table,Modal,Restricted,Stat});
+})();

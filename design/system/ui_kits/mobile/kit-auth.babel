@@ -1,0 +1,45 @@
+(()=>{
+const DS=window.FurEverDesignSystem_f25da7;const {Button,Input,Chip,Banner,Card,Icon,Avatar}=DS;
+const {useL,Header,Screen,ltr}=window;
+const Brand=({s=40})=><div style={{fontSize:s,fontWeight:700,color:'var(--primary)',letterSpacing:'-.02em'}}>FurEver</div>;
+function Language(){const {go,setLang,lang}=useL();
+  return <Screen bg="linear-gradient(var(--bg-gradient-top),var(--bg-gradient-bottom))"><div style={{padding:'48px 24px',display:'flex',flexDirection:'column',gap:16}}><Brand/><div className="t-h1" style={{marginTop:24}}>Choose your language<br/><span lang="ar" style={{fontFamily:'var(--font-ar)'}}>اختار لغتك</span></div>
+    {[['ar','العربية','Arabic'],['en','English','الإنجليزية']].map(([k,a,b])=><Card key={k} tint={lang===k} onClick={()=>{setLang(k);go('onboarding')}} pad={20} style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><div className="t-h2" style={{fontFamily:k==='ar'?'var(--font-ar)':'var(--font-en)'}}>{a}</div><div className="t-cap">{b}</div></div><Icon name="chevron-right" flip/></Card>)}</div></Screen>}
+function Onboarding(){const {t,go}=useL();const [i,setI]=React.useState(0);
+  const sl=[[ 'book-heart',t('Digital health passport','جواز صحة رقمي'),t('Vaccines and records for every pet, in one place.','تطعيمات وسجلات كل حيوان في مكان واحد.')],['clock',t('Booking with live queue','حجز مع طابور مباشر'),t('Book a visit and see your turn in real time.','احجز زيارة وتابع دورك لحظة بلحظة.')],['siren',t('Emergency care','رعاية الطوارئ'),t('Find 24-hour vets near you, fast.','لاقي أقرب دكتور شغال 24 ساعة بسرعة.')]];
+  return <Screen header={<div style={{display:'flex',justifyContent:'flex-end',padding:'8px 16px'}}><Button variant="ghost" size="s" onClick={()=>go('welcome')}>{t('Skip','تخطي')}</Button></div>}>
+    <div style={{padding:'24px',display:'flex',flexDirection:'column',alignItems:'center',gap:20,textAlign:'center'}}><div className="fe-ph" style={{width:240,height:240,borderRadius:'50%',color:'var(--primary)'}}><Icon name={sl[i][0]} size={80}/></div><div className="t-h1">{sl[i][1]}</div><div style={{color:'var(--text-secondary)',fontSize:'var(--fs-body-lg)'}}>{sl[i][2]}</div>
+    <div style={{display:'flex',gap:6}}>{sl.map((_,k)=><i key={k} style={{width:k===i?22:8,height:8,borderRadius:4,background:k===i?'var(--primary)':'var(--border)',transition:'width .25s'}}/>)}</div></div>
+    <div style={{position:'absolute',bottom:24,insetInline:24}}><Button block onClick={()=>i<2?setI(i+1):go('welcome')}>{i<2?t('Next','التالي'):t('Get Started','يلا نبدأ')}</Button></div></Screen>}
+function Welcome(){const {t,go}=useL();
+  return <Screen bg="linear-gradient(var(--bg-gradient-top),var(--bg-gradient-bottom) 70%)"><div style={{padding:'0 24px',height:'100%',display:'flex',flexDirection:'column',justifyContent:'flex-end',gap:12,paddingBottom:40}}>
+    <div className="fe-ph" style={{height:300,borderRadius:24,marginBottom:12}}>pet illustration</div>
+    <div className="t-h1">{t('Welcome to FurEver!','أهلاً بيك في فيرايفر!')}</div><div style={{color:'var(--text-secondary)',fontSize:'var(--fs-body-lg)',marginBottom:12}}>{t('The best care for your fur family.','أحسن رعاية لعيلتك الصغيرة.')}</div>
+    <Button block onClick={()=>go('signin')}>{t('Get Started','يلا نبدأ')}</Button><Button variant="secondary" block onClick={()=>go('signin')}>{t('I Have an Account','عندي حساب')}</Button></div></Screen>}
+function SignIn(){const {t,go}=useL();const [ph,setPh]=React.useState('');const [ld,setLd]=React.useState(false);
+  return <Screen header={<Header back="welcome" title=""/>}><div style={{padding:'8px 24px',display:'flex',flexDirection:'column',gap:16}}><div className="t-h1">{t('Sign in','تسجيل الدخول')}</div>
+    <Input label={t('Phone number','رقم الموبايل')} prefix="+20  ▾" ltr inputMode="tel" placeholder="100 123 4567" value={ph} onChange={e=>setPh(e.target.value)} hint={t('We will send a 6-digit code by SMS.','هنبعتلك كود من 6 أرقام برسالة.')}/>
+    <Button block disabled={ph.length<6} loading={ld} onClick={()=>{setLd(true);setTimeout(()=>{setLd(false);go('otp')},600)}}>{t('Continue','متابعة')}</Button>
+    <div style={{display:'flex',alignItems:'center',gap:12,color:'var(--text-secondary)'}}><hr style={{flex:1,border:0,borderTop:'1px solid var(--border)'}}/>{t('or','أو')}<hr style={{flex:1,border:0,borderTop:'1px solid var(--border)'}}/></div>
+    <Button variant="secondary" block icon="mail" onClick={()=>go('completeprofile')}>{t('Continue with Google','المتابعة بحساب Google')}</Button><Button variant="secondary" block icon="apple" onClick={()=>go('completeprofile')}>{t('Continue with Apple','المتابعة بحساب Apple')}</Button>
+    <div className="t-cap" style={{textAlign:'center'}}>{t('By continuing you agree to the Terms and Privacy Policy.','بالمتابعة إنت موافق على الشروط وسياسة الخصوصية.')}</div></div></Screen>}
+function Otp(){const {t,go}=useL();const [v,setV]=React.useState('');const [err,setErr]=React.useState(false);const [ld,setLd]=React.useState(false);
+  const verify=()=>{setLd(true);setTimeout(()=>{setLd(false);if(v==='000000'){setErr(true)}else go('completeprofile')},700)};
+  return <Screen header={<Header back="signin" title=""/>}><div style={{padding:'8px 24px',display:'flex',flexDirection:'column',gap:16}}><div className="t-h1">{t('Verify code','تأكيد الكود')}</div><div style={{color:'var(--text-secondary)'}}>{t('Sent to','اتبعت على')} {ltr('+20 100 123 4567')}</div>
+    <div dir="ltr" style={{display:'flex',gap:8,justifyContent:'center'}}>{[0,1,2,3,4,5].map(i=><div key={i} style={{width:46,height:56,borderRadius:12,border:'1.5px solid '+(err?'var(--danger)':v.length===i?'var(--primary)':'var(--border)'),background:'var(--surface)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,fontWeight:600}}>{v[i]||''}</div>)}</div>
+    <input autoFocus inputMode="numeric" maxLength={6} value={v} onChange={e=>{setErr(false);setV(e.target.value.replace(/\D/g,''))}} aria-label="code" style={{position:'absolute',opacity:0,height:1}}/>
+    {err&&<div className="fe-hint error" style={{textAlign:'center'}}>{t('Wrong code. 2 attempts left.','الكود غلط. فاضل محاولتين.')}</div>}
+    <div className="t-cap" style={{textAlign:'center'}}>{t('Tip: type any 6 digits (000000 shows the error).','جرّب أي 6 أرقام (000000 بيظهر الخطأ).')}</div>
+    <Button block disabled={v.length<6} loading={ld} onClick={verify}>{t('Verify','تأكيد')}</Button>
+    <div style={{display:'flex',justifyContent:'space-between'}}><Button variant="ghost" size="s" onClick={()=>go('signin')}>{t('Change number','تغيير الرقم')}</Button><span className="t-cap" style={{alignSelf:'center'}}>{t('Resend in','إعادة الإرسال بعد')} {ltr('0:42')}</span></div></div></Screen>}
+function CompleteProfile(){const {t,go}=useL();const [ok,setOk]=React.useState(false);
+  return <Screen header={<Header title={t('Complete profile','أكمل بياناتك')}/>}><div style={{padding:'8px 24px',display:'flex',flexDirection:'column',gap:16}}><div style={{alignSelf:'center',position:'relative'}}><Avatar name="S A" size={88}/><span style={{position:'absolute',bottom:0,insetInlineEnd:0,background:'var(--primary)',color:'var(--on-primary)',borderRadius:'50%',padding:6,display:'flex'}}><Icon name="camera" size={16}/></span></div>
+    <Input label={t('Full name','الاسم بالكامل')} defaultValue={t('Sarah Ahmed','سارة أحمد')}/><Input label={t('City','المدينة')} icon="map-pin" defaultValue={t('Cairo','القاهرة')}/>
+    <label style={{display:'flex',gap:10,alignItems:'center'}}><input type="checkbox" checked={ok} onChange={e=>setOk(e.target.checked)} style={{width:22,height:22,accentColor:'var(--primary)'}}/><span className="t-body">{t('I agree to the Terms and Privacy Policy','موافق على الشروط وسياسة الخصوصية')}</span></label>
+    <Button block disabled={!ok} onClick={()=>go('permissions')}>{t('Save','حفظ')}</Button></div></Screen>}
+function Permissions(){const {t,go}=useL();
+  return <Screen><div style={{padding:'48px 24px',display:'flex',flexDirection:'column',gap:16,alignItems:'center',textAlign:'center'}}><div className="fe-ph" style={{width:160,height:160,borderRadius:'50%',color:'var(--primary)'}}><Icon name="bell-ring" size={56}/></div><div className="t-h1">{t('Stay on top of care','خليك مطمّن على حيوانك')}</div>
+    <div style={{color:'var(--text-secondary)'}}>{t('Notifications remind you about vaccines and bookings. Location finds clinics near you. The app works without both.','الإشعارات بتفكرك بالتطعيمات والحجوزات، والموقع بيلاقيلك عيادات قريبة. التطبيق بيشتغل من غيرهم.')}</div>
+    <div style={{width:'100%',display:'flex',flexDirection:'column',gap:8,marginTop:12}}><Button block onClick={()=>go('home')}>{t('Allow','سماح')}</Button><Button variant="ghost" block onClick={()=>go('home')}>{t('Not now','مش دلوقتي')}</Button></div></div></Screen>}
+Object.assign(window,{Language,Onboarding,Welcome,SignIn,Otp,CompleteProfile,Permissions,Brand});
+})();

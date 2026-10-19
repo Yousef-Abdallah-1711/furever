@@ -1,0 +1,23 @@
+(()=>{
+const DS=window.FurEverDesignSystem_f25da7;const {Button,Input,Banner,Icon}=DS;const {DCtx}=window;
+function Login({t,go}){const [mfa,setMfa]=React.useState(false);const {portal,setPortal}=React.useContext(DCtx);
+  return <div style={{height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(var(--bg-gradient-top),var(--bg-gradient-bottom))'}}><div className="fe-card" style={{width:400,padding:32,display:'flex',flexDirection:'column',gap:14}}>
+    <div style={{fontSize:28,fontWeight:700,color:'var(--primary)'}}>FurEver</div><div className="t-h2">{mfa?t('Two-step verification','التحقق بخطوتين'):t('Sign in to dashboard','تسجيل الدخول للوحة التحكم')}</div>
+    {!mfa?<><Input label={t('Email','الإيميل')} ltr defaultValue={portal==='clinic'?'mona@paws.eg':'admin@furever.app'}/><Input label={t('Password','كلمة السر')} type="password" ltr defaultValue="password"/><Button block onClick={()=>portal==='admin'?setMfa(true):go()}>{t('Sign in','دخول')}</Button><Button variant="ghost" size="s">{t('Forgot password?','نسيت كلمة السر؟')}</Button></>:<><Banner tone="info">{t('Admins must verify with an authenticator app.','الأدمن لازم يتحقق من تطبيق المصادقة.')}</Banner><Input label={t('6-digit code','الكود (6 أرقام)')} ltr placeholder="123456"/><Button block onClick={go}>{t('Verify','تأكيد')}</Button></>}
+    <div style={{display:'flex',gap:6,justifyContent:'center'}}><Button variant="ghost" size="s" onClick={()=>{setPortal('clinic');setMfa(false)}}>{t('Clinic portal','بوابة العيادة')}</Button><Button variant="ghost" size="s" onClick={()=>{setPortal('admin');setMfa(false)}}>{t('Admin portal','بوابة الإدارة')}</Button></div></div></div>}
+function DashboardApp(){
+  const ld=k=>localStorage.getItem('fed-'+k);
+  const [lang,setLang]=React.useState(ld('lang')||'en');const [theme,setTheme]=React.useState(ld('theme')||'light');const [portal,setPortal]=React.useState(ld('portal')||'clinic');const [role,setRole]=React.useState('manager');const [page,setPage]=React.useState(portal==='clinic'?'queue':'overview');const [auth,setAuth]=React.useState(false);
+  React.useEffect(()=>{localStorage.setItem('fed-lang',lang);localStorage.setItem('fed-theme',theme);localStorage.setItem('fed-portal',portal)},[lang,theme,portal]);
+  React.useEffect(()=>{setRole(portal==='clinic'?'manager':'super_admin');setPage(portal==='clinic'?'queue':'overview')},[portal]);
+  const t=(en,ar)=>lang==='ar'?ar:en;
+  const CN=[['today','layout-dashboard',t('Today','النهارده')],['queue','list-ordered',t('Live queue','الطابور')],['appts','calendar-days',t('Appointments','المواعيد')],['services','stethoscope',t('Services','الخدمات')],['profile','building-2',t('Clinic profile','ملف العيادة')],['staff','users',t('Staff','الموظفين')]];
+  const AN=[['overview','layout-dashboard',t('Overview','نظرة عامة')],['users','users',t('Users','المستخدمين')],['clinics','building-2',t('Clinics','العيادات')],['ref','database',t('Reference data','بيانات مرجعية')],['broadcast','megaphone',t('Broadcast','إشعار جماعي')],['flags','flag',t('Flags and config','الفلاجز')],['audit','scroll-text',t('Audit log','سجل المراجعة')],['products','shopping-bag',t('Products and orders','المنتجات والطلبات'),2],['listings','badge-check',t('Listing verification','توثيق الإعلانات'),3],['payments','credit-card',t('Payments and refunds','المدفوعات'),4]];
+  window.__shell={nav:portal==='clinic'?CN:AN,page,setPage};
+  const P={queue:window.ClinicQueue,today:window.ClinicToday,appts:window.ClinicAppts,services:window.ClinicServices,staff:window.ClinicStaff,profile:window.ClinicProfile,overview:window.AdminOverview,users:window.AdminUsers,clinics:window.AdminClinics,ref:window.AdminRef,broadcast:window.AdminBroadcast,flags:window.AdminFlags,audit:window.AdminAudit};
+  const Cmp=P[page]||(()=><window.LaterPage name={(AN.find(x=>x[0]===page)||[])[2]} phase={(AN.find(x=>x[0]===page)||[])[3]||2}/>);
+  return <div dir={lang==='ar'?'rtl':'ltr'} lang={lang} data-theme={theme==='dark'?'dark':undefined} className="fe-root" style={{position:'absolute',inset:0}}>
+    <DCtx.Provider value={{t,lang,setLang,theme,setTheme,portal,setPortal,role,setRole,logout:()=>setAuth(false)}}>{auth?<Cmp key={page+role}/>:<Login t={t} go={()=>setAuth(true)}/>}</DCtx.Provider></div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<DashboardApp/>);
+})();

@@ -1,0 +1,43 @@
+(()=>{
+const {EC}=window;
+const S0={mode:'signup',phone:'',user:{},pet:{},health:{},perm:null,social:null,booking:null,clinic:0,notifRead:false};
+const DEMO={user:{name:'Sarah Ahmed',city:'Cairo',consent:true},pet:{species:'cat',name:'Milo',breed:'Persian',gender:'male',mode:'years',years:2,months:0,weight:'4.2',birth:'',photo:''},health:{vax:{type:'FVRCP',given:'2025-10-23',next:'2026-10-23',batch:''}},perm:'allowed',phone:'100 123 4567'};
+const SC={language:window.ELanguage,slides:window.ESlides,welcome:window.EWelcome,phone:window.EPhone,otp:window.EOtp,profile:window.EProfile,petSpecies:window.ESpecies,petBasics:window.EBasics,petPhoto:window.EPetPhoto,petHealth:window.EPetHealth,vaxForm:window.EVaxForm,perms:window.EPerms,summary:window.ESummary,home:window.EHome,pets:window.EPets,petDetail:window.EPetDetail,bookings:window.EBookings,profileTab:window.EProfileTab,clinics:window.EClinics,clinicDetail:window.EClinicDetail,notifs:window.ENotifs,emergency:window.EEmergency};
+const MAP=[['1 · Welcome and language',[['language','Language'],['slides','Intro slides'],['welcome','Welcome']]],['2 · Authentication',[['phone','Phone (+20)'],['otp','Verify code']]],['3 · New-user onboarding',[['profile','Profile'],['petSpecies','Pet species'],['petBasics','Pet basics'],['petPhoto','Pet photo'],['petHealth','Health passport'],['vaxForm','Add vaccination'],['perms','Notifications'],['summary','Summary']]],['4 · First app experience',[['home','Home'],['pets','Pets'],['petDetail','Pet profile'],['clinics','Clinics'],['clinicDetail','Clinic detail'],['bookings','Bookings'],['notifs','Notifications'],['emergency','Emergency'],['profileTab','Profile tab']]]];
+function EntryApp(){
+  const ld=k=>localStorage.getItem('fee-'+k);
+  const [scr,setScr]=React.useState('language');const [st,setSt]=React.useState(S0);const [lang,setLangS]=React.useState(ld('lang')||'en');const [theme,setThemeS]=React.useState(ld('theme')||'light');const [ret,setRet]=React.useState(null);const [sheet,setSheet]=React.useState(null);const [tst,setTst]=React.useState(null);
+  const setLang=l=>{setLangS(l);localStorage.setItem('fee-lang',l)};const setTheme=m=>{setThemeS(m);localStorage.setItem('fee-theme',m)};
+  const set=p=>setSt(s=>({...s,...p}));
+  const go=s=>{setRet(null);setSheet(null);setScr(s)};
+  const next=d=>{const r=ret;setRet(null);setSheet(null);setScr(r||d)};
+  const goWith=(s,b)=>{setRet(b);setSheet(null);setScr(s)};
+  const editFromSummary=s=>{setRet('summary');setScr(s)};
+  const toast=(msg,sim)=>{const id=Date.now();setTst({msg,sim,id});setTimeout(()=>setTst(c=>c&&c.id===id?null:c),2600)};
+  const completeAuth=kind=>{setSheet(null);if(st.mode==='signin'){setSt(s=>({...s,...DEMO,phone:s.phone||DEMO.phone,mode:'signin',social:null}));go('home');toast(lang==='ar'?'أهلاً بيك تاني يا سارة':'Welcome back, Sarah',false)}else{const soc=kind==='google'?'Google':kind==='apple'?'Apple':null;setSt(s=>({...s,social:soc,user:soc?{name:'Sarah Ahmed'}:s.user}));go('profile')}};
+  const restart=()=>{setSt(S0);setRet(null);setSheet(null);setScr('language')};
+  const logout=()=>{setSt(s=>({...S0}));setRet(null);setScr('welcome');toast(lang==='ar'?'تم تسجيل الخروج':'Logged out',false)};
+  const jump=s=>{const pre=['language','slides','welcome','phone','otp'];setSt(c=>{let n={...c};if(!pre.includes(s)){if(!n.user.name)n={...n,...DEMO,mode:n.mode};}if(['petBasics','petPhoto','petHealth','vaxForm'].includes(s)&&!n.pet.species)n.pet={...n.pet,species:'cat'};if(['petBasics','petPhoto','petHealth','vaxForm'].includes(s)&&['profile','petSpecies','petBasics','petPhoto','petHealth','vaxForm','perms','summary'].includes(s)&&!c.user.name){n.pet={species:'cat'};n.health={}}return n});go(s)};
+  const t=(en,ar)=>lang==='ar'?ar:en;
+  const Cmp=SC[scr]||SC.language;
+  const group=(MAP.find(g=>g[1].some(x=>x[0]===scr))||[''])[0];
+  const Btn=({on,children,...p})=><button {...p} style={{font:'500 13px Inter',padding:'6px 12px',borderRadius:8,border:'1px solid #d9c6c3',background:on?'#A96062':'#fff',color:on?'#fff':'#4a4a4a',cursor:'pointer',whiteSpace:'nowrap'}}>{children}</button>;
+  return <div style={{display:'flex',gap:28,justifyContent:'center',alignItems:'flex-start',padding:24,flexWrap:'wrap',font:'13px Inter',color:'#4a4a4a'}}>
+    <div style={{width:250,display:'flex',flexDirection:'column',gap:12}}>
+      <b style={{fontSize:16}}>FurEver · Entry prototype</b><div>Owner app: auth, onboarding, first Home. All actions are simulated.</div>
+      <div>Language</div><div style={{display:'flex',gap:6}}><Btn on={lang==='en'} onClick={()=>setLang('en')}>English LTR</Btn><Btn on={lang==='ar'} onClick={()=>setLang('ar')}>العربية RTL</Btn></div>
+      <div>Theme</div><div style={{display:'flex',gap:6}}><Btn on={theme==='light'} onClick={()=>setTheme('light')}>Light</Btn><Btn on={theme==='dark'} onClick={()=>setTheme('dark')}>Dark</Btn></div>
+      <Btn onClick={restart}>Restart prototype</Btn>
+      <div>Jump to screen</div><select value={scr} onChange={e=>jump(e.target.value)} style={{padding:8,borderRadius:8,font:'inherit'}}>{MAP.map(([g,l])=><optgroup key={g} label={g}>{l.map(([k,n])=><option key={k} value={k}>{n}</option>)}</optgroup>)}</select>
+      <div style={{background:'#fff',border:'1px solid #e6d3d0',borderRadius:12,padding:12,lineHeight:1.5}}><b>Test paths</b><br/>New user: Get Started, any valid phone (100 123 4567), code 123456.<br/>Returning: I Have an Account, same steps, lands on Home.<br/>Errors: code 000000 wrong, 111111 expired, empty or short phone.</div></div>
+    <div dir={lang==='ar'?'rtl':'ltr'} lang={lang} data-theme={theme==='dark'?'dark':undefined} className="fe-root" style={{width:390,height:800,borderRadius:44,position:'relative',overflow:'hidden',border:'10px solid #1f1a1b',boxSizing:'content-box',boxShadow:'0 20px 60px rgba(60,30,32,.25)'}}>
+      <EC.Provider value={{t,go,next,goWith,editFromSummary,ret,st,set,mode:st.mode,lang,setLang,theme,setTheme,sheet,openSheet:setSheet,closeSheet:()=>setSheet(null),toast,completeAuth,restart,logout}}>
+        <Cmp key={scr}/>{sheet&&<div style={{position:'absolute',inset:0,zIndex:40}}>{sheet}</div>}
+        {tst&&<div role="status" style={{position:'absolute',insetInline:16,bottom:88,zIndex:60,background:'var(--text-primary)',color:'var(--background)',borderRadius:12,padding:'10px 14px',display:'flex',gap:8,alignItems:'center',fontSize:'var(--fs-body)'}}>{tst.sim&&<span style={{fontSize:10,fontWeight:700,border:'1px solid currentColor',borderRadius:4,padding:'0 4px'}}>{t('SIMULATED','محاكاة')}</span>}<span>{tst.msg}</span></div>}
+      </EC.Provider></div>
+    <div style={{width:260,display:'flex',flexDirection:'column',gap:10}}><b style={{fontSize:16}}>Flow map</b>
+      {MAP.map(([g,l])=><div key={g} style={{background:g===group?'#EEDAD7':'#fff',border:'1px solid #e6d3d0',borderRadius:12,padding:10}}><div style={{fontWeight:600,marginBottom:6}}>{g}</div><div style={{display:'flex',flexWrap:'wrap',gap:4}}>{l.map(([k,n])=><button key={k} onClick={()=>jump(k)} style={{font:'12px Inter',padding:'3px 8px',borderRadius:6,border:'1px solid '+(k===scr?'#A96062':'#e6d3d0'),background:k===scr?'#A96062':'#fbf6f5',color:k===scr?'#fff':'#4a4a4a',cursor:'pointer'}}>{n}</button>)}</div></div>)}
+      <div style={{fontSize:12,lineHeight:1.5}}>New: 1 → 2 → 3 → 4. Returning: 1 → 2 → 4 (skips 3). Home to Profile tab, Review setup summary returns to 3.</div></div></div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<EntryApp/>);
+})();

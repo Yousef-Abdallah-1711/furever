@@ -84,10 +84,10 @@ fire, not one task per event.
   (research.md §10 — CRLF vs LF on Windows).
 - [x] T009 [P] [D00a] Configure `commitlint.config.cjs`, `.husky/commit-msg`, and `lint-staged.config.js`
   for conventional commits (constitution X).
-- [ ] T010 [D00a] Copy the current root-level PRD (`FurEver — PRD (Mobile + Web Dashboard + Backend) (1).md`)
+- [x] T010 [D00a] Copy the current root-level PRD (`FurEver — PRD (Mobile + Web Dashboard + Backend) (1).md`)
   to `docs/PRD.md` as a **placeholder** — it must be replaced by the amended PRD before D02 starts
   (blocking task T078 in D00g).
-- [ ] T011 [D00a] Copy `FurEver Design System/` (tokens, components, ui_kits, guidelines) into
+- [x] T011 [D00a] Copy `FurEver Design System/` (tokens, components, ui_kits, guidelines) into
   `design/system/` per the constitution's "Precedence and Source of Truth" and PRD amendment 7.
 - [ ] T012 [D00a] **Checkpoint**: run D00a's exit check — `pnpm install` succeeds from a clean clone;
   `COMPATIBILITY.md` is committed with source URLs and a date; `git check-attr text -- '*.ts'` reports

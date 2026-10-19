@@ -1,0 +1,74 @@
+(()=>{
+const DS=window.FurEverDesignSystem_f25da7;const {Button,Icon,IconButton,Banner,Chip,Card,Input,PhaseTag}=DS;
+const {useE,ESCREEN:Screen,EHeader:Header,ESheet:Sheet,EPick:Pick,eltr:ltr}=window;
+const Brand=({s=40})=><div style={{fontSize:s,fontWeight:700,color:'var(--primary)',letterSpacing:'-.02em'}}>FurEver</div>;
+function Language(){const {go,setLang,lang,t}=useE();
+  return <Screen bg="linear-gradient(var(--bg-gradient-top),var(--bg-gradient-bottom))"><div style={{padding:'56px 24px',display:'flex',flexDirection:'column',gap:16}}><Brand/>
+    <div className="t-h1" style={{marginTop:28}}>Choose your language<br/><span lang="ar" style={{fontFamily:'var(--font-ar)'}}>اختار لغتك</span></div>
+    {[['ar','العربية','Arabic · right-to-left'],['en','English','الإنجليزية · left-to-right']].map(([k,a,b])=><Card key={k} tint={lang===k} onClick={()=>{setLang(k);go('slides')}} pad={20} style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><div className="t-h2" style={{fontFamily:k==='ar'?'var(--font-ar)':'var(--font-en)'}}>{a}</div><div className="t-cap">{b}</div></div><Icon name="chevron-right" flip/></Card>)}
+    <div className="t-cap" style={{textAlign:'center'}}>{t('You can change this later in Settings.','تقدر تغيّرها بعدين من الإعدادات.')}</div></div></Screen>}
+function Slides(){const {t,go}=useE();const [i,setI]=React.useState(0);
+  const sl=[['book-heart',t('Digital health passport','جواز صحة رقمي'),t('Vaccines and records for every pet, in one place.','تطعيمات وسجلات كل حيوان في مكان واحد.')],['clock',t('Booking with live queue','حجز مع طابور مباشر'),t('Book a visit and watch your turn in real time.','احجز زيارة وتابع دورك لحظة بلحظة.')],['siren',t('Emergency care','رعاية الطوارئ'),t('Find 24-hour vets near you, fast.','لاقي أقرب دكتور شغال 24 ساعة بسرعة.')]];
+  return <Screen header={<Header back={()=>i?setI(i-1):go('language')} right={<Button variant="ghost" size="s" onClick={()=>go('welcome')}>{t('Skip','تخطي')}</Button>}/>}>
+    <div style={{padding:24,display:'flex',flexDirection:'column',alignItems:'center',gap:20,textAlign:'center'}}><div className="fe-ph" style={{width:240,height:240,borderRadius:'50%',color:'var(--primary)'}}><Icon name={sl[i][0]} size={80}/></div><div className="t-h1">{sl[i][1]}</div><div style={{color:'var(--text-secondary)',fontSize:'var(--fs-body-lg)'}}>{sl[i][2]}</div>
+    <div style={{display:'flex',gap:6}}>{sl.map((_,k)=><button key={k} aria-label={'slide '+(k+1)} onClick={()=>setI(k)} style={{width:k===i?22:8,height:8,borderRadius:4,border:0,padding:0,background:k===i?'var(--primary)':'var(--border)',transition:'width .25s',cursor:'pointer'}}/>)}</div></div>
+    <div style={{position:'absolute',bottom:24,insetInline:24}}><Button block onClick={()=>i<2?setI(i+1):go('welcome')}>{i<2?t('Next','التالي'):t('Get Started','يلا نبدأ')}</Button></div></Screen>}
+function Welcome(){const {t,go,set,setLang,lang}=useE();
+  return <Screen header={<div style={{display:'flex',justifyContent:'flex-end',padding:'4px 12px'}}><Chip icon="globe" onClick={()=>setLang(lang==='en'?'ar':'en')}>{lang==='en'?'العربية':'English'}</Chip></div>} bg="linear-gradient(var(--bg-gradient-top),var(--bg-gradient-bottom) 70%)"><div style={{padding:'0 24px',height:'100%',display:'flex',flexDirection:'column',justifyContent:'flex-end',gap:12,paddingBottom:36}}>
+    <Brand s={34}/><div className="fe-ph" style={{height:260,borderRadius:24,margin:'4px 0 8px'}}>pet illustration</div>
+    <div className="t-h1">{t('Welcome to FurEver!','أهلاً بيك في فيرايفر!')}</div><div style={{color:'var(--text-secondary)',fontSize:'var(--fs-body-lg)',marginBottom:8}}>{t('The best care for your fur family.','أحسن رعاية لعيلتك الصغيرة.')}</div>
+    <Button block onClick={()=>{set({mode:'signup'});go('phone')}}>{t('Get Started','يلا نبدأ')}</Button><Button variant="secondary" block onClick={()=>{set({mode:'signin'});go('phone')}}>{t('I Have an Account','عندي حساب')}</Button></div></Screen>}
+function validPhone(p){const d=p.replace(/\D/g,'').replace(/^0/,'');if(!d)return t0('empty');if(d.length!==10||!/^1[0125]/.test(d))return t0('bad');return null}
+const t0=k=>k;
+function CountrySheet({onClose}){const {t}=useE();
+  return <Sheet title={t('Country code','كود الدولة')} onClose={onClose}><Pick sel="eg" onPick={onClose} items={[['eg','Egypt (+20)'],['sa','Saudi Arabia (+966)',t('Not available yet','مش متاح لسه')],['ae','UAE (+971)',t('Not available yet','مش متاح لسه')]]}/></Sheet>}
+function Legal({kind,onClose}){const {t}=useE();
+  return <Sheet title={kind==='terms'?t('Terms of Service','شروط الخدمة'):t('Privacy Policy','سياسة الخصوصية')} onClose={onClose}><div style={{color:'var(--text-secondary)',marginBottom:16}}>{t('Placeholder legal text. The final text is rendered in the current language and its version is recorded on acceptance.','نص قانوني مؤقت. النص النهائي بيظهر باللغة الحالية ويتسجّل رقم نسخته عند الموافقة.')}</div><Button block onClick={onClose}>{t('Close','إغلاق')}</Button></Sheet>}
+function Social({kind,onDone,onClose}){const {t}=useE();const [ld,setLd]=React.useState(false);
+  const acc=kind==='google'?[[t('Sarah Ahmed','سارة أحمد'),'sarah.ahmed@gmail.com'],[t('Use another account','استخدم حساب تاني'),'']]:[[t('Continue as Sarah','كمّل باسم سارة'),'Hide my email']];
+  return <Sheet sim title={kind==='google'?t('Choose a Google account','اختار حساب Google'):t('Sign in with Apple','تسجيل الدخول بـ Apple')} onClose={ld?undefined:onClose}>
+    <div className="t-cap" style={{marginBottom:8}}>{t('Prototype only. No real Google or Apple sign-in is connected.','نموذج تجريبي فقط. مفيش ربط حقيقي مع Google أو Apple.')}</div>
+    {acc.map(([n,e],i)=><button key={i} disabled={ld} onClick={()=>{if(!e&&i){onClose();return}setLd(true);setTimeout(onDone,900)}} style={{display:'flex',gap:12,alignItems:'center',width:'100%',minHeight:56,border:0,borderTop:'1px solid var(--border)',background:'none',color:'var(--text-primary)',fontFamily:'inherit',fontSize:'var(--fs-body-lg)',textAlign:'start',cursor:'pointer'}}><Icon name="user-round" size={22} style={{color:'var(--primary)'}}/><span style={{flex:1}}>{n}<div className="t-cap">{e}</div></span>{ld&&i===0&&<span className="fe-spin" style={{color:'var(--primary)'}}/>}</button>)}</Sheet>}
+function Phone(){const {t,go,st,set,mode,sheet,closeSheet,openSheet,lang,completeAuth}=useE();
+  const [ph,setPh]=React.useState(st.phone||'');const [err,setErr]=React.useState(null);const [ld,setLd]=React.useState(false);
+  const signup=mode==='signup';
+  const msg=e=>e==='empty'?t('Enter your phone number','اكتب رقم موبايلك'):e==='bad'?t('Enter a valid Egyptian mobile number, e.g. 100 123 4567','اكتب رقم موبايل مصري صحيح، مثلًا 100 123 4567'):null;
+  const submit=()=>{const e=validPhone(ph);setErr(e);if(e)return;setLd(true);setTimeout(()=>{setLd(false);set({phone:ph});go('otp')},700)};
+  const social=k=>openSheet(<Social kind={k} onClose={closeSheet} onDone={()=>{closeSheet();completeAuth(k)}}/>);
+  const lg=k=><span style={{textDecoration:'underline',color:'var(--primary)',cursor:'pointer',fontWeight:500}} onClick={()=>openSheet(<Legal kind={k} onClose={closeSheet}/>)}>{k==='terms'?t('Terms','الشروط'):t('Privacy Policy','سياسة الخصوصية')}</span>;
+  return <Screen header={<Header back="welcome"/>}><div style={{padding:'0 24px 24px',display:'flex',flexDirection:'column',gap:16}}>
+    <div><div className="t-h1">{signup?t('Create your account','أنشئ حسابك'):t('Welcome back','أهلاً بيك تاني')}</div><div style={{color:'var(--text-secondary)',marginTop:4}}>{signup?t('Enter your phone number to get started.','اكتب رقم موبايلك عشان نبدأ.'):t('Sign in with the phone number you registered with.','سجّل دخولك بنفس رقم الموبايل المسجّل.')}</div></div>
+    <div className="fe-field"><span className="fe-label">{t('Phone number','رقم الموبايل')}</span><div style={{display:'flex',gap:8}}>
+      <button onClick={()=>openSheet(<CountrySheet onClose={closeSheet}/>)} className="fe-input" style={{width:'auto',flex:'none',display:'flex',alignItems:'center',gap:6,direction:'ltr',cursor:'pointer'}} aria-label="country code">+20<Icon name="chevron-down" size={16}/></button>
+      <input className={'fe-input'+(err?' error':'')} dir="ltr" inputMode="tel" placeholder="100 123 4567" value={ph} onChange={e=>{setPh(e.target.value);setErr(null)}} onKeyDown={e=>e.key==='Enter'&&submit()} disabled={ld} aria-invalid={!!err} style={{textAlign:'start'}}/></div>
+      <span className={'fe-hint'+(err?' error':'')}>{err?msg(err):t('We will send a 6-digit code by SMS.','هنبعتلك كود من 6 أرقام برسالة.')}</span></div>
+    <Button block loading={ld} onClick={submit}>{t('Continue','متابعة')}</Button>
+    <div style={{display:'flex',alignItems:'center',gap:12,color:'var(--text-secondary)'}}><hr style={{flex:1,border:0,borderTop:'1px solid var(--border)'}}/>{t('or','أو')}<hr style={{flex:1,border:0,borderTop:'1px solid var(--border)'}}/></div>
+    <Button variant="secondary" block icon="mail" onClick={()=>social('google')}>{t('Continue with Google','المتابعة بحساب Google')}</Button><Button variant="secondary" block icon="apple" onClick={()=>social('apple')}>{t('Continue with Apple','المتابعة بحساب Apple')}</Button>
+    <div className="t-cap" style={{textAlign:'center'}}>{t('By continuing you agree to the ','بالمتابعة إنت موافق على ')}{lg('terms')}{t(' and ',' و')}{lg('privacy')}.</div>
+    <div style={{textAlign:'center'}}><Button variant="ghost" size="s" onClick={()=>set({mode:signup?'signin':'signup'})}>{signup?t('Already have an account? Sign in','عندك حساب؟ سجّل دخولك'):t('New to FurEver? Create an account','جديد على فيرايفر؟ أنشئ حساب')}</Button></div>
+    </div></Screen>}
+function Otp(){const {t,go,st,mode,completeAuth,toast}=useE();
+  const [v,setV]=React.useState('');const [status,setStatus]=React.useState('idle');const [left,setLeft]=React.useState(3);const [sec,setSec]=React.useState(60);const ref=React.useRef();
+  React.useEffect(()=>{const i=setInterval(()=>setSec(s=>s>0?s-1:0),1000);return()=>clearInterval(i)},[]);
+  React.useEffect(()=>{ref.current&&ref.current.focus()},[]);
+  const locked=left<=0;
+  const verify=code=>{setStatus('loading');setTimeout(()=>{if(code==='123456'){setStatus('success');setTimeout(()=>completeAuth('phone'),800)}else if(code==='111111'){setStatus('expired')}else{setLeft(l=>l-1);setStatus('wrong')}},700)};
+  const onChange=e=>{const d=e.target.value.replace(/\D/g,'').slice(0,6);setV(d);if(status==='wrong'||status==='expired')setStatus('idle');if(d.length===6)verify(d)};
+  const resend=()=>{setSec(60);setV('');setStatus('idle');setLeft(3);toast(t('New code sent','اتبعت كود جديد'),true)};
+  const box=i=>{const bad=status==='wrong'||status==='expired';return <div key={i} style={{width:46,height:56,borderRadius:12,border:'1.5px solid '+(bad?'var(--danger)':status==='success'?'var(--success)':v.length===i?'var(--primary)':'var(--border)'),background:'var(--surface)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,fontWeight:600}}>{v[i]||''}</div>};
+  return <Screen header={<Header back="phone"/>}><div style={{padding:'0 24px 24px',display:'flex',flexDirection:'column',gap:16}} onClick={()=>ref.current&&ref.current.focus()}>
+    <div><div className="t-h1">{t('Verify code','تأكيد الكود')}</div><div style={{color:'var(--text-secondary)',marginTop:4}}>{t('Enter the 6-digit code sent to','اكتب الكود المكوّن من 6 أرقام اللي اتبعت على')} {ltr('+20 '+(st.phone||'100 123 4567'))}</div></div>
+    <div dir="ltr" style={{display:'flex',gap:8,justifyContent:'center'}}>{[0,1,2,3,4,5].map(box)}</div>
+    <input ref={ref} inputMode="numeric" autoComplete="one-time-code" value={v} onChange={onChange} disabled={locked||status==='loading'||status==='success'} aria-label={t('Verification code','كود التأكيد')} style={{position:'absolute',opacity:0,height:1,width:1}}/>
+    {status==='loading'&&<div style={{display:'flex',gap:8,justifyContent:'center',color:'var(--primary)'}}><span className="fe-spin"/>{t('Verifying…','جاري التأكيد…')}</div>}
+    {status==='success'&&<Banner tone="success">{t('Code verified. Signing you in…','تم التأكيد. جاري تسجيل الدخول…')}</Banner>}
+    {status==='wrong'&&!locked&&<div className="fe-hint error" style={{textAlign:'center'}}>{t('Incorrect code. ','الكود غلط. ')}{left} {t('attempts left.','محاولات متبقية.')}</div>}
+    {status==='expired'&&<Banner tone="warning">{t('This code has expired. Request a new one.','الكود انتهت صلاحيته. اطلب كود جديد.')}</Banner>}
+    {locked&&<Banner tone="danger">{t('Too many attempts. Request a new code or change your number.','محاولات كتير. اطلب كود جديد أو غيّر الرقم.')}</Banner>}
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><Button variant="ghost" size="s" icon="pencil" onClick={()=>go('phone')}>{t('Change number','تغيير الرقم')}</Button>{sec>0?<span className="t-cap">{t('Resend in','إعادة الإرسال بعد')} {ltr('0:'+String(sec).padStart(2,'0'))}</span>:<Button variant="outline" size="s" onClick={resend}>{t('Resend code','إعادة إرسال الكود')}</Button>}</div>
+    <Card tint pad={12}><div style={{display:'flex',gap:8,alignItems:'center',marginBottom:6}}><PhaseTag>{t('Prototype','نموذج')}</PhaseTag><b>{t('Simulated SMS','رسالة محاكاة')}</b></div><div className="t-cap" style={{color:'var(--text-primary)'}}>{ltr('123456')} {t('succeeds','ينجح')} · {ltr('111111')} {t('expired','منتهي')} · {t('any other code is incorrect','أي كود تاني غلط')}.<br/>{t('Mode:','الوضع:')} {mode==='signup'?t('new account → onboarding','حساب جديد ← الإعداد'):t('returning user → Home','مستخدم قديم ← الرئيسية')}.</div>
+      <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}><Button size="s" variant="secondary" onClick={()=>setSec(0)}>{t('Skip timer','تخطي المؤقت')}</Button><Button size="s" variant="secondary" onClick={()=>{setV('123456');verify('123456')}}>{t('Autofill 123456','املا 123456')}</Button></div></Card>
+    </div></Screen>}
+Object.assign(window,{ELanguage:Language,ESlides:Slides,EWelcome:Welcome,EPhone:Phone,EOtp:Otp,EBrand:Brand});
+})();

@@ -1,0 +1,37 @@
+(()=>{
+const DS=window.FurEverDesignSystem_f25da7;const {Button,Icon,IconButton,Banner,Chip,Card,PhaseTag}=DS;
+const EC=React.createContext({});const useE=()=>React.useContext(EC);
+const TODAY=new Date('2026-10-18T00:00:00');
+const fmt=d=>{const x=new Date(d);return String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')+'/'+x.getFullYear()};
+const addM=(iso,m)=>{const d=new Date(iso);d.setMonth(d.getMonth()+m);return d.toISOString().slice(0,10)};
+const vaxStatus=iso=>{const d=(new Date(iso)-TODAY)/864e5;return d<0?'overdue':d<=14?'due_soon':'up_to_date'};
+const CITIES=[['Cairo','القاهرة'],['Giza','الجيزة'],['Alexandria','الإسكندرية'],['Mansoura','المنصورة'],['Tanta','طنطا'],['Hurghada','الغردقة'],['Aswan','أسوان']];
+function Screen({children,header,tab,bg,noStatus}){
+  return <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',background:bg||'var(--background)'}}>
+    <div style={{height:44,flex:'none',display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0 24px',fontSize:13,fontWeight:600}}><span dir="ltr">9:41</span><span dir="ltr" style={{display:'flex',gap:6}}><Icon name="signal" size={14}/><Icon name="wifi" size={14}/><Icon name="battery-full" size={16}/></span></div>
+    {header}<div style={{flex:1,overflow:'auto',position:'relative'}}>{children}</div>{tab&&<TabBar active={tab}/>}</div>;
+}
+function Header({title,back,right,sub}){
+  const {t,go}=useE();
+  return <div style={{display:'flex',alignItems:'center',gap:8,padding:'4px 12px',minHeight:52}}>
+    {back?<IconButton plain icon="arrow-left" flip label={t('Back','رجوع')} onClick={()=>typeof back==='function'?back():go(back)}/>:<span style={{width:12}}/>}
+    <div style={{flex:1}}><div className="t-h3">{title}</div>{sub&&<div className="t-cap">{sub}</div>}</div>{right}</div>;
+}
+function TabBar({active}){
+  const {t,go}=useE();
+  const tabs=[['home','house',t('Home','الرئيسية')],['pets','paw-print',t('Pets','حيواناتي')],['bookings','calendar-days',t('Bookings','حجوزاتي')],['profileTab','user-round',t('Profile','حسابي')]];
+  return <div style={{display:'flex',borderTop:'1px solid var(--border)',background:'var(--surface)',paddingBottom:14}}>{tabs.map(([id,ic,l])=><button key={id} onClick={()=>go(id)} aria-current={active===id} style={{flex:1,minHeight:56,border:0,background:'none',color:active===id?'var(--primary)':'var(--text-secondary)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,fontFamily:'inherit',fontSize:'var(--fs-caption)',fontWeight:active===id?600:400,cursor:'pointer'}}><Icon name={ic} size={22}/>{l}</button>)}</div>;
+}
+function Steps({n}){
+  const {t}=useE();const L=[t('Profile','البيانات'),t('Pet','الحيوان'),t('Health','الصحة'),t('Alerts','التنبيهات')];
+  return <div style={{display:'flex',gap:6,padding:'0 20px 8px'}}>{L.map((x,i)=><div key={i} style={{flex:1}}><div style={{height:5,borderRadius:3,background:i<=n?'var(--primary)':'var(--border)'}}/><div className="t-cap" style={{marginTop:4,color:i===n?'var(--text-primary)':undefined,fontWeight:i===n?600:400}}>{x}</div></div>)}</div>;
+}
+function Sheet({title,children,onClose,sim}){
+  const {t}=useE();
+  return <div className="fe-sheet-bd" onClick={onClose}><div className="fe-sheet" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" style={{maxHeight:'80%',overflow:'auto'}}>
+    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}><div className="t-h2" style={{flex:1}}>{title}</div>{sim&&<PhaseTag>{t('Simulated','محاكاة')}</PhaseTag>}</div>{children}</div></div>;
+}
+function Pick({items,onPick,sel}){return <div style={{display:'flex',flexDirection:'column'}}>{items.map(([k,l,d])=><button key={k} disabled={d} onClick={()=>onPick(k)} style={{display:'flex',alignItems:'center',gap:12,minHeight:48,border:0,borderTop:'1px solid var(--border)',background:'none',color:d?'var(--text-secondary)':'var(--text-primary)',fontFamily:'inherit',fontSize:'var(--fs-body-lg)',cursor:d?'not-allowed':'pointer',textAlign:'start',opacity:d?.5:1}}><span style={{flex:1}}>{l}</span>{d&&<span className="t-cap">{d}</span>}{sel===k&&<Icon name="check" size={20} style={{color:'var(--primary)'}}/>}</button>)}</div>}
+const ltr=s=><span className="ltr">{s}</span>;
+Object.assign(window,{EC,useE,ESCREEN:Screen,EHeader:Header,ETabBar:TabBar,ESteps:Steps,ESheet:Sheet,EPick:Pick,eltr:ltr,eFmt:fmt,eAddM:addM,eVaxStatus:vaxStatus,ECITIES:CITIES,ETODAY:TODAY});
+})();
