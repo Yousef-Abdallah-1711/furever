@@ -98,7 +98,7 @@ fire, not one task per event.
 No product tables are created here — only extensions, the shared trigger, and the access-token hook
 skeleton (constitution III, VII; D00 scope rule).
 
-- [ ] T013 [D00b] Initialize `backend/supabase/config.toml` with the **local email inbox** enabled (no
+- [x] T013 [D00b] Initialize `backend/supabase/config.toml` with the **local email inbox** enabled (no
   real email sent locally) — owners sign in by email code in Phase 1, not phone/SMS (2026-10-18 sign-in
   method change; Twilio is not configured anywhere in this project).
 - [ ] T014 [P] [D00b] Write migration `backend/supabase/migrations/<timestamp>_extensions.sql` enabling

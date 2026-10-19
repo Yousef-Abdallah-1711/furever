@@ -78,6 +78,26 @@ devDependency install over global npm install), then ran `pnpm --filter backend 
 supabase@2.121.0 --save-exact` directly. Docker Desktop confirmed running (`docker info` exit 0)
 before proceeding, per the task's own prerequisite.
 
+## D00b — Backend init and CI RLS check
+
+**Standing infrastructure note (affects every task below)**: Codex's sandboxed subprocess execution
+cannot spawn the `supabase` CLI successfully on this Windows machine (`Failed to create parent
+directories for backend\supabase\.gitkeep`) — the same restricted-token pattern already seen with
+`pnpm add`'s registry fetch (G2). Codex's own file-write and web-fetch tool calls work fine; it's
+specifically subprocess-spawned CLI binaries that fail. **Resolution applied for all of D00b**: the
+orchestrator runs every CLI-invoking command directly (`supabase init`, `supabase migration new`,
+`supabase start`/`test db`/`stop`), then delegates the actual file-content authoring (editing
+config.toml, writing migration SQL, writing test SQL) to Codex against the real files the CLI created.
+
+| Task | Worker | Retries | Commands run | Result | Commit |
+| --- | --- | --- | --- | --- | --- |
+| T013 | orchestrator (`supabase init`, direct) + codex (gpt-6-luna, effort high) for content review | 0 | Re-read config.toml; `grep` for `[local_smtp]`, `[auth.sms]`, `[auth.sms.twilio]`, and a secret-pattern scan (orchestrator, independent of Codex's report); raw-byte BOM/CRLF check | PASS — the CLI-generated config.toml already satisfied every requirement (local email inbox via `[local_smtp]` enabled by default in Supabase CLI 2.121.0 — note this is a NEWER section name than `[inbucket]`, which official docs still reference; SMS/Twilio already disabled by default; no real secrets, only `env(...)` references); no edit was needed | (pending) |
+
+**D02 follow-up, noted by T013's review**: `config.toml` has no equivalent for this project's real OTP
+lockout rules (5 wrong attempts cancels a code; 3 cancellations in 60 minutes locks the email 15
+minutes; per-email/per-IP throttling; no-enumeration). Confirmed already correctly deferred to D02's
+`verify-otp-guard` Edge Function + `otp_attempts` table (research.md §3) — not a gap, just re-confirmed.
+
 ## D00a — Repo and tooling
 
 | Task | Worker | Retries | Commands run | Result | Commit |
