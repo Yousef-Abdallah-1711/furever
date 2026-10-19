@@ -101,11 +101,11 @@ skeleton (constitution III, VII; D00 scope rule).
 - [x] T013 [D00b] Initialize `backend/supabase/config.toml` with the **local email inbox** enabled (no
   real email sent locally) — owners sign in by email code in Phase 1, not phone/SMS (2026-10-18 sign-in
   method change; Twilio is not configured anywhere in this project).
-- [ ] T014 [P] [D00b] Write migration `backend/supabase/migrations/<timestamp>_extensions.sql` enabling
+- [x] T014 [P] [D00b] Write migration `backend/supabase/migrations/<timestamp>_extensions.sql` enabling
   `pgcrypto`, `postgis`, `pg_trgm`, `btree_gist`, `pg_cron`, `pg_net`, `pg_stat_statements`.
-- [ ] T015 [P] [D00b] Write migration `backend/supabase/migrations/<timestamp>_shared_trigger.sql`
+- [x] T015 [P] [D00b] Write migration `backend/supabase/migrations/<timestamp>_shared_trigger.sql`
   creating the shared `set_updated_at()` trigger function (constitution IV). Depends only on T014.
-- [ ] T016 [P] [D00b] Write migration `backend/supabase/migrations/<timestamp>_access_token_hook_skeleton.sql`
+- [x] T016 [P] [D00b] Write migration `backend/supabase/migrations/<timestamp>_access_token_hook_skeleton.sql`
   creating `custom_access_token_hook(event jsonb)` as `security definer`, `set search_path = ''`, returning
   `event` unchanged for now (real `user_role` injection lands in D02 — research.md §8). Depends only on
   T014.

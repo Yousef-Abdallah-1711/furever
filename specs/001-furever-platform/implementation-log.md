@@ -98,6 +98,10 @@ lockout rules (5 wrong attempts cancels a code; 3 cancellations in 60 minutes lo
 minutes; per-email/per-IP throttling; no-enumeration). Confirmed already correctly deferred to D02's
 `verify-otp-guard` Edge Function + `otp_attempts` table (research.md §3) — not a gap, just re-confirmed.
 
+| T014 | orchestrator (`supabase migration new`, direct) + codex (gpt-6-luna, effort high) for SQL content | 0 | Raw-byte BOM/CRLF check; full content re-read; schema choice (`WITH SCHEMA extensions`) cross-checked against Codex's cited Supabase docs | PASS | (pending) |
+| T015 | orchestrator (CLI) + codex (gpt-6-luna, effort high) | 0 | Raw-byte check; reviewed `now()` vs. `timezone('utc', now())` reasoning (correct: `timestamptz` already stores an absolute instant; `timezone('utc', now())` would wrongly produce a timestamp *without* time zone) | PASS | (pending) |
+| T016 | orchestrator (CLI) + codex (gpt-6-luna, effort high) | 0 | Raw-byte check; **independently re-fetched** supabase.com/docs/guides/auth/auth-hooks myself and confirmed the GRANT/REVOKE statements match Supabase's own documented pattern exactly (grant usage+execute to `supabase_auth_admin`, revoke execute from `authenticated, anon, public`) | PASS | (pending) |
+
 ## D00a — Repo and tooling
 
 | Task | Worker | Retries | Commands run | Result | Commit |
