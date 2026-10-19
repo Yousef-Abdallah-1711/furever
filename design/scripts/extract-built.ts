@@ -6,10 +6,12 @@ type KitArea = "mobile" | "clinic" | "admin";
 type KitFile = { path: string; source: string };
 type BuiltScreen = {
   route: string;
+  additionalRoutes?: string[];
   title: string;
   phase: number;
   area: KitArea;
   inventory: string;
+  sourceGroup?: "mobile-entry";
 };
 
 const scriptPath = fileURLToPath(import.meta.url);
@@ -102,7 +104,19 @@ function parseBuiltScreens(markdown: string): BuiltScreen[] {
     const status = cells[4];
     if (phase !== 1 || !/\bBuilt\b/.test(status)) continue;
 
-    for (const route of splitRoutes(cells[1])) {
+    const rowRoutes = splitRoutes(cells[1]);
+    if (rowRoutes[0] === "/login" && rowRoutes[1] === "/mfa") {
+      screens.push({
+        route: "/login",
+        additionalRoutes: ["/mfa"],
+        title: cells[2],
+        phase,
+        area,
+        inventory: line,
+      });
+      continue;
+    }
+    for (const route of rowRoutes) {
       if (!route.startsWith("/")) continue;
       screens.push({ route, title: cells[2], phase, area, inventory: line });
     }
@@ -208,7 +222,10 @@ function renderScreen(
   sourceFile: KitFile,
   override: string | undefined,
 ): string {
-  const component = componentNames[screen.route];
+  const component =
+    screen.sourceGroup === "mobile-entry"
+      ? "Summary"
+      : componentNames[screen.route];
   const body = componentBody(sourceFile.source, component);
   const components = extractComponents(body);
   const states = extractStates(screen, body);
@@ -226,11 +243,14 @@ function renderScreen(
   const componentList = components.length
     ? components.map((name) => `\`${name}\``).join(", ")
     : "None identified";
+  const additionalRoutes = screen.additionalRoutes?.length
+    ? `\n- Additional routes: ${screen.additionalRoutes.map((route) => `\`${route}\``).join(", ")}`
+    : "";
   const overrideNote = override
     ? `\n## Copy override\n\nUse the \`${override}\` section in [design/overrides.md](../overrides.md) in place of conflicting kit copy.\n`
     : "";
 
-  return `# Screen: ${screen.route}\n\n- Screen ID: \`${screen.route}\`\n- Route: \`${screen.route}\`\n- Delivery phase: ${screen.phase}\n- Status: Built\n- Kit source file: [${basename(sourceFile.path)}](../../${sourceRelative})\n- Kit entry file: [${basename(kitIndexPath)}](../../${indexRelative})\n- Kit component: \`${component}\`\n- States present: ${stateList}\n- Components used: ${componentList}\n${overrideNote}`;
+  return `# Screen: ${screen.route}\n\n- Screen ID: \`${screen.route}\`\n- Route: \`${screen.route}\`${additionalRoutes}\n- Delivery phase: ${screen.phase}\n- Status: Built\n- Kit source file: [${basename(sourceFile.path)}](../../${sourceRelative})\n- Kit entry file: [${basename(kitIndexPath)}](../../${indexRelative})\n- Kit component: \`${component}\`\n- States present: ${stateList}\n- Components used: ${componentList}\n${overrideNote}`;
 }
 
 async function main() {
@@ -247,20 +267,55 @@ async function main() {
   }
 
   const mobileIndexPath = resolve(sourceRoot, "ui_kits/mobile/index.html");
+  const mobileEntryIndexPath = resolve(
+    sourceRoot,
+    "ui_kits/mobile-entry/index.html",
+  );
   const dashboardIndexPath = resolve(
     sourceRoot,
     "ui_kits/dashboard/index.html",
   );
-  const [mobileKit, dashboardKit] = await Promise.all([
+  const [mobileKit, mobileEntryKit, dashboardKit] = await Promise.all([
     readKit(mobileIndexPath),
+    readKit(mobileEntryIndexPath),
     readKit(dashboardIndexPath),
   ]);
   const screens = parseBuiltScreens(inventory);
+  const coverageStart = spec.indexOf("## Screen Coverage");
+  const coverageEnd = spec.indexOf("## Success Criteria", coverageStart);
+  const summaryRow = spec
+    .slice(coverageStart, coverageEnd)
+    .split(/\r?\n/)
+    .find(
+      (line) =>
+        line.includes("`/onboarding/summary`") && line.includes("| Built |"),
+    );
+  if (
+    summaryRow &&
+    !screens.some((screen) => screen.route === "/onboarding/summary")
+  ) {
+    screens.push({
+      route: "/onboarding/summary",
+      title: "Setup Summary",
+      phase: 1,
+      area: "mobile",
+      inventory: summaryRow,
+      sourceGroup: "mobile-entry",
+    });
+  }
   await mkdir(outputRoot, { recursive: true });
 
   for (const screen of screens) {
-    const kit = screen.area === "mobile" ? mobileKit : dashboardKit;
-    const component = componentNames[screen.route];
+    const kit =
+      screen.sourceGroup === "mobile-entry"
+        ? mobileEntryKit
+        : screen.area === "mobile"
+          ? mobileKit
+          : dashboardKit;
+    const component =
+      screen.sourceGroup === "mobile-entry"
+        ? "Summary"
+        : componentNames[screen.route];
     if (!component)
       throw new Error(
         `No kit component mapping found for Built screen ${screen.route}`,
@@ -271,11 +326,17 @@ async function main() {
         `No kit source function ${component} found for ${screen.route}`,
       );
     const output = resolve(outputRoot, screenFileName(screen.route));
+    const kitIndexPath =
+      screen.sourceGroup === "mobile-entry"
+        ? mobileEntryIndexPath
+        : screen.area === "mobile"
+          ? mobileIndexPath
+          : dashboardIndexPath;
     await writeFile(
       output,
       renderScreen(
         screen,
-        screen.area === "mobile" ? mobileIndexPath : dashboardIndexPath,
+        kitIndexPath,
         sourceFile,
         overrideLabel(screen.route),
       ),

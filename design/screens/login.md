@@ -2,6 +2,7 @@
 
 - Screen ID: `/login`
 - Route: `/login`
+- Additional routes: `/mfa`
 - Delivery phase: 1
 - Status: Built
 - Kit source file: [kit-app.babel](../../FurEver Design System/ui_kits/dashboard/kit-app.babel)
