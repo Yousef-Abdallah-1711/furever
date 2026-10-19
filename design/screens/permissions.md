@@ -4,8 +4,8 @@
 - Route: `/permissions`
 - Delivery phase: 1
 - Status: Built
-- Kit source file: [kit-auth.babel](../../FurEver Design System/ui_kits/mobile/kit-auth.babel)
-- Kit entry file: [index.html](../../FurEver Design System/ui_kits/mobile/index.html)
-- Kit component: `Permissions`
+- Kit source file: [e-onboard2.babel](../../FurEver Design System/ui_kits/mobile-entry/e-onboard2.babel)
+- Kit entry file: [index.html](../../FurEver Design System/ui_kits/mobile-entry/index.html)
+- Kit component: `Perms`
 - States present: Not explicitly identified
-- Components used: `Button`, `Icon`, `Screen`
+- Components used: `Button`, `Card`, `Header`, `Icon`, `OS`, `Screen`, `Sheet`, `Steps`

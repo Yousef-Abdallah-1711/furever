@@ -4,11 +4,11 @@
 - Route: `/welcome`
 - Delivery phase: 1
 - Status: Built
-- Kit source file: [kit-auth.babel](../../FurEver Design System/ui_kits/mobile/kit-auth.babel)
-- Kit entry file: [index.html](../../FurEver Design System/ui_kits/mobile/index.html)
+- Kit source file: [e-auth.babel](../../FurEver Design System/ui_kits/mobile-entry/e-auth.babel)
+- Kit entry file: [index.html](../../FurEver Design System/ui_kits/mobile-entry/index.html)
 - Kit component: `Welcome`
 - States present: Not explicitly identified
-- Components used: `Button`, `Screen`
+- Components used: `Brand`, `Button`, `Chip`, `Screen`
 
 ## Copy override
 

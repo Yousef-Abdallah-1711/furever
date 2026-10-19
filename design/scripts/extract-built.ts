@@ -69,6 +69,16 @@ const componentNames: Record<string, string> = {
   "/admin/audit-logs": "Audit",
 };
 
+const mobileEntryComponents: Record<string, string> = {
+  "/language": "Language",
+  "/onboarding": "Slides",
+  "/welcome": "Welcome",
+  "/sign-in": "Phone",
+  "/otp": "Otp",
+  "/complete-profile": "Profile",
+  "/permissions": "Perms",
+};
+
 const overrideSections: Record<string, string> = {
   "/welcome": "/welcome",
   "/sign-in": "/sign-in",
@@ -224,7 +234,9 @@ function renderScreen(
 ): string {
   const component =
     screen.sourceGroup === "mobile-entry"
-      ? "Summary"
+      ? screen.route === "/onboarding/summary"
+        ? "Summary"
+        : mobileEntryComponents[screen.route]
       : componentNames[screen.route];
   const body = componentBody(sourceFile.source, component);
   const components = extractComponents(body);
@@ -281,6 +293,11 @@ async function main() {
     readKit(dashboardIndexPath),
   ]);
   const screens = parseBuiltScreens(inventory);
+  for (const screen of screens) {
+    if (mobileEntryComponents[screen.route]) {
+      screen.sourceGroup = "mobile-entry";
+    }
+  }
   const coverageStart = spec.indexOf("## Screen Coverage");
   const coverageEnd = spec.indexOf("## Success Criteria", coverageStart);
   const summaryRow = spec
@@ -314,7 +331,9 @@ async function main() {
           : dashboardKit;
     const component =
       screen.sourceGroup === "mobile-entry"
-        ? "Summary"
+        ? screen.route === "/onboarding/summary"
+          ? "Summary"
+          : mobileEntryComponents[screen.route]
         : componentNames[screen.route];
     if (!component)
       throw new Error(

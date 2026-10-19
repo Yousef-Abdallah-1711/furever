@@ -6,21 +6,21 @@ Built-screen kit sources and Spec-screen patterns are linked from each screen re
 | --- | --- | --- | --- |
 | `/profile/about` | `/profile/about` | Pattern: [`/(tabs)/profile`](screens/tabs-profile.md) | D02 |
 | `/profile/account` | `/profile/account` | Kit: [kit-home.babel](../FurEver Design System/ui_kits/mobile/kit-home.babel) | D02 |
-| `/complete-profile` | `/complete-profile` | Kit: [kit-auth.babel](../FurEver Design System/ui_kits/mobile/kit-auth.babel) | D02 |
+| `/complete-profile` | `/complete-profile` | Kit: [e-onboard1.babel](../FurEver Design System/ui_kits/mobile-entry/e-onboard1.babel) | D02 |
 | `/profile/edit` | `/profile/edit` | Pattern: [`/(tabs)/profile`](screens/tabs-profile.md) | D02 |
 | `/force-update` | `/force-update` | Pattern: [`/welcome`](screens/welcome.md) | D02 |
 | `/profile/help` | `/profile/help` | Pattern: [`/(tabs)/profile`](screens/tabs-profile.md) | D02 |
-| `/language` | `/language` | Kit: [kit-auth.babel](../FurEver Design System/ui_kits/mobile/kit-auth.babel) | D02 |
+| `/language` | `/language` | Kit: [e-auth.babel](../FurEver Design System/ui_kits/mobile-entry/e-auth.babel) | D02 |
 | `/legal/terms` | `/legal/terms`, `/legal/privacy` | Pattern: [`/(tabs)/profile`](screens/tabs-profile.md) | D02 |
 | `/maintenance` | `/maintenance` | Pattern: [`/welcome`](screens/welcome.md) | D02 |
-| `/onboarding` | `/onboarding` | Kit: [kit-auth.babel](../FurEver Design System/ui_kits/mobile/kit-auth.babel) | D02 |
+| `/onboarding` | `/onboarding` | Kit: [e-auth.babel](../FurEver Design System/ui_kits/mobile-entry/e-auth.babel) | D02 |
 | `/(tabs)/profile` | `/(tabs)/profile` | Kit: [kit-home.babel](../FurEver Design System/ui_kits/mobile/kit-home.babel) | D02 |
 | `/profile/settings` | `/profile/settings` | Kit: [kit-home.babel](../FurEver Design System/ui_kits/mobile/kit-home.babel) | D02 |
 | `/onboarding/summary` | `/onboarding/summary` | Kit: [e-onboard2.babel](../FurEver Design System/ui_kits/mobile-entry/e-onboard2.babel) | D02 |
-| `/sign-in` | `/sign-in` | Kit: [kit-auth.babel](../FurEver Design System/ui_kits/mobile/kit-auth.babel) | D02 |
+| `/sign-in` | `/sign-in` | Kit: [e-auth.babel](../FurEver Design System/ui_kits/mobile-entry/e-auth.babel) | D02 |
 | `/` | `/` | Pattern: [`/welcome`](screens/welcome.md) | D02 |
-| `/otp` | `/otp` | Kit: [kit-auth.babel](../FurEver Design System/ui_kits/mobile/kit-auth.babel) | D02 |
-| `/welcome` | `/welcome` | Kit: [kit-auth.babel](../FurEver Design System/ui_kits/mobile/kit-auth.babel) | D02 |
+| `/otp` | `/otp` | Kit: [e-auth.babel](../FurEver Design System/ui_kits/mobile-entry/e-auth.babel) | D02 |
+| `/welcome` | `/welcome` | Kit: [e-auth.babel](../FurEver Design System/ui_kits/mobile-entry/e-auth.babel) | D02 |
 | `/pets/new` | `/pets/new` | Kit: [kit-home.babel](../FurEver Design System/ui_kits/mobile/kit-home.babel) | D03 |
 | `/documents/[path]` | `/documents/[path]` | Pattern: [`/pets/[id]/passport`](screens/pets-id-passport.md) | D03 |
 | `/pets/[id]/edit` | `/pets/[id]/edit` | Pattern: [`/pets/new`](screens/pets-new.md) | D03 |
@@ -30,7 +30,7 @@ Built-screen kit sources and Spec-screen patterns are linked from each screen re
 | `/(tabs)/index` | `/(tabs)/index` | Kit: [kit-home.babel](../FurEver Design System/ui_kits/mobile/kit-home.babel) | D04 |
 | `/notifications` | `/notifications` | Kit: [kit-home.babel](../FurEver Design System/ui_kits/mobile/kit-home.babel) | D04 |
 | `/pets/[id]/passport` | `/pets/[id]/passport` | Kit: [kit-home.babel](../FurEver Design System/ui_kits/mobile/kit-home.babel) | D04 |
-| `/permissions` | `/permissions` | Kit: [kit-auth.babel](../FurEver Design System/ui_kits/mobile/kit-auth.babel) | D04 |
+| `/permissions` | `/permissions` | Kit: [e-onboard2.babel](../FurEver Design System/ui_kits/mobile-entry/e-onboard2.babel) | D04 |
 | `/pets/[id]` | `/pets/[id]` | Kit: [kit-home.babel](../FurEver Design System/ui_kits/mobile/kit-home.babel) | D04 |
 | `/clinics/[id]` | `/clinics/[id]` | Kit: [kit-booking.babel](../FurEver Design System/ui_kits/mobile/kit-booking.babel) | D05 |
 | `/clinics` | `/clinics` | Kit: [kit-booking.babel](../FurEver Design System/ui_kits/mobile/kit-booking.babel) | D05 |

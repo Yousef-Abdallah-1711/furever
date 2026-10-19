@@ -4,11 +4,11 @@
 - Route: `/sign-in`
 - Delivery phase: 1
 - Status: Built
-- Kit source file: [kit-auth.babel](../../FurEver Design System/ui_kits/mobile/kit-auth.babel)
-- Kit entry file: [index.html](../../FurEver Design System/ui_kits/mobile/index.html)
-- Kit component: `SignIn`
-- States present: `loading`
-- Components used: `Button`, `Header`, `Input`, `Screen`
+- Kit source file: [e-auth.babel](../../FurEver Design System/ui_kits/mobile-entry/e-auth.babel)
+- Kit entry file: [index.html](../../FurEver Design System/ui_kits/mobile-entry/index.html)
+- Kit component: `Phone`
+- States present: `empty`, `error`, `loading`
+- Components used: `Button`, `CountrySheet`, `Header`, `Icon`, `Legal`, `Screen`, `Social`
 
 ## Copy override
 

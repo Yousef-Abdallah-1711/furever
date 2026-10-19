@@ -4,11 +4,11 @@
 - Route: `/onboarding`
 - Delivery phase: 1
 - Status: Built
-- Kit source file: [kit-auth.babel](../../FurEver Design System/ui_kits/mobile/kit-auth.babel)
-- Kit entry file: [index.html](../../FurEver Design System/ui_kits/mobile/index.html)
-- Kit component: `Onboarding`
+- Kit source file: [e-auth.babel](../../FurEver Design System/ui_kits/mobile-entry/e-auth.babel)
+- Kit entry file: [index.html](../../FurEver Design System/ui_kits/mobile-entry/index.html)
+- Kit component: `Slides`
 - States present: Not explicitly identified
-- Components used: `Button`, `Icon`, `Screen`
+- Components used: `Button`, `Header`, `Icon`, `Screen`
 
 ## Copy override
 
