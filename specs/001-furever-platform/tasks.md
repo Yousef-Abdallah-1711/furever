@@ -181,7 +181,7 @@ skeleton (constitution III, VII; D00 scope rule).
   under that screen in `packages/i18n/en.json`/`ar.json`, and record every Arabic key's draft status as an
   entry in `packages/i18n/draft-keys.json` (a flat list of keys), not as a sibling marker inside
   `en.json`/`ar.json` (handoff.md: Arabic copy is draft). Depends on T034.
-- [ ] T038 [D00d] Write `design/scripts/verify-screen-count.ts` comparing `design/screen-map.md`'s row
+- [x] T038 [D00d] Write `design/scripts/verify-screen-count.ts` comparing `design/screen-map.md`'s row
   count against `plan.md`'s Coverage Table total (70, including D02's T197 Setup Summary screen task; the
   script compares against whatever `plan.md` currently states, not a hardcoded number). Depends on T036.
 - [ ] T039 [D00d] **Checkpoint**: run D00d's exit check — `design/screen-map.md` covers every Phase 1
