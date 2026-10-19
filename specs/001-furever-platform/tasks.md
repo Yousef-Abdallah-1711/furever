@@ -143,7 +143,7 @@ skeleton (constitution III, VII; D00 scope rule).
   key on mismatch.
 - [x] T027 [D00c] Seed `packages/i18n/en.json` and `packages/i18n/ar.json` with an identical placeholder
   key set (e.g. `common.appName`) so T026 has something real to check against. Depends on T026.
-- [ ] T028 [D00c] Write the design-tokens generator `packages/design-tokens/scripts/build.ts` reading
+- [x] T028 [D00c] Write the design-tokens generator `packages/design-tokens/scripts/build.ts` reading
   `design/system/tokens/*.css`, resolving each variable per theme (`:root` = light,
   `[data-theme="dark"]` = dark), and **precomputing every `color-mix()` expression to a static hex value
   for both themes** (`--success-bg`, `--warning-bg`, `--danger-bg`, `--info-bg`, `--primary-bg`,
