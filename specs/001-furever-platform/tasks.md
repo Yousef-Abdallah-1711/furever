@@ -155,7 +155,7 @@ skeleton (constitution III, VII; D00 scope rule).
 - [x] T030 [D00c] Add a snapshot test `packages/design-tokens/scripts/build.test.ts` asserting the
   generator's output for `design/system/tokens/colors.css` matches a committed snapshot, for every
   precomputed tint/shadow in both themes. Depends on T029.
-- [ ] T031 [P] [D00c] Configure Vitest for `web/` and every `packages/*` workspace (`vitest.config.ts`
+- [x] T031 [P] [D00c] Configure Vitest for `web/` and every `packages/*` workspace (`vitest.config.ts`
   each) with one trivial passing test per workspace.
 - [ ] T032 [P] [D00c] Configure `jest-expo` for `mobile/` (`mobile/jest.config.js`) with one trivial
   passing test.
