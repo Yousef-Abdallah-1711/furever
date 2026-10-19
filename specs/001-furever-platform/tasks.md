@@ -70,11 +70,11 @@ fire, not one task per event.
   `backend/package.json`, `mobile/package.json`, `web/package.json`, `packages/shared/package.json`,
   `packages/i18n/package.json`, `packages/design-tokens/package.json`, and set `.nvmrc` to the matrix's
   Node version. Depends on T001.
-- [ ] T003 [P] [D00a] Create `pnpm-workspace.yaml` at the repo root listing `backend`, `mobile`, `web`,
+- [x] T003 [P] [D00a] Create `pnpm-workspace.yaml` at the repo root listing `backend`, `mobile`, `web`,
   `packages/*`.
-- [ ] T004 [P] [D00a] Create `turbo.json` at the repo root with `build`/`dev`/`lint`/`test`/`typecheck`
+- [x] T004 [P] [D00a] Create `turbo.json` at the repo root with `build`/`dev`/`lint`/`test`/`typecheck`
   pipeline tasks.
-- [ ] T005 [P] [D00a] Create `biome.json` at the repo root (lint + format rules; constitution X).
+- [x] T005 [P] [D00a] Create `biome.json` at the repo root (lint + format rules; constitution X).
 - [ ] T006 [P] [D00a] Create the base `tsconfig.json` at the repo root with `"strict": true`, plus
   `backend/tsconfig.json`, `mobile/tsconfig.json`, `web/tsconfig.json`, `packages/shared/tsconfig.json`
   extending it (constitution X).
