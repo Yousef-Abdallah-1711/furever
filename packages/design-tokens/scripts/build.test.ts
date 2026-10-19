@@ -1,5 +1,8 @@
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { precomputedMixes, readTokenThemes } from "./build";
+import { buildTokens, precomputedMixes, readTokenThemes } from "./build";
 
 describe("OKLab color-mix resolution", () => {
   it("matches independently calculated light and dark token colors", async () => {
@@ -26,5 +29,37 @@ describe("OKLab color-mix resolution", () => {
         "--fe-ph-mix-1": "#342628",
       },
     });
+  });
+
+  it("matches the committed snapshot for color.css mixes and shadows in both themes", async () => {
+    const destination = await mkdtemp(join(tmpdir(), "furever-design-tokens-"));
+    try {
+      const themes = await buildTokens(undefined, destination);
+      const generatedCss = await readFile(
+        join(destination, "variables.css"),
+        "utf8",
+      );
+      const colors = precomputedMixes(themes);
+      const expectedNames = new Set([
+        ...Object.keys(colors.light),
+        "--shadow-card",
+        "--shadow-sheet",
+      ]);
+      const [lightCss, darkCss] = generatedCss.split('[data-theme="dark"]');
+      const readExpectedVariables = (css: string) =>
+        Object.fromEntries(
+          [...css.matchAll(/^\s*(--[\w-]+):\s*(.+);$/gm)]
+            .filter(([, name]) => expectedNames.has(name))
+            .map(([, name, value]) => [name, value]),
+        );
+      const snapshot = {
+        light: readExpectedVariables(lightCss),
+        dark: readExpectedVariables(darkCss),
+      };
+
+      expect(snapshot).toMatchSnapshot();
+    } finally {
+      await rm(destination, { recursive: true, force: true });
+    }
   });
 });

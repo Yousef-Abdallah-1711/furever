@@ -152,7 +152,7 @@ skeleton (constitution III, VII; D00 scope rule).
   `packages/design-tokens/dist/tailwind-preset.js` (NativeWind/Tailwind preset) and
   `packages/design-tokens/dist/variables.css` (web CSS variables) from the resolved values. Depends on
   T028.
-- [ ] T030 [D00c] Add a snapshot test `packages/design-tokens/scripts/build.test.ts` asserting the
+- [x] T030 [D00c] Add a snapshot test `packages/design-tokens/scripts/build.test.ts` asserting the
   generator's output for `design/system/tokens/colors.css` matches a committed snapshot, for every
   precomputed tint/shadow in both themes. Depends on T029.
 - [ ] T031 [P] [D00c] Configure Vitest for `web/` and every `packages/*` workspace (`vitest.config.ts`

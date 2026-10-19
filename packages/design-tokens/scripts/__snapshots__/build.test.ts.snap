@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`OKLab color-mix resolution > matches the committed snapshot for color.css mixes and shadows in both themes 1`] = `
+{
+  "dark": {
+    "--danger-bg": "#392627",
+    "--fe-ph-mix-1": "#342628",
+    "--fe-skel-mix-1": "#312426",
+    "--info-bg": "#302C33",
+    "--primary-bg": "#3A2A2C",
+    "--shadow-card": "none",
+    "--shadow-sheet": "none",
+    "--success-bg": "#30302C",
+    "--warning-bg": "#3B2D26",
+  },
+  "light": {
+    "--danger-bg": "#FAE9E7",
+    "--fe-ph-mix-1": "#F3E5E3",
+    "--fe-skel-mix-1": "#F5E9E7",
+    "--info-bg": "#E5ECF4",
+    "--primary-bg": "#F4E8E8",
+    "--shadow-card": "0 1px 2px rgba(74,40,42,.06),0 4px 14px rgba(74,40,42,.06)",
+    "--shadow-sheet": "0 -8px 30px rgba(74,40,42,.14)",
+    "--success-bg": "#E4EFE7",
+    "--warning-bg": "#F6ECE1",
+  },
+}
+`;
