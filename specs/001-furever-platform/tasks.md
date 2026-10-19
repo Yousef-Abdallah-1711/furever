@@ -165,7 +165,7 @@ skeleton (constitution III, VII; D00 scope rule).
 
 ## D00d — Design extraction scripts
 
-- [ ] T034 [D00d] Write the Built-screen extractor `design/scripts/extract-built.ts`: for each screen
+- [x] T034 [D00d] Write the Built-screen extractor `design/scripts/extract-built.ts`: for each screen
   marked **Built** in `FurEver Design System/guidelines/screen-inventory.md`, read its `.babel`/
   `index.html` kit source and emit `design/screens/<ID>.md` (route, kit source file, states present,
   components used). Depends on T011.

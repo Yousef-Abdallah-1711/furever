@@ -1,0 +1,11 @@
+# Screen: /admin/flags
+
+- Screen ID: `/admin/flags`
+- Route: `/admin/flags`
+- Delivery phase: 1
+- Status: Built
+- Kit source file: [kit-admin.babel](../../FurEver Design System/ui_kits/dashboard/kit-admin.babel)
+- Kit entry file: [index.html](../../FurEver Design System/ui_kits/dashboard/index.html)
+- Kit component: `Flags`
+- States present: `restricted`
+- Components used: `Banner`, `Restricted`, `Shell`
