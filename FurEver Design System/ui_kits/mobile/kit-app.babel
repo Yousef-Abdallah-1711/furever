@@ -1,0 +1,31 @@
+(()=>{
+const {LCtx}=window;
+const S=[
+['Auth and onboarding',[['language','Language',window.Language],['onboarding','Onboarding',window.Onboarding],['welcome','Welcome',window.Welcome],['signin','Sign in',window.SignIn],['otp','Verify code',window.Otp],['completeprofile','Complete profile',window.CompleteProfile],['permissions','Permissions primer',window.Permissions]]],
+['Home and pets',[['home','Home',window.Home],['pets','My pets',window.Pets],['addpet','Add pet (4 steps)',window.AddPet],['passport','Pet passport',window.Passport],['addvax','Add vaccination',window.AddVax],['passportshare','Passport share',window.PassportShare]]],
+['Clinics and booking',[['clinics','Clinics',window.Clinics],['clinic','Clinic detail',window.Clinic],['bservice','Book 1 Service',window.BService],['bdoctor','Book 2 Doctor',window.BDoctor],['btime','Book 3 Time',window.BTime],['bdetails','Book 4 Pet',window.BDetails],['bsummary','Book 5 Summary',window.BSummary],['bsuccess','Confirmation',window.BSuccess],['bookings','My bookings',window.Bookings],['booking','Booking and live queue',window.Booking],['review','Rate visit',window.Review],['emergency','Emergency',window.Emergency]]],
+['Notifications and profile',[['notifications','Notifications',window.Notifications],['profile','Profile',window.Profile],['settings','Settings',window.Settings],['account','Account',window.Account]]],
+['Later phase',[['shop','Shop (P2)',window.Shop],['community','Adoption and Mating (P3)',window.Community],['prejoin','Video pre-join (P4)',window.Prejoin]]]];
+const flat=S.flatMap(g=>g[1]);const flow=['signin','otp','completeprofile','addpet','passport','addvax','clinics','clinic','bservice','bdoctor','btime','bdetails','bsummary','bsuccess','booking','bookings','review'];
+function MobileApp(){
+  const ld=k=>localStorage.getItem('fe-'+k);
+  const [scr,setScr]=React.useState(ld('scr')||'welcome');const [lang,setLang]=React.useState(ld('lang')||'en');const [theme,setTheme]=React.useState(ld('theme')||'light');const [st,setSt]=React.useState('populated');const [bk,setBk]=React.useState({});
+  React.useEffect(()=>{localStorage.setItem('fe-scr',scr);localStorage.setItem('fe-lang',lang);localStorage.setItem('fe-theme',theme)},[scr,lang,theme]);
+  const go=s=>setScr(s);const t=(en,ar)=>lang==='ar'?ar:en;
+  const cur=flat.find(x=>x[0]===scr)||flat[0];const Cmp=cur[2];const fi=flow.indexOf(scr);
+  const Seg=({v,set,o})=><div style={{display:'flex',gap:6,flexWrap:'wrap'}}>{o.map(([k,l])=><button key={k} onClick={()=>set(k)} style={{font:'500 13px Inter',padding:'6px 12px',whiteSpace:'nowrap',borderRadius:8,border:'1px solid #d9c6c3',background:v===k?'#A96062':'#fff',color:v===k?'#fff':'#4a4a4a',cursor:'pointer'}}>{l}</button>)}</div>;
+  return <div style={{display:'flex',gap:32,justifyContent:'center',alignItems:'flex-start',padding:24,flexWrap:'wrap'}}>
+    <div style={{width:260,display:'flex',flexDirection:'column',gap:14,font:'13px Inter',color:'#4a4a4a'}}>
+      <b style={{fontSize:16}}>FurEver · Owner app</b>
+      <div>Language</div><Seg v={lang} set={setLang} o={[['en','English LTR'],['ar','العربية RTL']]}/>
+      <div>Theme</div><Seg v={theme} set={setTheme} o={[['light','Light'],['dark','Dark']]}/>
+      <div>List state</div><Seg v={st} set={setSt} o={[['populated','Populated'],['loading','Loading'],['empty','Empty'],['error','Error / offline']]}/>
+      <div>Screen</div><select value={scr} onChange={e=>setScr(e.target.value)} style={{padding:8,borderRadius:8,font:'inherit'}}>{S.map(([g,l])=><optgroup key={g} label={g}>{l.map(([k,n])=><option key={k} value={k}>{n}</option>)}</optgroup>)}</select>
+      <div>Core flow {fi>=0?(fi+1)+' / '+flow.length:''}</div><div style={{display:'flex',gap:6}}><button onClick={()=>fi>0&&go(flow[fi-1])} style={{padding:'6px 12px'}}>Prev</button><button onClick={()=>go(flow[fi<0?0:Math.min(fi+1,flow.length-1)])} style={{padding:'6px 12px'}}>Next</button></div>
+    </div>
+    <div dir={lang==='ar'?'rtl':'ltr'} lang={lang} data-theme={theme==='dark'?'dark':undefined} className="fe-root" style={{width:390,height:800,borderRadius:44,position:'relative',overflow:'hidden',border:'10px solid #1f1a1b',boxSizing:'content-box',boxShadow:'0 20px 60px rgba(60,30,32,.25)'}}>
+      <LCtx.Provider value={{t,go,lang,setLang,theme,setTheme,st,setSt,bk,setBk}}><Cmp/></LCtx.Provider>
+    </div></div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<MobileApp/>);
+})();

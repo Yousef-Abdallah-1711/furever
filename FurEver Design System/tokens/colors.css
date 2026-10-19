@@ -1,0 +1,10 @@
+:root{
+--primary:#A96062;--on-primary:#FFFFFF;--surface-secondary:#EEDAD7;--bg-gradient-top:#DAB7B5;--bg-gradient-bottom:#FBF6F5;--background:#FBF6F5;--surface:#FFFFFF;--border:#E6D3D0;--text-primary:#4A4A4A;--text-secondary:#6B6B6B;--success:#3F8F5F;--warning:#B7791F;--danger:#C0443F;--info:#3F6FA8;--overlay:rgba(0,0,0,.40);--on-danger:#FFFFFF;
+--success-bg:color-mix(in oklab,var(--success) 14%,var(--surface));--warning-bg:color-mix(in oklab,var(--warning) 14%,var(--surface));--danger-bg:color-mix(in oklab,var(--danger) 12%,var(--surface));--info-bg:color-mix(in oklab,var(--info) 13%,var(--surface));--primary-bg:color-mix(in oklab,var(--primary) 14%,var(--surface));
+--shadow-card:0 1px 2px rgba(74,40,42,.06),0 4px 14px rgba(74,40,42,.06);--shadow-sheet:0 -8px 30px rgba(74,40,42,.14);
+--bg-surface:var(--surface);--text-body:var(--text-primary);--text-muted:var(--text-secondary);--border-default:var(--border);--surface-card:var(--surface);--link:var(--primary);
+}
+[data-theme="dark"]{
+--primary:#D08A8C;--on-primary:#1A1415;--surface-secondary:#3A2A2C;--bg-gradient-top:#2B1F21;--bg-gradient-bottom:#1A1415;--background:#1A1415;--surface:#251C1E;--border:#4A393C;--text-primary:#F3E9E8;--text-secondary:#B9A9A8;--success:#6CC08B;--warning:#E0A94F;--danger:#E5736E;--info:#7FA6D6;--overlay:rgba(0,0,0,.60);--on-danger:#1A1415;
+--shadow-card:none;--shadow-sheet:none;
+}

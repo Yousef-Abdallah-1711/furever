@@ -1,0 +1,34 @@
+(()=>{
+const DS=window.FurEverDesignSystem_f25da7;const {Button,Icon,IconButton,EmptyState,Skeleton,PhaseTag}=DS;
+const LCtx=React.createContext({});
+const useL=()=>React.useContext(LCtx);
+function Header({title,back,right,transparent,phase}){
+  const {t,go}=useL();
+  return <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',minHeight:56,background:transparent?'transparent':'var(--background)'}}>
+    {back?<IconButton plain icon="arrow-left" flip label={t('Back','رجوع')} onClick={()=>go(back)}/>:<span style={{width:12}}/>}
+    <div className="t-h2" style={{flex:1,fontSize:'var(--fs-h3)'}}>{title}</div>{phase&&<PhaseTag>{t('Later phase','مرحلة لاحقة')}</PhaseTag>}{right}
+  </div>;
+}
+function TabBar({active}){
+  const {t,go}=useL();
+  const tabs=[['home','house',t('Home','الرئيسية')],['pets','paw-print',t('Pets','حيواناتي')],['bookings','calendar-days',t('Bookings','حجوزاتي')],['profile','user-round',t('Profile','حسابي')]];
+  return <div style={{display:'flex',borderTop:'1px solid var(--border)',background:'var(--surface)',paddingBottom:14}}>{tabs.map(([id,ic,l])=>
+    <button key={id} onClick={()=>go(id)} style={{flex:1,minHeight:56,border:0,background:'none',color:active===id?'var(--primary)':'var(--text-secondary)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,fontFamily:'inherit',fontSize:'var(--fs-caption)',fontWeight:active===id?600:400,cursor:'pointer'}}><Icon name={ic} size={22}/>{l}</button>)}</div>;
+}
+function Screen({children,tab,header,sheet,bg}){
+  return <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',background:bg||'var(--background)'}}>
+    <div style={{height:44,flex:'none',display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0 24px',fontSize:13,fontWeight:600}}><span dir="ltr">9:41</span><span dir="ltr" style={{display:'flex',gap:6}}><Icon name="signal" size={14}/><Icon name="wifi" size={14}/><Icon name="battery-full" size={16}/></span></div>
+    {header}<div style={{flex:1,overflow:'auto',position:'relative'}}>{children}</div>{tab&&<TabBar active={tab}/>}{sheet}
+  </div>;
+}
+function Photo({w=64,h=64,r=14,label='photo',style}){return <div className="fe-ph" style={{width:w,height:h,borderRadius:r,flex:'none',...style}}>{label}</div>;}
+function ListState({children,rows=3,h=76,emptyIcon,emptyTitle,emptyBody,emptyAction,onAction}){
+  const {st,t,setSt}=useL();
+  if(st==='loading')return <div style={{display:'flex',flexDirection:'column',gap:12,padding:16}}>{Array.from({length:rows}).map((_,i)=><Skeleton key={i} h={h} r={16}/>)}</div>;
+  if(st==='empty')return <EmptyState icon={emptyIcon} title={emptyTitle} body={emptyBody} action={emptyAction} onAction={onAction}/>;
+  if(st==='error')return <EmptyState tone="danger" icon="wifi-off" title={t('Something went wrong','حصلت مشكلة')} body={t('We could not load this. Check your connection.','مقدرناش نحمّل البيانات. اتأكد من الإنترنت.')} action={t('Retry','حاول تاني')} onAction={()=>setSt('populated')}/>;
+  return children;
+}
+const ltr=(s)=><span className="ltr">{s}</span>;
+Object.assign(window,{LCtx,useL,Header,TabBar,Screen,Photo,ListState,ltr});
+})();

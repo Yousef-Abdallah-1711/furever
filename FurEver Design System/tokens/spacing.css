@@ -1,0 +1,6 @@
+:root{
+--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;--sp-12:48px;
+--r-chip:8px;--r-control:12px;--r-card:16px;--r-sheet:24px;--r-full:999px;
+--h-btn-l:48px;--h-btn-m:40px;--h-btn-s:32px;--touch:44px;
+--ease:cubic-bezier(.2,.8,.2,1);/* @kind other */--dur-fast:150ms;/* @kind other */--dur:250ms;/* @kind other */
+}

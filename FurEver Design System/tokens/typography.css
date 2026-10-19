@@ -1,0 +1,9 @@
+:root{
+--font-en:"Inter",system-ui,sans-serif;--font-ar:"Cairo","Inter",system-ui,sans-serif;--font-body:var(--font-en);
+--fs-h1:24px;--fs-h2:20px;--fs-h3:18px;--fs-body:14px;--fs-body-lg:16px;--fs-button:16px;--fs-caption:12px;
+--fw-regular:400;/* @kind other */--fw-medium:500;/* @kind other */--fw-semibold:600;/* @kind other */--fw-bold:700;/* @kind other */--lh-en:1.4;/* @kind other */--lh-ar:1.55;/* @kind other */--lh-body:var(--lh-en);
+}
+[dir="rtl"],:lang(ar){--font-body:var(--font-ar);--lh-body:var(--lh-ar);--fs-h1:25px;--fs-h2:21px;--fs-h3:19px;--fs-body:15px;--fs-body-lg:17px;--fs-button:17px;--fs-caption:13px}
+.fe-root{font-family:var(--font-body);line-height:var(--lh-body);color:var(--text-primary);background:var(--background);font-size:var(--fs-body)}
+.t-h1{font-size:var(--fs-h1);font-weight:700}.t-h2{font-size:var(--fs-h2);font-weight:600}.t-h3{font-size:var(--fs-h3);font-weight:600}.t-body{font-size:var(--fs-body)}.t-cap{font-size:var(--fs-caption);color:var(--text-secondary)}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
