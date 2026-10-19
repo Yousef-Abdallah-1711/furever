@@ -1,0 +1,2 @@
+-- Seed data will be added from delivery phase D03 onward as each phase's tables land.
+-- D00b scope: no product seed data; product tables do not exist yet.

@@ -109,9 +109,9 @@ skeleton (constitution III, VII; D00 scope rule).
   creating `custom_access_token_hook(event jsonb)` as `security definer`, `set search_path = ''`, returning
   `event` unchanged for now (real `user_role` injection lands in D02 — research.md §8). Depends only on
   T014.
-- [ ] T017 [P] [D00b] Create `backend/supabase/seed.sql` as an empty skeleton with a header comment
+- [x] T017 [P] [D00b] Create `backend/supabase/seed.sql` as an empty skeleton with a header comment
   noting it is populated per later delivery phase.
-- [ ] T018 [D00b] Write the RLS-check script `backend/supabase/scripts/check-rls.sql` (fails the build if
+- [x] T018 [D00b] Write the RLS-check script `backend/supabase/scripts/check-rls.sql` (fails the build if
   any `public` table lacks RLS — constitution III, VII).
 - [ ] T019 [D00b] Write the RLS-check test **first**, as a failing fixture:
   `backend/supabase/tests/000_rls_check.test.sql` creates a scratch table inside a transaction **without**
