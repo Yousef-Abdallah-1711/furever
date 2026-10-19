@@ -75,12 +75,12 @@ fire, not one task per event.
 - [x] T004 [P] [D00a] Create `turbo.json` at the repo root with `build`/`dev`/`lint`/`test`/`typecheck`
   pipeline tasks.
 - [x] T005 [P] [D00a] Create `biome.json` at the repo root (lint + format rules; constitution X).
-- [ ] T006 [P] [D00a] Create the base `tsconfig.json` at the repo root with `"strict": true`, plus
+- [x] T006 [P] [D00a] Create the base `tsconfig.json` at the repo root with `"strict": true`, plus
   `backend/tsconfig.json`, `mobile/tsconfig.json`, `web/tsconfig.json`, `packages/shared/tsconfig.json`
   extending it (constitution X).
-- [ ] T007 [P] [D00a] Create `.editorconfig` at the repo root (UTF-8, LF, 2-space indent, trim trailing
+- [x] T007 [P] [D00a] Create `.editorconfig` at the repo root (UTF-8, LF, 2-space indent, trim trailing
   whitespace).
-- [ ] T008 [P] [D00a] Create `.gitattributes` at the repo root forcing `* text=auto eol=lf`
+- [x] T008 [P] [D00a] Create `.gitattributes` at the repo root forcing `* text=auto eol=lf`
   (research.md §10 — CRLF vs LF on Windows).
 - [ ] T009 [P] [D00a] Configure `commitlint.config.cjs`, `.husky/commit-msg`, and `lint-staged.config.js`
   for conventional commits (constitution X).
