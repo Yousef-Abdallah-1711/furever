@@ -82,7 +82,7 @@ fire, not one task per event.
   whitespace).
 - [x] T008 [P] [D00a] Create `.gitattributes` at the repo root forcing `* text=auto eol=lf`
   (research.md §10 — CRLF vs LF on Windows).
-- [ ] T009 [P] [D00a] Configure `commitlint.config.cjs`, `.husky/commit-msg`, and `lint-staged.config.js`
+- [x] T009 [P] [D00a] Configure `commitlint.config.cjs`, `.husky/commit-msg`, and `lint-staged.config.js`
   for conventional commits (constitution X).
 - [ ] T010 [D00a] Copy the current root-level PRD (`FurEver — PRD (Mobile + Web Dashboard + Backend) (1).md`)
   to `docs/PRD.md` as a **placeholder** — it must be replaced by the amended PRD before D02 starts
