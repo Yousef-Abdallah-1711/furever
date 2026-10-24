@@ -1,6 +1,12 @@
 {
   "common": {
-    "appName": "FurEver"
+    "appName": "FurEver",
+    "shellProof": "A token-styled shell is ready.",
+    "tokenSample": "Primary token",
+    "switchToArabic": "Switch to Arabic",
+    "switchToEnglish": "Switch to English",
+    "switchToDark": "Dark theme",
+    "switchToLight": "Light theme"
   },
   "screens": {
     "audit": {

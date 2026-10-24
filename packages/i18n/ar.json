@@ -1,6 +1,12 @@
 {
   "common": {
-    "appName": "فورإيفر"
+    "appName": "فورإيفر",
+    "shellProof": "واجهة بتصميم النظام جاهزة.",
+    "tokenSample": "الرمز الأساسي",
+    "switchToArabic": "التبديل إلى العربية",
+    "switchToEnglish": "English",
+    "switchToDark": "المظهر الداكن",
+    "switchToLight": "المظهر الفاتح"
   },
   "screens": {
     "audit": {
