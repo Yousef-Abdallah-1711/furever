@@ -3,6 +3,8 @@
   "compilerOptions": {
     "jsx": "preserve",
     "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] },
     "plugins": [{ "name": "next" }],
     "allowJs": true,
     "noEmit": true,
