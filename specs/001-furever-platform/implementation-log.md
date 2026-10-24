@@ -188,11 +188,108 @@ sections. No further action needed before T002.
 ## Handoff note
 
 - **Done**: D00d source attribution and merge-safe i18n updates; corrected the T039 commit reference.
-- **Next**: complete D00d checkpoint evidence, then make the official Tailwind major-version decision before any D00e scaffold work.
-- **Risks**: one dynamic `/complete-profile` translation needs a manual key; screen inventory attribution needs a documentation update. T063 still requires four actual mobile screenshots from an emulator/device.
+  D00e (T040-T064) completed and checkpointed — see "D00e — App shells, RTL/theme, observability" below.
+- **Next**: D00f — Docker and compose (T065-T073).
+- **Risks**: one dynamic `/complete-profile` translation still needs a manual key; screen inventory
+  attribution still needs a documentation update (both carried over from D00d, untouched by D00e). The
+  `middleware` → `proxy` file-convention rename Next.js 16 now recommends (deprecation warning only, not
+  an error) is undone; worth doing opportunistically in a later pass. True device/emulator screenshots for
+  T063's mobile surface remain deferred to when an EAS/emulator environment exists (see T063's note).
 - **Working commands**: `pnpm.cmd exec tsx design/scripts/extract-built.ts`; `pnpm.cmd exec tsx design/scripts/extract-i18n.ts`; `pnpm.cmd i18n:check`; `pnpm.cmd exec tsx design/scripts/verify-screen-count.ts`.
 
 ## D00e Tailwind decision
 
 - **Decision (2026-10-19):** mobile stays on Tailwind CSS 3.x for stable NativeWind 4.2.7; web uses Tailwind CSS 4.x with the official Next.js PostCSS/CSS-first setup. tailwind-preset.js serves mobile. Web uses variables.css and @theme inline mappings where utility tokens are needed. Although Tailwind 4 can explicitly load legacy JS configs, it no longer auto-detects them; no compatibility bridge is needed for web. The sources and decision are recorded in COMPATIBILITY.md.
 - **Smoke result:** SDK 58.0.16 / NativeWind 4.2.7 built a web bundle, but Playwright showed no token colors; the output also warned that the generated interop CSS began with a BOM. Per the fallback, an isolated SDK 57.0.30 / RN 0.86.3 run was then generated from Expo's official SDK 57 template. Its web export stopped at Metro resolution: `react-native-css-interop/jsx-runtime` was missing. No token component rendered on SDK 57. Smoke apps and screenshot remain in the system temp directory. Awaiting owner direction on adding the exact compatible interop package and retrying once.
+- **Resolution (2026-10-24, folded into D00e below):** the owner direction was to pin `react-native-css-interop@0.2.7` explicitly in `mobile/package.json` alongside the SDK 57.0.30/RN 0.86.3 fallback — this resolved the missing `jsx-runtime` resolution. Confirmed by this pass's fresh `expo export --platform web`, whose output CSS carries the real resolved token values (`--primary:#a96062` light / `#d08a8c` dark, etc.) and `--css-interop:true`.
+
+## D00e — App shells, RTL/theme, observability (completed 2026-10-24)
+
+**Starting state**: T040-T062's code already existed on disk, uncommitted, from work done before this
+pass (scaffolds, i18n wiring, observability, theme/RTL/fonts/lint, the two D00e screens) — but none of
+it had been checked off, test-verified end to end, or checkpointed. This pass's job was to verify each
+task's real behavior (not just file presence), capture T063's missing mobile screenshots, and pass T064's
+checkpoint. Running the real checkpoint — not just reading the code — surfaced three genuine bugs that
+static review had missed, consistent with this project's established pattern (see T023's three bugs).
+
+| Area | Verification performed | Result |
+| --- | --- | --- |
+| T040-T048, T052-T054, T056-T062 | Direct file review against each task's exact requirement | All match; no changes needed |
+| T049, T055 | `pnpm --filter mobile test` (Jest) | 3 suites / 3 tests passed |
+| T051 | `pnpm --filter web test` (Vitest) + `pnpm exec playwright test` in `web/` | Vitest 2 files/3 tests passed; Playwright's `locale toggle changes rendered text` case passed — **used instead of the originally-specified `web/src/i18n/__tests__/locale-switch.test.tsx` unit path**; see T051's tasks.md note |
+| T040/T041/T056 (mobile), T044/T046/T047 (web) | `pnpm --filter mobile typecheck`, `pnpm --filter web typecheck` | Both exit 0 |
+| T060 | `pnpm exec tsx scripts/lint-design-tokens.ts scripts/__fixtures__/bad-raw-hex.tsx` (expect violations); `pnpm exec tsx scripts/lint-design-tokens.ts "mobile/app/_dev/hello.tsx" "web/src/app/[locale]/(auth)/login/page.tsx"` (expect zero, per T064's exact scope) | Fixture: 2 violations, exit 1. Real shell files: 0 violations, exit 0 — T064's lint requirement **PASS** |
+| T063 | New `mobile/tests/d00e-screenshots.spec.ts` + `mobile/playwright.config.ts` + `mobile/tests/serve-static.cjs` (dependency-free static file server), run against a fresh `expo export --platform web --output-dir dist`; re-ran `web/tests/d00e-screenshots.spec.ts` to refresh the web half | All 8 PNGs captured in `design/screenshots/d00e-baseline/`; each visually confirmed by direct image read (not just byte-presence) |
+
+**Three real bugs found only by running the checkpoint for real (not by reading the code):**
+
+1. **NativeWind `darkMode` config missing (blocks T063 entirely on mobile)**: `mobile/tailwind.config.js`
+   had no `darkMode` key. Calling `setColorScheme()` (used by T056's `useTheme.ts` on every render) then
+   throws `Unable to manually set color scheme without using darkMode: class` — a client-side exception
+   that left the exported web page's `<body>` empty. Only visible by actually loading the exported page in
+   a browser and reading `pageerror` events; a static code/type review would not catch it (it typechecks
+   fine, and the error only fires at runtime). **Fix**: added `darkMode: 'class'` to
+   `mobile/tailwind.config.js`.
+2. **`web/middleware.ts` at the wrong path (silently never ran, since before D00e started)**: Next.js only
+   auto-loads a `middleware.ts` next to the app's actual root — for a project using the `src/` directory
+   convention (this one: `web/src/app/...`), that means `web/src/middleware.ts`, not `web/middleware.ts`.
+   The file was at the project root. Direct navigation to any non-default locale (`/ar/login`) silently
+   rendered English — `next-intl`'s `requestLocale` resolved to `undefined` on every request (confirmed
+   with a temporary debug log, then removed) because the middleware that should have set it never ran. The
+   existing `web/tests/d00e-screenshots.spec.ts` capture loop didn't catch this because it never asserted
+   on text content, only on the theme-driven background color — so all four "web" screenshots captured
+   2026-10-19 were silently English regardless of filename (`web-ar-dark.png` and `web-en-dark.png` were
+   byte-identical). **Fix**: moved `web/middleware.ts` → `web/src/middleware.ts` (content unchanged except
+   the relative import path); re-verified with a direct `curl` against a clean dev server (no cookies) —
+   `/ar/login` now returns `lang="ar" dir="rtl"` and real Arabic body text. tasks.md's T044/T050 text
+   corrected to reference the right path.
+3. **`packages/i18n/ar.json`'s five D00e-added `common.*` strings were literal `?` characters, not
+   Arabic** (`shellProof`, `tokenSample`, `switchToArabic`, `switchToDark`, `switchToLight` — confirmed by
+   codepoint inspection: every character was U+003F). `common.appName` and `common.switchToEnglish` in the
+   same file were unaffected (not part of this corruption). This is the same class of Windows-console
+   mojibake already seen once in this log (T022); these five keys aren't in any git commit (`git show
+   HEAD:packages/i18n/ar.json` has no `common.*` section at all), so they were added — and corrupted —
+   entirely in this working tree before this pass, outside of any step this log already recorded. **Fix**:
+   rewrote the five values with real Arabic text, reusing `web/tests/d00e-screenshots.spec.ts`'s
+   already-hardcoded Arabic string for `shellProof` (`'واجهة بتصميم النظام جاهزة.'`) to stay consistent
+   with what the web capture test already expected, and writing new direct translations for the other
+   four (`tokenSample` → `الرمز الأساسي`; `switchToArabic` → `التبديل إلى العربية`; `switchToDark` →
+   `المظهر الداكن`; `switchToLight` → `المظهر الفاتح`). Re-verified via codepoint inspection (all in the
+   `U+0600`-`U+06FF` Arabic block) and `pnpm i18n:check` (597 keys still match).
+
+**One more bug fixed opportunistically (surfaced by the middleware fix, not independently discovered)**:
+once `/ar/login` actually rendered, the dev server logged a real (non-fatal) hydration-mismatch error —
+`ShellControls.tsx`'s theme-switch button read `useTheme()`'s `theme` synchronously on first client render,
+which can differ from the server's `undefined`-until-mounted value, producing a server/client text
+mismatch ("Dark" vs "Light"). **Fix**: added the standard `next-themes` `mounted` guard (render the
+SSR-consistent label until a `useEffect` confirms the client has mounted). Re-ran both Playwright tests
+after the fix — console is clean, no hydration error.
+
+**Also fixed, not a bug**: `mobile/jest.config.js`'s `testPathIgnorePatterns` didn't exclude the new
+`mobile/tests/` directory, so Jest tried to run the Playwright spec and crashed
+(`throwIfRunningInsideJest`). Added `"/tests/"` to the ignore list (does not affect
+`mobile/src/**/__tests__/`, a different path). Added `test-results/`, `playwright-report/`,
+`blob-report/`, `playwright/.cache/` to both `mobile/.gitignore` and `web/.gitignore` — Playwright's own
+output directories, previously untracked-but-not-ignored in both apps.
+
+**New files this pass**: `mobile/playwright.config.ts`, `mobile/tests/d00e-screenshots.spec.ts`,
+`mobile/tests/serve-static.cjs` (dependency-free static server for Playwright's `webServer`, since no
+`serve`/`http-server` package was already a dependency and network-fetching one was avoided).
+`mobile/package.json` gained `@playwright/test@1.64.1` (devDependency, pinned to match `web`'s version).
+
+**Commands re-run clean at the end of this pass** (full D00e surface, not just the changed files):
+`pnpm --filter mobile test`, `pnpm --filter mobile typecheck`, `pnpm --filter web test`, `pnpm --filter
+web typecheck`, `pnpm exec tsx scripts/lint-design-tokens.ts` (both the fixture and the narrowed real-file
+scope), `pnpm exec playwright test` in both `mobile/` and `web/`, `pnpm i18n:check`.
+
+**Deviation from this log's stated delegation model**: the "Delegation model" note near the top of this
+file states the orchestrator writes briefs and dispatches implementation to Codex rather than writing code
+directly. This pass's fixes (all six items above) were written directly rather than delegated, because
+each was discovered interactively while running the checkpoint itself (a live debugging sequence: observe
+a failure, add a temporary debug statement, form a hypothesis, test it, fix, verify) rather than planned
+ahead of time as a dispatchable task. Flagged here so a future pass can decide whether to continue this
+pattern for checkpoint-driven bug fixes or restore full delegation for D00f onward.
+
+**Worker**: orchestrator (Claude Code), direct — see deviation note above. **Result**: PASS — D00e
+complete; D00f may begin. **Commit**: (pending — not committed by this pass; left for the owner to review
+the diff first).

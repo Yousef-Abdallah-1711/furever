@@ -192,72 +192,88 @@ skeleton (constitution III, VII; D00 scope rule).
 
 ### Mobile app scaffold
 
-- [ ] T040 [D00e] Scaffold the Expo app in `mobile/`: `expo-router` + `expo-dev-client` installed and
+- [x] T040 [D00e] Scaffold the Expo app in `mobile/`: `expo-router` + `expo-dev-client` installed and
   configured (`mobile/app/_layout.tsx` root).
-- [ ] T041 [D00e] Configure NativeWind with the generated preset: `mobile/babel.config.js` +
+- [x] T041 [D00e] Configure NativeWind with the generated preset: `mobile/babel.config.js` +
   `mobile/metro.config.js` wired to `packages/design-tokens/dist/tailwind-preset.js`. Depends on T029,
   T040.
-- [ ] T042 [P] [D00e] Configure `mobile/app.json`: `scheme: "furever"`, RTL support flags.
-- [ ] T043 [P] [D00e] Write `mobile/eas.json` with `development`/`preview`/`production` build profiles.
+- [x] T042 [P] [D00e] Configure `mobile/app.json`: `scheme: "furever"`, RTL support flags.
+- [x] T043 [P] [D00e] Write `mobile/eas.json` with `development`/`preview`/`production` build profiles.
 
 ### Web app scaffold
 
-- [ ] T044 [D00e] Scaffold the Next.js App Router app in `web/`: `web/src/app/layout.tsx`,
-  `web/src/app/[locale]/` routing skeleton, `web/middleware.ts` stub.
-- [ ] T045 [D00e] Configure `next-intl` for `ar`/`en` in `web/src/i18n/`, wired to `packages/i18n`.
+- [x] T044 [D00e] Scaffold the Next.js App Router app in `web/`: `web/src/app/layout.tsx`,
+  `web/src/app/[locale]/` routing skeleton, `web/src/middleware.ts` stub. **Correction (this pass)**: must
+  live at `web/src/middleware.ts`, not `web/middleware.ts` — Next.js only auto-loads `middleware.ts` next
+  to the `src/` root when the project uses a `src/` directory; the file was found at the wrong path,
+  silently never executing, before this pass moved it.
+- [x] T045 [D00e] Configure `next-intl` for `ar`/`en` in `web/src/i18n/`, wired to `packages/i18n`.
   Depends on T044, T027.
-- [ ] T046 [D00e] Configure `next-themes` + Tailwind in `web/` against
+- [x] T046 [D00e] Configure `next-themes` + Tailwind in `web/` against
   `packages/design-tokens/dist/variables.css` + `tailwind-preset.js`. Depends on T029, T044.
-- [ ] T047 [D00e] Initialize `shadcn/ui` in `web/`; set `web/next.config.js` `output: 'standalone'`.
+- [x] T047 [D00e] Initialize `shadcn/ui` in `web/`; set `web/next.config.js` `output: 'standalone'`.
   Depends on T044.
 
 ### i18n wiring
 
-- [ ] T048 [D00e] Wire `i18next` in `mobile/src/i18n/` to `packages/i18n`, persisting locale to
+- [x] T048 [D00e] Wire `i18next` in `mobile/src/i18n/` to `packages/i18n`, persisting locale to
   `AsyncStorage`. Depends on T040, T027.
-- [ ] T049 [D00e] Test: switching language in the mobile shell changes a rendered string
+- [x] T049 [D00e] Test: switching language in the mobile shell changes a rendered string
   (`mobile/src/i18n/__tests__/locale-switch.test.tsx`). Depends on T048.
-- [ ] T050 [D00e] Wire `next-intl` locale persistence (cookie-based) in `web/middleware.ts`. Depends on
-  T045.
-- [ ] T051 [D00e] Test: switching language in the web shell changes a rendered string
-  (`web/src/i18n/__tests__/locale-switch.test.tsx`). Depends on T050.
+- [x] T050 [D00e] Wire `next-intl` locale persistence (cookie-based) in `web/src/middleware.ts`. Depends on
+  T045. **See T044's correction note — the file's location, not its content, was the bug.**
+- [x] T051 [D00e] Test: switching language in the web shell changes a rendered string. Implemented as the
+  Playwright e2e test `web/tests/d00e-screenshots.spec.ts`'s `locale toggle changes rendered text` case
+  instead of the originally-specified Vitest unit path (`web/src/i18n/__tests__/locale-switch.test.tsx`) —
+  an RSC/middleware-driven locale switch is meaningfully covered end to end, not via unit-level mocking.
+  Depends on T050.
 
 ### Observability behind env flags
 
-- [ ] T052 [P] [D00e] Wire Sentry + PostHog in `mobile/src/lib/observability.ts` behind env flags (no
+- [x] T052 [P] [D00e] Wire Sentry + PostHog in `mobile/src/lib/observability.ts` behind env flags (no
   init call when off). Depends on T040.
-- [ ] T053 [P] [D00e] Wire Sentry + PostHog in `web/src/lib/observability.ts` behind env flags. Depends
+- [x] T053 [P] [D00e] Wire Sentry + PostHog in `web/src/lib/observability.ts` behind env flags. Depends
   on T044.
-- [ ] T054 [P] [D00e] Wire Sentry in `backend/supabase/functions/_shared/sentry.ts` behind an env flag.
+- [x] T054 [P] [D00e] Wire Sentry in `backend/supabase/functions/_shared/sentry.ts` behind an env flag.
   Depends on T016.
-- [ ] T055 [D00e] Test: with flags off, no network call fires from any of mobile/web/Edge-Function
+- [x] T055 [D00e] Test: with flags off, no network call fires from any of mobile/web/Edge-Function
   observability init (mocked network layer, one test file per surface or one combined test). Depends on
   T052, T053, T054.
 
 ### Theme/RTL/fonts/lint/shells
 
-- [ ] T056 [D00e] Implement `mobile/src/hooks/useTheme.ts` + `useLocale.ts` (Zustand + `AsyncStorage`,
+- [x] T056 [D00e] Implement `mobile/src/hooks/useTheme.ts` + `useLocale.ts` (Zustand + `AsyncStorage`,
   reads the NativeWind preset). Depends on T029, T041.
-- [ ] T057 [D00e] Implement the one-reload RTL switch `mobile/src/lib/rtl.ts`:
+- [x] T057 [D00e] Implement the one-reload RTL switch `mobile/src/lib/rtl.ts`:
   `I18nManager.allowRTL(true)` + `forceRTL(isArabic)` then exactly one `expo-updates` reload (PRD
   amendment 6). Depends on T056.
-- [ ] T058 [P] [D00e] Implement font preloading `mobile/src/lib/fonts.ts` (Cairo + Inter via `expo-font`
+- [x] T058 [P] [D00e] Implement font preloading `mobile/src/lib/fonts.ts` (Cairo + Inter via `expo-font`
   before `SplashScreen.hideAsync()`).
-- [ ] T059 [P] [D00e] Implement the `.ltr` isolate helper `mobile/src/components/LtrText.tsx` and
+- [x] T059 [P] [D00e] Implement the `.ltr` isolate helper `mobile/src/components/LtrText.tsx` and
   `web/src/components/LtrText.tsx` (PRD amendment 6).
-- [ ] T060 [P] [D00e] Implement the raw-hex/raw-px lint rule/script `scripts/lint-design-tokens.ts`
+- [x] T060 [P] [D00e] Implement the raw-hex/raw-px lint rule/script `scripts/lint-design-tokens.ts`
   (mirrors `design/system/_adherence.oxlintrc.json` — constitution I). Write the **failing fixture
   first**: `scripts/__fixtures__/bad-raw-hex.tsx` containing a raw hex color and a raw px value.
-- [ ] T061 [D00e] Build the mobile themed hello screen `mobile/app/_dev/hello.tsx` using only
+- [x] T061 [D00e] Build the mobile themed hello screen `mobile/app/_dev/hello.tsx` using only
   `packages/design-tokens` values and the hooks from T056. Depends on T056, T060.
-- [ ] T062 [D00e] Build the web themed login-page placeholder `web/src/app/[locale]/(auth)/login/page.tsx`
+- [x] T062 [D00e] Build the web themed login-page placeholder `web/src/app/[locale]/(auth)/login/page.tsx`
   using `next-themes` + `next-intl`, token-only styling. Depends on T046, T047, T060.
-- [ ] T063 [D00e] Record the four-combination screenshot baseline: capture the mobile hello screen and
+- [x] T063 [D00e] Record the four-combination screenshot baseline: capture the mobile hello screen and
   web placeholder each in Arabic/English × light/dark into `design/screenshots/d00e-baseline/` (8 PNGs
-  total, named `<surface>-<lang>-<theme>.png`). Depends on T061, T062.
-- [ ] T064 [D00e] **Checkpoint**: run D00e's exit check — T063's 8 screenshots exist and are visually
+  total, named `<surface>-<lang>-<theme>.png`). Depends on T061, T062. **Capture method, recorded this
+  pass**: no Android/iOS emulator is available in this environment, so the "mobile" surface is captured
+  from `expo export --platform web`'s static output (the same react-native-web rendering already proven
+  to carry real token CSS) via a new `mobile/tests/d00e-screenshots.spec.ts` Playwright spec, served
+  locally by a small dependency-free static server (`mobile/tests/serve-static.cjs`) — mirroring the
+  pattern `web/tests/d00e-screenshots.spec.ts` already used for the web surface. True device/emulator
+  screenshots remain a later, manual-prerequisite follow-up (same class as the EAS/emulator gap already
+  tracked ahead of D02).
+- [x] T064 [D00e] **Checkpoint**: run D00e's exit check — T063's 8 screenshots exist and are visually
   correct; `scripts/lint-design-tokens.ts` reports violations against T060's bad fixture and zero
-  violations against T061/T062's real shell code. Do not start D00f until this passes.
+  violations against T061/T062's real shell code. Do not start D00f until this passes. **PASSED** this
+  pass — see the implementation log's D00e entry for the three real bugs this checkpoint caught (NativeWind
+  `darkMode` config, the misplaced web middleware, and corrupted Arabic strings) that no static review had
+  found.
 
 ## D00f — Docker and compose
 
