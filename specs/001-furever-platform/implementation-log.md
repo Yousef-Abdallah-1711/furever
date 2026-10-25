@@ -803,4 +803,63 @@ ScreenHeader,SearchBar}.tsx` + the same seven under `web/src/components/`.
 `tasks.md` specifies, `@react-native-community/datetimepicker`/`react-day-picker`, not the kits' plain
 `<input type="date">` prototype), `Toast`, then the 6 dashboard-shell pieces (T109-T114), then T115-119's
 galleries, prop-drift check, screenshot check, and checkpoint.
+**Commit**: `f3a7b7d`.
+
+## D01e — Design system port, Wave 5: Select, DateField, Toast (completes T099-T108)
+
+**Scope**: T102 (`Select`), T103 (`DateField`), T107 (`Toast`) — the last 3 of the 10 built-from-pattern
+components, completing all 28 of D01's component-port tasks (T081-T108). Two Codex batches (`gpt-6-luna`,
+`high`), 2-way parallel: Batch L (`Select`+`Toast`), Batch M (`DateField` alone, given its own dispatch
+since it integrates two entirely different platform libraries).
+
+**Real dependency gap found before trusting either library call**: before writing `DateField`'s brief,
+verified both libraries' *actual* installed APIs directly rather than trusting memory or the task
+description's one-line mention — read `@react-native-community/datetimepicker`'s own README (confirmed
+v9.1.0's real usage: `onValueChange`/`onDismiss`, not the deprecated `onChange` the library's own docs
+warn against) and `react-day-picker`'s type definitions directly (confirmed v10.0.2's single-select
+`mode="single"`/`selected`/`onSelect` shape). Both briefs quoted the exact confirmed signatures rather
+than asking Codex to guess.
+
+**One real gap Codex's own run caught that the orchestrator's dependency setup had missed**: `date-fns`
+had only been installed in `web/package.json` (added back in D01a's dependency-prep pass) — mobile never
+got it, so `DateField.tsx`'s mobile half failed `tsc` with `TS2307: Cannot find module 'date-fns'`.
+Installed it for mobile via `npx expo install date-fns` (SDK-compatible resolution, same approach as
+D01a's other mobile installs) before re-verifying.
+
+**`Select` needed a solo-equivalent fix mid-wave**: Batch L's first pass left `mobile/src/components/
+Select.tsx` as the literal word `hello` (another aborted-placeholder stub, same class as D01d's `OtpInput`
+stub) while the batch was still running; by the time the batch's own completion notification arrived, it
+had already overwritten that stub with the real, complete implementation on its own — no redispatch was
+needed this time, but it's recorded here because checking the file mid-run (prompted by `DateField`'s own
+Codex run flagging `TS2304` errors referencing stray `hello`/`there` identifiers in that file) is what
+surfaced it; waiting for the batch's own final report would have missed the transient state.
+
+**One real bug found by reading the diff, not from any gate**: both platforms' `Toast.tsx` built its
+auto-dismiss timer with `useEffect(..., [duration, onDismiss])`. Since `onDismiss` is near-certain to be
+a fresh inline closure on every call site (e.g. `onDismiss={() => setToast(null)}`), any re-render of the
+parent during the toast's lifetime tears down and restarts the timer — a toast whose owner re-renders at
+all during `duration` could silently never auto-dismiss. **Fix**: capture `onDismiss` in a `useRef`,
+updated by its own effect, and depend the dismiss-timer effect on `duration` alone. The first version of
+this fix mutated the ref directly in the render body (`onDismissRef.current = onDismiss;` outside any
+effect) — caught immediately by `react-hooks/refs` ("Cannot update ref during render") on both platforms'
+lint, a real rule catching a real mistake in the orchestrator's own fix, not Codex's code. Corrected by
+moving that assignment into its own `useEffect`.
+
+**Verification performed** (orchestrator's own re-run on the full merged tree, all 6 Wave 5 files, after
+the date-fns install and both Toast fixes): `pnpm --filter mobile typecheck` and `pnpm --filter web
+typecheck` both clean (this also confirms the `DayPicker` `classNames` slot keys and the `disabled`
+matcher shape Codex used are real, correctly-typed v10 API surface, not guessed); `pnpm --filter mobile
+lint` and `pnpm --filter web lint` both clean after the ref fix (same pre-existing warnings as prior D01
+passes); `Grep`-based token-rule re-check — 0 matches across all 6 files; a direct `U+FFFD` scan — none
+found.
+
+**Files this pass**: `mobile/src/components/{DateField,Select,Toast}.tsx` + the same three under
+`web/src/components/`, plus `date-fns` added to `mobile/package.json`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`), 2-way parallel dispatch, no redispatch needed this wave; the
+`date-fns` install and the `Toast` ref-timing fix (plus its own lint-caught correction) were applied
+directly by the orchestrator. **Result**: PASS — **T081-T108 (all 28 D01 components) now complete.**
+**Remaining D01 work**: the 6 web-only dashboard-shell pieces (T109 `Sidebar`, T110 `TopBar`, T111
+`DataTable`, T112 `Modal`, T113 `RestrictedState`, T114 `StatCard`), then T115-119's galleries, prop-drift
+check, screenshot check, and checkpoint.
 **Commit**: (pending — this pass's component files not yet committed).

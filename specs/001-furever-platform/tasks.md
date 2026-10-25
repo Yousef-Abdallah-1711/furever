@@ -428,13 +428,13 @@ skeleton (constitution III, VII; D00 scope rule).
 - [x] T100 [P] [D01] Build the missing `OtpInput` (6-box code entry; used for the email sign-in code, not
   SMS — no SMS autofill applies).
 - [x] T101 [P] [D01] Build the missing `SearchBar`.
-- [ ] T102 [P] [D01] Build the missing `Select` (bottom-sheet picker on mobile, popover on web).
-- [ ] T103 [P] [D01] Build the missing `DateField` (`@react-native-community/datetimepicker` on mobile,
+- [x] T102 [P] [D01] Build the missing `Select` (bottom-sheet picker on mobile, popover on web).
+- [x] T103 [P] [D01] Build the missing `DateField` (`@react-native-community/datetimepicker` on mobile,
   `react-day-picker` on web).
 - [x] T104 [P] [D01] Build the missing `CategoryCard` (tinted `Card` variant per PRD section 9).
 - [x] T105 [P] [D01] Build the missing `DoctorCard`.
 - [x] T106 [P] [D01] Build the missing `ListRow`.
-- [ ] T107 [P] [D01] Build the missing `Toast`.
+- [x] T107 [P] [D01] Build the missing `Toast`.
 - [x] T108 [P] [D01] Build the missing `ScreenHeader`.
 
 ## Dashboard shell (web only)
