@@ -404,7 +404,7 @@ skeleton (constitution III, VII; D00 scope rule).
   `icon`, `onClick`, `style`, `type`).
 - [x] T084 [P] [D01] Port `Card` (`Card.d.ts`: `children`, `onClick`, `pad`, `tint`, `style`).
 - [x] T085 [P] [D01] Port `Chip` (`Chip.d.ts`: `on`, `icon`, `onClick`).
-- [ ] T086 [P] [D01] Port `EmptyState` (`EmptyState.d.ts`: `icon`, `title`, `body`, `action`, `onAction`,
+- [x] T086 [P] [D01] Port `EmptyState` (`EmptyState.d.ts`: `icon`, `title`, `body`, `action`, `onAction`,
   `tone`).
 - [x] T087 [P] [D01] Port `Icon` (`Icon.d.ts`: `name`, `size`, `flip`, `label`).
 - [x] T088 [P] [D01] Port `IconButton` (`IconButton.d.ts`: `icon`, `label`, `badge`, `plain`, `flip`,
@@ -415,11 +415,11 @@ skeleton (constitution III, VII; D00 scope rule).
 - [x] T091 [P] [D01] Port `Rating` (`Rating.d.ts`: `value`, `size`, `onChange`).
 - [x] T092 [P] [D01] Port `Skeleton` (`Skeleton.d.ts`: `w`, `h`, `r`).
 - [x] T093 [P] [D01] Port `StatusBadge` (`StatusBadge.d.ts`: `status` enum, `children`).
-- [ ] T094 [P] [D01] Port `ClinicCard` (`ClinicCard.d.ts`: `name`, `distance`, `rating`, `next`,
+- [x] T094 [P] [D01] Port `ClinicCard` (`ClinicCard.d.ts`: `name`, `distance`, `rating`, `next`,
   `nextLabel`, `badge`, `onClick`).
-- [ ] T095 [P] [D01] Port `ConfirmSheet` (`ConfirmSheet.d.ts`: `title`, `body`, `confirm`, `cancel`,
+- [x] T095 [P] [D01] Port `ConfirmSheet` (`ConfirmSheet.d.ts`: `title`, `body`, `confirm`, `cancel`,
   `destructive`, `onConfirm`, `onCancel`).
-- [ ] T096 [P] [D01] Port `PetCard` (`PetCard.d.ts`: `name`, `breed`, `age`, `status` enum,
+- [x] T096 [P] [D01] Port `PetCard` (`PetCard.d.ts`: `name`, `breed`, `age`, `status` enum,
   `statusLabel`, `onClick`).
 - [x] T097 [P] [D01] Port `SlotChip` (`SlotChip.d.ts`: `time`, `on`, `disabled`, `onClick`).
 - [x] T098 [P] [D01] Port `Stepper` (`Stepper.d.ts`: `steps`, `current`).

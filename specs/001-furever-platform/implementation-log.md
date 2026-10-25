@@ -686,4 +686,68 @@ corrections found during review). **Result**: PASS.
 **Remaining D01 work**: `EmptyState`, `ClinicCard`, `ConfirmSheet`, `PetCard` (domain components that
 depend on Wave 1/2 core pieces), then the 10 built-from-pattern components, then the dashboard shell, then
 T115-119's galleries and checkpoint.
+**Commit**: `c0b14a4`.
+
+## D01c — Design system port, Wave 3: the last 4 `.d.ts`-backed components (completes T081-T098)
+
+**Scope**: T086 (`EmptyState`), T094 (`ClinicCard`), T095 (`ConfirmSheet`), T096 (`PetCard`) — the last
+four of the 18 core/domain components with a `.d.ts`. All depend only on components landed in D01a/b
+(`Icon`, `Button`, `Card`, `Avatar`, `StatusBadge`, `useTokenColor`), confirmed by rereading each `.d.ts`
+before dispatch. Three Codex batches (`gpt-6-luna`, `high`): Batch G (`EmptyState`+`ClinicCard`), Batch H
+(`PetCard` alone), Batch I (`ConfirmSheet` alone, given its own dispatch since a modal/sheet overlay is
+meaningfully more involved than the rest). Every brief explicitly repeated the `var()`/`currentColor`
+mobile gotcha D01b found, pointed at the existing `useTokenColor` hook, and told Codex which components
+already exist to import rather than reimplement.
+
+**Two of the three batches failed outright under 3-way concurrent dispatch and needed a solo
+redispatch — the same class of problem D01b's Batch E hit once, now happening twice in one wave:**
+
+1. **Batch H (`PetCard`) self-reported total failure** ("Windows sandbox helper returned 'Access is
+   denied'" on every write and shell attempt, `touchedFiles: []`) — but checking the working tree showed
+   both `PetCard.tsx` files already existed with real, mostly-correct content at that point. The write
+   had actually succeeded *before* a later tool call hit the access-denied error, and Codex's own final
+   report described the whole task as failed when it wasn't — a second, concrete instance of "don't trust
+   the self-report," this time the self-report was pessimistic rather than optimistic. Redispatched solo
+   anyway (before checking the tree, since the report gave no reason to expect otherwise) — the solo
+   retry overwrote both files with equivalent content.
+2. **Batch I (`ConfirmSheet`) genuinely failed**: only a one-line stub (`import type { ReactNode } from
+   'react';`) landed on mobile, nothing on web. Removed the stub and redispatched solo; the retry
+   succeeded cleanly on the first attempt.
+
+Given this is now 3 of 9 Wave 1-3 parallel batches needing a solo redispatch (D01b's Batch E once, D01c's
+Batches H and I), 3-way concurrent `workspace-write` Codex dispatch against the same working tree appears
+meaningfully less reliable on this machine than running 2 at a time or sequentially — not yet root-caused
+(no reproducible minimal case), but worth downgrading to 2-way parallelism for the remaining D01 waves
+rather than continuing to hit this at the current rate.
+
+**One more real bug, the same corruption class this log has already recorded twice (T022;
+D00e's five Arabic strings)**: the solo-redispatched `PetCard.tsx` rendered `{breed} <U+FFFD> {age}`
+(the Unicode replacement character) in place of the middle-dot separator ("·", U+00B7) the brief asked
+for, on **both** platforms, confirmed by direct codepoint inspection — and the corruption was identical
+on the *first* Batch H attempt too (confirmed before it was overwritten), so this is systematic to
+writing that one specific character through Codex's Windows file-write path in this environment, not a
+one-off. **Fix**: replaced both occurrences directly with the real `·` character and re-verified by
+codepoint (`U+00B7` confirmed on both files) and by scanning all 8 of this wave's files for any
+`U+FFFD` occurrence (none found elsewhere). Not root-caused to a specific encoding step; flagged here
+as a recurring risk for any future component whose copy needs a non-ASCII character, the same caution
+this log's `.ps1` em-dash finding already established for script files.
+
+**Verification performed** (orchestrator's own re-run on the full merged tree, all 8 Wave 3 files):
+`pnpm --filter mobile typecheck` and `pnpm --filter web typecheck` both clean; `pnpm --filter mobile
+lint` and `pnpm --filter web lint` both clean (same pre-existing warnings as D01a/b); `Grep`-based
+token-rule re-check (raw hex in quotes, raw `px` literal) — 0 matches across all 8 files; a direct
+`U+FFFD` scan of all 8 files — none found after the fix.
+
+**Files this pass**: `mobile/src/components/{ClinicCard,ConfirmSheet,EmptyState,PetCard}.tsx` + the same
+four under `web/src/components/`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`); two of three batches needed a solo redispatch after a parallel-
+run failure (see above); the mojibake fix and the stale-stub cleanup were applied directly by the
+orchestrator. **Result**: PASS — **T081-T098 (all 18 `.d.ts`-backed core/domain components) now
+complete.**
+**Remaining D01 work**: the 10 built-from-pattern components (T099-T108: `PhoneInput`, `OtpInput`,
+`SearchBar`, `Select`, `DateField`, `CategoryCard`, `DoctorCard`, `ListRow`, `Toast`, `ScreenHeader` —
+none has an existing `.d.ts`; each needs its prop shape inferred from the kits' inline usage, same care
+as a new design), then the 6 web-only dashboard-shell pieces (T109-T114), then T115-119's galleries,
+prop-drift check, screenshot check, and checkpoint.
 **Commit**: (pending — this pass's component files not yet committed).
