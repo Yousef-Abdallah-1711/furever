@@ -862,4 +862,54 @@ directly by the orchestrator. **Result**: PASS — **T081-T108 (all 28 D01 compo
 **Remaining D01 work**: the 6 web-only dashboard-shell pieces (T109 `Sidebar`, T110 `TopBar`, T111
 `DataTable`, T112 `Modal`, T113 `RestrictedState`, T114 `StatCard`), then T115-119's galleries, prop-drift
 check, screenshot check, and checkpoint.
+**Commit**: `9e27a58`.
+
+## D01f — Dashboard shell: Sidebar, TopBar, DataTable, Modal, RestrictedState, StatCard (completes T109-T114)
+
+**Scope**: T109-T114, the 6 web-only dashboard-shell pieces under `web/src/components/dashboard/`. Mined
+`design/system/ui_kits/dashboard/kit-chrome.babel`'s `Shell`/`Table`/`Modal`/`Restricted`/`Stat`
+prototypes for the real visual/behavioral patterns before writing either brief — that file alone covers
+five of the six (its `Shell` combines what became `Sidebar` + `TopBar`). T109's "collapsible" sidebar
+requirement has no kit prototype at all (the kit's rail is always expanded), so that interaction was
+designed fresh rather than ported. Two Codex batches (`gpt-6-luna`, `high`), 2-way parallel: Batch N
+(`Sidebar`/`TopBar`/`StatCard`), Batch O (`DataTable`/`Modal`/`RestrictedState`).
+
+**Two pieces of infrastructure added by the orchestrator before dispatch, not by Codex**: `DataTable`'s
+own task text requires URL-backed pagination/sort state via `nuqs` — `nuqs`'s Next.js App Router adapter
+(`NuqsAdapter` from `nuqs/adapters/next/app`) must wrap the app for its hooks to work at all, and nothing
+in this repo had added it yet, so it was added to `web/src/app/providers.tsx` directly (a one-line,
+well-understood infra change, not delegated). Separately, before writing `Modal`'s brief, confirmed
+`@base-ui/react/dialog`'s real controlled API (`Dialog.Root`'s `open`/`onOpenChange` props) by reading
+`DialogRoot.d.ts` directly rather than assuming a Radix-style signature — `@base-ui/react` is already an
+installed dependency used elsewhere in this repo (the unrelated `web/src/components/ui/button.tsx`
+shadcn scaffold), so `Modal` is built on its real `Dialog` primitive (full focus-trap, portal, body-scroll
+-lock, and Escape-to-close for free) instead of hand-rolling overlay logic a fourth time (after
+`ConfirmSheet`, `Select`, and `DateField`'s popover each needed their own).
+
+**One real bug found by reading the diff, the same class D01e's `Toast` fix already caught**:
+`DataTable`'s page/sort/dir-changed effect depended on `[page, sort, dir, onQueryChange]`. Since
+`onQueryChange` is near-certain to be a fresh inline closure from most call sites, any unrelated
+re-render of the owning dashboard page would re-fire the effect and call `onQueryChange` again even
+though the actual query hadn't changed — for a callback whose whole purpose is "tell the caller to
+refetch," this risks redundant network requests on every unrelated re-render while the table is mounted.
+**Fix**: same remedy as `Toast` — capture `onQueryChange` in a `useRef` updated by its own effect, and
+depend the query-changed effect on `page`/`sort`/`dir` alone.
+
+**Verification performed** (orchestrator's own re-run on the full merged tree, all 6 Wave 6 files, after
+the `DataTable` fix): `pnpm --filter web typecheck` clean (this also confirms `Dialog.Close`'s `render`
+prop usage and the `nuqs` setter calls in `DataTable` are real, correctly-typed API surface, not guessed);
+`pnpm --filter web lint` clean (same pre-existing `Avatar.tsx` warning as every prior D01 pass); a `Grep`
+-based scan for raw hex/`px` literals and for hardcoded `left`/`right`-style classes — 0 matches across
+all 6 files; a direct `U+FFFD` mojibake scan — none found.
+
+**Files this pass**: `web/src/components/dashboard/{Sidebar,TopBar,DataTable,Modal,RestrictedState,
+StatCard}.tsx`, plus `NuqsAdapter` added to `web/src/app/providers.tsx`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`), 2-way parallel dispatch, no redispatch needed this wave; the
+`NuqsAdapter` addition and the `DataTable` ref-timing fix were applied directly by the orchestrator.
+**Result**: PASS — **T109-T114 (all 6 dashboard-shell components) now complete. All 34 of D01's
+component-build tasks (T081-T114) are done.**
+**Remaining D01 work**: T115 (mobile gallery), T116 (web gallery, including the 6 dashboard-shell
+pieces), T117 (4-combination screenshot check), T118 (prop-drift checker against the 18 real `.d.ts`
+files), T119 (final checkpoint) — the phase's gate for D02.
 **Commit**: (pending — this pass's component files not yet committed).

@@ -439,16 +439,16 @@ skeleton (constitution III, VII; D00 scope rule).
 
 ## Dashboard shell (web only)
 
-- [ ] T109 [P] [D01] Build the sidebar shell `web/src/components/dashboard/Sidebar.tsx` (inline-start,
+- [x] T109 [P] [D01] Build the sidebar shell `web/src/components/dashboard/Sidebar.tsx` (inline-start,
   collapsible, right in Arabic).
-- [ ] T110 [P] [D01] Build the top bar `web/src/components/dashboard/TopBar.tsx` (clinic switcher,
+- [x] T110 [P] [D01] Build the top bar `web/src/components/dashboard/TopBar.tsx` (clinic switcher,
   search, language/theme toggle, user menu).
-- [ ] T111 [P] [D01] Build the data table `web/src/components/dashboard/DataTable.tsx` (server-side
+- [x] T111 [P] [D01] Build the data table `web/src/components/dashboard/DataTable.tsx` (server-side
   pagination/sorting props, URL state via `nuqs`).
-- [ ] T112 [P] [D01] Build the modal/dialog shell `web/src/components/dashboard/Modal.tsx`.
-- [ ] T113 [P] [D01] Build the restricted-state wrapper `web/src/components/dashboard/RestrictedState.tsx`
+- [x] T112 [P] [D01] Build the modal/dialog shell `web/src/components/dashboard/Modal.tsx`.
+- [x] T113 [P] [D01] Build the restricted-state wrapper `web/src/components/dashboard/RestrictedState.tsx`
   (locked-page pattern for non-managers/non-super-admins).
-- [ ] T114 [P] [D01] Build the stat card `web/src/components/dashboard/StatCard.tsx`.
+- [x] T114 [P] [D01] Build the stat card `web/src/components/dashboard/StatCard.tsx`.
 
 ## Gallery and verification
 
