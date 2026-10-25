@@ -468,9 +468,10 @@ skeleton (constitution III, VII; D00 scope rule).
   (`/en/_dev/gallery`, `/ar/_dev/gallery`).
 - [x] T118 [D01] Write the prop-drift check `scripts/check-component-props.ts` comparing every ported
   component's exported prop types against `design/system/components/**/*.d.ts`. Depends on T081-T098.
-- [ ] T119 [D01] **Checkpoint**: both galleries render all components correctly in all 4 combinations
+- [x] T119 [D01] **Checkpoint**: both galleries render all components correctly in all 4 combinations
   (T117); the raw-hex/px rule (D00e) reports 0 violations against the new component code; the prop-drift
-  check (T118) passes. Gate for D02.
+  check (T118) passes. Gate for D02. **D01 STATUS: COMPLETE — VERIFIED — CLOSED** (see
+  implementation-log.md's D01j entry for the full checkpoint table and verification evidence).
 
 ---
 

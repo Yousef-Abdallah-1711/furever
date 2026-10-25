@@ -1076,5 +1076,70 @@ contrast at a glance; a cosmetic observation, not a defect, and not something to
 folder path fix, the ACL/permissions workaround, and the hydration-mismatch fix were all done directly by
 the orchestrator after the sandboxed run hit its SWC blocker. **Result**: PASS — independently verified
 with real screenshots, not self-reported.
-**Remaining D01 work**: T119, the final checkpoint — re-verify everything together and close the phase.
-**Commit**: (pending — this pass's files not yet committed).
+**Commit**: `cbbb25b`.
+
+## D01j — T119 final checkpoint: D01 CLOSED
+
+**Scope**: re-verify every one of T117/T118's gate conditions together, on the full merged tree, as the
+phase's actual gate for D02 — not a restatement of the individual passes above, a fresh, independent run
+of all of them.
+
+**One more real, recurring-class bug found during this final pass, not previously caught**: running the
+*full* mobile Playwright suite together (`pnpm exec playwright test`, both specs, 2 workers) — rather
+than the single filtered `d01-gallery-screenshots.spec.ts` run D01i's own verification used — failed:
+`mobile/dist` (the static export `tests/serve-static.cjs` serves, per `mobile/playwright.config.ts`'s
+`reuseExistingServer: true` webServer) was still the **stale export from 2026-10-24**, predating
+`gallery.tsx`'s existence entirely (`dist/_dev/` contained only `hello.html`) — the exact same staleness
+class T079's entry already documented for `packages/design-tokens/dist/`, now recurring for
+`mobile/dist`. D01i's own screenshots were still legitimate (Codex's sandboxed run exported to a
+temporary directory specifically to work around a `mobile/test-results` write restriction, confirmed in
+its own report), but the checked-in, reusable local `dist/` never got that fresh build, so a plain
+re-run of the suite without this fix would fail for the next person. **Fix**: regenerated via `pnpm
+exec expo export --platform web --output-dir dist` (confirmed `/_dev/gallery` now listed among the
+static routes, 71KB); re-ran the full mobile Playwright suite — both specs pass together. The 4 mobile
+PNGs were regenerated as a side effect (byte-different, visually identical on a direct re-check — font
+anti-aliasing/non-determinism, not a content change) and re-committed.
+
+**Full checkpoint, every item independently re-verified by the orchestrator on the final merged tree:**
+
+| Gate | Result |
+| --- | --- |
+| Both galleries render all components in all 4 locale/theme combinations | PASS — all 8 PNGs under `design/screenshots/d01-gallery/` visually inspected directly (not just checked for existence); mobile's full Playwright suite (D00e's + D01's specs together) passes; web's full Playwright suite (same) passes |
+| Raw-hex/px rule reports 0 violations against the new component code | PASS — scanned every one of D01's actual deliverables by name (all 28 mobile + 34 web components, `resolveTokenColor.ts`, both gallery files, both screenshot specs, the prop-drift script — 87 files): 0 matches. (A repo-wide sweep separately found 2 raw-hex lines in `mobile/src/components/animated-icon.tsx`/`themed-text.tsx` and 8 raw-px lines in `web/src/app/page.tsx`/`web/src/components/ui/button.tsx` — all pre-existing Expo-template/shadcn-scaffold files from before D01, never touched by any D01 task, out of scope by the same precedent D00e's own T064 checkpoint established of scoping this rule to the phase's actual new files, not the whole legacy tree.) |
+| Prop-drift check (T118) passes | PASS — `pnpm exec tsx scripts/check-component-props.ts` run directly: `0 prop-drift violations across 18 components (36 port files checked)` |
+| Mobile test suite (Jest) | PASS — 3 suites / 3 tests |
+| Web test suite (Vitest) | PASS — 2 files / 3 tests |
+| Mobile typecheck / lint | PASS — 0 errors (4 pre-existing warnings, unrelated to D01) |
+| Web typecheck / lint | PASS — 0 errors (1 pre-existing warning, unrelated to D01) |
+
+**D01 scope closed**: T081-T119, all 39 tasks. 28 shared components (18 ported prop-for-prop from
+`design/system/components/**/*.d.ts`, 10 built from the kits' inline usage patterns) + 6 web-only
+dashboard-shell pieces = 34 total components, 2 component galleries, 1 prop-drift checker, 8 verified
+screenshots across both apps.
+
+**Known limitations carried forward, not silently resolved (none block D02, all explicitly recorded
+here rather than left implicit):**
+- Mobile RTL mirroring was not exercised by this phase's screenshot check — PRD §12's own documented
+  constraint (`I18nManager.forceRTL()` + an `expo-updates` reload) can't be triggered by a live
+  Playwright session without a real reload cycle; same category of deferred-to-device verification
+  D00g's handoff already flagged for mobile screenshots generally.
+- `Rating`'s filled/unfilled stars differ only by stroke color (Lucide's `star` icon has no solid
+  variant) — legible but low-contrast; a deliberate, specified design choice from D01b, not a defect.
+- Three separate Windows/Codex-sandbox environment issues recorded across D01a-j (the `codex.cmd` PATH
+  shim, the `lint-design-tokens.ts` `pnpm exec tsx` hang worked around with direct `Grep` scans
+  throughout, and the SWC-native-binding/cache-ACL failures inside `workspace-write` sandboxes) remain
+  environment quirks, not root-caused to a single fix — each was worked around per-occurrence as
+  documented in its own entry above.
+- The two still-open, explicitly-flagged-not-silently-resolved PRD/implementation questions carried
+  since D00g (the Egyptian-phone-format-vs-E.164 `phoneSchema` contradiction; whether the email-code
+  lockout can be bypassed via Supabase Auth's public endpoints) remain unresolved and are D02's to pick
+  up, not D01's.
+
+**Worker**: orchestrator (Claude Code), direct — this pass's fix (the `dist` regeneration) was a build-
+artifact regeneration, not application code, so it was done directly rather than delegated, consistent
+with every prior pass's convention of delegating implementation/scripts but not environment
+housekeeping. **Result**: PASS.
+
+# D01 STATUS: COMPLETE — VERIFIED — CLOSED
+
+**Commit**: (pending — this pass's regenerated screenshots and this entry not yet committed).
