@@ -24,9 +24,6 @@ type LucideIconType = ComponentType<{
   accessibilityRole?: 'image';
 }>;
 
-const rawIcons = LucideIcons as unknown as Record<string, unknown>;
-const interopCache = new Map<string, LucideIconType>();
-
 function isIconComponent(value: unknown): value is LucideIconType {
   if (typeof value === 'function') return true;
   if (typeof value !== 'object' || value === null) return false;
@@ -36,20 +33,21 @@ function isIconComponent(value: unknown): value is LucideIconType {
   return typeofTag === Symbol.for('react.forward_ref') || typeofTag === Symbol.for('react.memo');
 }
 
-function resolveIcon(pascalName: string): LucideIconType | undefined {
-  const cached = interopCache.get(pascalName);
-  if (cached) return cached;
-  const candidate = rawIcons[pascalName];
-  if (!isIconComponent(candidate)) return undefined;
-  const wrapped = cssInterop(candidate, {
-    className: { target: 'style', nativeStyleToProp: { color: 'color' } },
-  });
-  interopCache.set(pascalName, wrapped);
-  return wrapped;
-}
+// Built once at module scope, not inside Icon's render, so every icon's
+// component identity is stable across renders (react-hooks/static-components).
+const nativeIcons: Record<string, LucideIconType> = Object.fromEntries(
+  Object.entries(LucideIcons as unknown as Record<string, unknown>)
+    .filter(([, value]) => isIconComponent(value))
+    .map(([pascalName, value]) => [
+      pascalName,
+      cssInterop(value as LucideIconType, {
+        className: { target: 'style', nativeStyleToProp: { color: 'color' } },
+      }),
+    ]),
+);
 
 export function Icon({ name, size = 24, flip = false, label, style }: IconProps) {
-  const IconComponent = resolveIcon(kebabToPascal(name));
+  const IconComponent = nativeIcons[kebabToPascal(name)];
   if (!IconComponent) return null;
 
   return (

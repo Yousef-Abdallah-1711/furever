@@ -603,7 +603,87 @@ Stepper}.tsx` + the same eight under `web/src/components/`.
 **Worker**: Codex (`gpt-6-luna`, `high`), three parallel dispatches, orchestrator-reviewed; the Icon.tsx
 fix was applied directly by the orchestrator rather than round-tripped through another Codex dispatch
 (a one-line, fully-understood correctness fix found during review, not a planned task). **Result**: PASS.
-**Remaining D01 work**: Wave 2 (`Button`, `Chip`, `IconButton`, `Input`, `Banner`, `Rating` — depend only
-on `Icon`, now landed), then the domain components that depend on Wave 1/2 core pieces, then the 10
-built-from-pattern components, then the dashboard shell, then T115-119's galleries and checkpoint.
+**Commit**: `92a6d82`.
+
+## D01b — Design system port, Wave 2: the 6 components depending only on `Icon`
+
+**Scope**: T082 (`Banner`), T083 (`Button`), T085 (`Chip`), T088 (`IconButton`), T089 (`Input`), T091
+(`Rating`) — all six depend only on the now-landed `Icon`, confirmed by rereading each `.d.ts` before
+dispatch. Same delegation setup as D01a: Codex (`gpt-6-luna`, `high`), three parallel batches on
+disjoint files (Batch D: Button/IconButton; Batch E: Chip/Rating; Batch F: Input/Banner), each brief
+telling Codex `Icon.tsx` already exists and to import it rather than reimplement icon lookup.
+
+**Batch E failed its first attempt and had to be redispatched**: Codex's own tool-call log
+(`events.jsonl`/`stderr.txt`) showed four repeated `Failed to write file
+...mobile/src/components/Chip.tsx` errors across ~4 minutes, plus a stray diagnostic probe file
+(`mobile/src/components/write-test.tmp`) it left behind trying to isolate the problem. Neither `Chip.tsx`
+nor `Rating.tsx` existed anywhere afterward — a genuine failed run, not a review disagreement. Removed
+the stray probe file and redispatched Batch E alone (not parallel this time) with the same brief; the
+solo retry also hit one `Failed to write file ...Chip.tsx` on its first two tool calls before succeeding
+on a later one, so this looks like a transient Windows file-write contention issue in Codex's sandbox
+rather than a brief or content problem — worth watching for in later waves, not yet root-caused.
+
+**Two real bugs found by reading the diff against actual platform behavior, not by trusting Codex's own
+gate report:**
+
+1. **`react-hooks/static-components` lint error reappeared in the already-committed `Icon.tsx`** (D01a's
+   own fix), caught only because two independent fresh Codex runs (Batches D and F) both hit it rereading
+   the full tree — D01a's own pre-commit lint run had reported 0 errors on the same file content
+   (confirmed via `git diff`: the file was byte-identical). This points to a stale-cache blind spot in
+   `expo lint`'s ESLint cache (Windows mtime granularity is coarse enough that an edit immediately
+   followed by a lint run can hit a cache entry keyed from before the edit) — D01a's "clean lint" claim
+   for `Icon.tsx` was wrong, caught only by this pass's independent re-runs. **Fix**: the D01a fix had
+   switched `Icon.tsx`'s lookup from an eager module-scope object to a lazy, `Map`-memoized per-name
+   resolver — functionally safe (same component identity returned on every call for a given name after
+   the first), but the lint rule can't see that: it flags any component value *created by a function call
+   inside a render function* regardless of memoization, because the concern is about reconciliation
+   safety in the general case. Reverted to eager construction of the full icon map at module scope (same
+   shape as Batch A's original, pre-bug code) with the corrected `forwardRef`/`memo` type guard kept —
+   satisfies both the lint rule (nothing is "created during render" anymore, it's a plain object property
+   lookup) and the original forwardRef-detection bug fix.
+2. **Three of Wave 2's six mobile components passed a web-only CSS escape hatch as a React Native style
+   value**: `Button.tsx` used literal `'var(--on-primary)'` (etc., per variant) for its icon/spinner
+   color; `Chip.tsx`, `Rating.tsx`, `Banner.tsx`, and `Input.tsx` used the CSS keyword `'currentColor'` for
+   the same purpose. Both are valid on web (real CSS, resolved by the browser) but meaningless to React
+   Native — RN's `style` prop is never run through NativeWind's className compiler (only `className`
+   strings are, which is why `Button`'s `h-[var(--h-btn-l)]` *className* works fine on mobile: mobile's
+   `global.css` imports `packages/design-tokens/dist/variables.css` before `@tailwind` directives, so
+   NativeWind's own CSS pipeline resolves that `var()` reference — confirmed by reading `global.css` and
+   `app/_layout.tsx`'s import chain). A literal `style={{ color: 'var(--x)' }}` or `'currentColor'`,
+   passed directly as a RN style object rather than through a className, has no such resolution path. Not
+   caught by typecheck (both are valid strings for a loosely-typed/`as never`-cast `color`) or by the
+   token-rule scan (neither pattern matches a raw hex or `px` literal). **Fix**: added
+   `mobile/src/lib/resolveTokenColor.ts`, a `useTokenColor(name)` hook that reads the active theme from
+   the existing `useTheme()` hook and looks up the real hex from
+   `packages/design-tokens/dist/tailwind-preset.js`'s `furever.themes.<light|dark>.colors` object (the
+   same generated artifact already used for every className token, just read as a plain JS object instead
+   of through Tailwind's class compiler) — verified by directly inspecting that object's keys against
+   `variables.css`'s hand-read values before trusting it. Replaced the five `var()`/`currentColor` call
+   sites across `Button.tsx`, `Chip.tsx`, `Rating.tsx`, and `Banner.tsx`'s mobile files with
+   `useTokenColor(...)` calls; `Input.tsx`'s mobile icon color was the fifth site, not called out in its
+   own Codex report but found by the same review pass. Re-verified with `tsc --noEmit` (clean) after each
+   fix; could not verify the actual rendered color without a device/simulator, so this is confirmed
+   correct by the token-lookup's own hex output matching `variables.css` exactly, not by a screenshot —
+   real visual confirmation is deferred to T115/T117 same as D01a's Icon fix.
+
+**Verification performed** (orchestrator's own re-run on the full merged tree, all 12 Wave 2 files plus
+the new `resolveTokenColor.ts` helper, after every fix above): `pnpm --filter mobile typecheck` and
+`pnpm --filter web typecheck` both clean; `pnpm --filter mobile lint` and `pnpm --filter web lint` both
+clean (only the same pre-existing warnings D01a already noted); `Grep`-based token-rule re-check (raw hex
+in quotes, raw `px` literal) across all 12 files — 0 matches on both platforms.
+
+**Tooling note carried forward from D01a**: `pnpm exec tsx scripts/lint-design-tokens.ts` was not
+attempted again this pass (same unexplained hang from D01a); the `Grep`-based manual check continues to
+stand in. Still unresolved before T118's prop-drift script needs the same `tsx`-via-`pnpm-exec` pattern.
+
+**Files this pass**: `mobile/src/components/{Banner,Button,Chip,IconButton,Input,Rating}.tsx` + the same
+six under `web/src/components/`, plus the new `mobile/src/lib/resolveTokenColor.ts`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`), three parallel dispatches (one redispatched solo after a
+genuine sandbox-level failure), orchestrator-reviewed; both bug fixes above were applied directly by the
+orchestrator rather than round-tripped through another Codex dispatch (well-understood, narrowly-scoped
+corrections found during review). **Result**: PASS.
+**Remaining D01 work**: `EmptyState`, `ClinicCard`, `ConfirmSheet`, `PetCard` (domain components that
+depend on Wave 1/2 core pieces), then the 10 built-from-pattern components, then the dashboard shell, then
+T115-119's galleries and checkpoint.
 **Commit**: (pending — this pass's component files not yet committed).

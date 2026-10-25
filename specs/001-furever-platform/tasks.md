@@ -399,20 +399,20 @@ skeleton (constitution III, VII; D00 scope rule).
 
 - [x] T081 [P] [D01] Port `Avatar`: `mobile/src/components/Avatar.tsx` + `web/src/components/Avatar.tsx`,
   matching `design/system/components/core/Avatar.d.ts` prop-for-prop.
-- [ ] T082 [P] [D01] Port `Banner` (same pattern, `Banner.d.ts`).
-- [ ] T083 [P] [D01] Port `Button` (`Button.d.ts`: `variant`, `size`, `block`, `loading`, `disabled`,
+- [x] T082 [P] [D01] Port `Banner` (same pattern, `Banner.d.ts`).
+- [x] T083 [P] [D01] Port `Button` (`Button.d.ts`: `variant`, `size`, `block`, `loading`, `disabled`,
   `icon`, `onClick`, `style`, `type`).
 - [x] T084 [P] [D01] Port `Card` (`Card.d.ts`: `children`, `onClick`, `pad`, `tint`, `style`).
-- [ ] T085 [P] [D01] Port `Chip` (`Chip.d.ts`: `on`, `icon`, `onClick`).
+- [x] T085 [P] [D01] Port `Chip` (`Chip.d.ts`: `on`, `icon`, `onClick`).
 - [ ] T086 [P] [D01] Port `EmptyState` (`EmptyState.d.ts`: `icon`, `title`, `body`, `action`, `onAction`,
   `tone`).
 - [x] T087 [P] [D01] Port `Icon` (`Icon.d.ts`: `name`, `size`, `flip`, `label`).
-- [ ] T088 [P] [D01] Port `IconButton` (`IconButton.d.ts`: `icon`, `label`, `badge`, `plain`, `flip`,
+- [x] T088 [P] [D01] Port `IconButton` (`IconButton.d.ts`: `icon`, `label`, `badge`, `plain`, `flip`,
   `onClick`).
-- [ ] T089 [P] [D01] Port `Input` (`Input.d.ts`: `label`, `hint`, `error`, `icon`, `value`,
+- [x] T089 [P] [D01] Port `Input` (`Input.d.ts`: `label`, `hint`, `error`, `icon`, `value`,
   `defaultValue`, `placeholder`, `disabled`, `type`, `inputMode`, `ltr`, `prefix`, `onChange`).
 - [x] T090 [P] [D01] Port `PhaseTag` (`PhaseTag.d.ts`: `phase`, `children`).
-- [ ] T091 [P] [D01] Port `Rating` (`Rating.d.ts`: `value`, `size`, `onChange`).
+- [x] T091 [P] [D01] Port `Rating` (`Rating.d.ts`: `value`, `size`, `onChange`).
 - [x] T092 [P] [D01] Port `Skeleton` (`Skeleton.d.ts`: `w`, `h`, `r`).
 - [x] T093 [P] [D01] Port `StatusBadge` (`StatusBadge.d.ts`: `status` enum, `children`).
 - [ ] T094 [P] [D01] Port `ClinicCard` (`ClinicCard.d.ts`: `name`, `distance`, `rating`, `next`,
