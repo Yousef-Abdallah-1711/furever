@@ -524,3 +524,86 @@ pattern for checkpoint-driven bug fixes or restore full delegation for D00f onwa
 **Worker**: orchestrator (Claude Code), direct — see deviation note above. **Result**: PASS — D00e
 complete; D00f may begin. **Commit**: (pending — not committed by this pass; left for the owner to review
 the diff first).
+
+## D01a — Design system port, Wave 1: the 8 components with no internal dependencies (in progress)
+
+**Scope**: T081 (`Avatar`), T084 (`Card`), T087 (`Icon`), T090 (`PhaseTag`), T092 (`Skeleton`), T093
+(`StatusBadge`), T097 (`SlotChip`), T098 (`Stepper`) — the subset of D01's 18 `.d.ts`-backed components
+that depend on none of their siblings (confirmed by reading every core/domain `.d.ts` before starting:
+none of these eight has an `icon` prop or composes another ported component). The owner chose to restore
+this log's stated delegation model for D01 (asked explicitly at the start of the phase, per the carried-
+forward instruction from the prior session) — this pass dispatches to Codex (`gpt-6-luna`, effort `high`,
+`service_tier=priority`) via the `codex-delegate` skill, three parallel batches on disjoint files (Batch
+A: Icon/Skeleton/Avatar; Batch B: Card/PhaseTag/StatusBadge; Batch C: SlotChip/Stepper), since all eight
+are mutually independent and the user's own standing instruction caps parallel Codex agents at three with
+non-overlapping files.
+
+**Pre-dispatch gap found by checking the repo, not by reading tasks.md**: mobile had no icon library at
+all (`Icon.d.ts` is required by almost every later component). Added `lucide-react-native` +
+`react-native-svg` (peer dep) via `npx expo install` for SDK-57-compatible versions, plus
+`@react-native-community/datetimepicker` (needed later for T103) in the same pass to avoid a second
+install round. Added `nuqs` + `react-day-picker` + `date-fns` to `web/package.json` for the later
+DataTable/DateField tasks (T103, T111), `date-fns` matching PRD §12's own date-formatting guidance.
+Installed and typechecked clean before any component dispatch. **Commit**: `81d8a29`.
+
+**Windows Codex-dispatch gotcha (new, not in COMPATIBILITY.md yet)**: on this machine `codex` is not on
+Git Bash's `PATH` under its bare name — `command -v codex` and bash's own `type` fail even with the
+install directory prepended to `PATH`, though the literal file `codex.cmd` executes fine when named
+explicitly, and Node's own child-process spawn (which `relay.mjs` uses) resolves the bare name correctly
+via Windows' `PATHEXT`. Worked around with a one-line `codex.cmd` shim
+(`"<codex.exe path>" -c service_tier=priority %*`) in a scratch directory prepended to `PATH` only for the
+`relay.mjs` invocation; `--model gpt-6-luna --effort high` passed as `relay.mjs`'s own flags. Verified
+end-to-end with a throwaway `--read-only` ping dispatch before spending real tokens, and independently
+confirmed via the new Codex session's own `turn_context` line (`model: gpt-6-luna`, `effort: high`) per
+this machine's standing Codex-delegation instruction — not just trusted from the relay's summary.
+
+**Real bug found by reading Codex's diff against the actual library source, not by trusting its own gate
+report**: `mobile/src/components/Icon.tsx`'s first draft built its icon lookup table with
+`.filter(([, value]) => typeof value === 'function')`. `lucide-react-native`'s `createLucideIcon` (read
+directly from `node_modules/.../lucide-react-native/dist/esm/createLucideIcon.js`) wraps every icon in
+`React.forwardRef(...)`, which is `typeof 'object'`, not `'function'` — the filter silently excluded every
+real icon, so `nativeIcons` was always empty and `<Icon name="..." />` would have rendered `null` for
+every icon on mobile, with no typecheck or lint error to catch it (the bug is in runtime value shape, not
+types). **Fix**: replaced the `typeof` filter with an `isIconComponent` guard that also accepts an object
+whose `$$typeof` is `Symbol.for('react.forward_ref')` or `Symbol.for('react.memo')`, and switched from
+eagerly `cssInterop`-wrapping all ~1500 exported icons at module load to a lazy, memoized per-name
+resolution (the eager version was also needlessly wrapping every unused icon on every app start). Could
+not runtime-smoke-test directly with plain `node` — `lucide-react-native`'s entry pulls in
+`react-native`'s own Flow-typed `index.js`, which only parses under Metro/Babel — so this was verified by
+(1) reading `createLucideIcon.js` directly to confirm the `forwardRef` wrapping, (2) the corrected
+`$$typeof` check being the documented, standard way to detect a `forwardRef` component, and (3) a clean
+`tsc --noEmit`. Real on-device rendering verification is deferred to T115/T117's gallery + screenshot
+check, consistent with this project's established pattern of trusting real output over a type-check alone
+for anything with a runtime-shape dependency.
+
+**Tooling gotcha found while re-verifying the design-token gate**: `pnpm exec tsx scripts/lint-design-
+tokens.ts <file-list>` hung indefinitely in this session's shell (three separate attempts, each moved to
+background with zero output after 60s+, while a bare `pnpm exec tsx -e "console.log(1)"` returned in
+1.1s) — left several zero-CPU orphaned `node` processes behind. The script itself (re-read in full) has
+no loop, timer, or async wait that should block process exit, so the hang looks shell/environment-
+specific rather than a script bug; not root-caused this pass (flagged here rather than silently worked
+around). Re-verified the same two rules (raw hex in quotes, raw `px` literal) directly against all 16
+Wave-1 files with two `Grep` passes mirroring the script's exact regexes — 0 matches on both patterns,
+across both platforms. Worth root-causing before T118's prop-drift script (same `tsx`-via-`pnpm-exec`
+pattern) is written, in case it hits the same hang.
+
+**Verification performed** (orchestrator's own re-run on the full merged tree after all three Codex
+batches landed, not the batches' own self-reported gates — each batch's own `pnpm --filter mobile
+typecheck` transiently failed on the *other* batches' files mid-write, since all three ran in the same
+working tree concurrently; this resolved itself once all three had finished and is not a real issue):
+`pnpm --filter mobile typecheck` (clean after the Icon.tsx fix), `pnpm --filter web typecheck` (clean —
+the "`next typegen` can't load its SWC native binding" error all three Codex sandboxes reported did not
+reproduce outside the sandbox, so treated as sandbox-only noise, not a real repo issue), `pnpm --filter
+mobile lint` / `pnpm --filter web lint` (clean; only pre-existing warnings plus the brief-approved
+`Avatar.tsx` `<img>` warning), and the `Grep`-based token-rule re-check above.
+
+**Files this pass**: `mobile/src/components/{Avatar,Card,Icon,PhaseTag,Skeleton,SlotChip,StatusBadge,
+Stepper}.tsx` + the same eight under `web/src/components/`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`), three parallel dispatches, orchestrator-reviewed; the Icon.tsx
+fix was applied directly by the orchestrator rather than round-tripped through another Codex dispatch
+(a one-line, fully-understood correctness fix found during review, not a planned task). **Result**: PASS.
+**Remaining D01 work**: Wave 2 (`Button`, `Chip`, `IconButton`, `Input`, `Banner`, `Rating` — depend only
+on `Icon`, now landed), then the domain components that depend on Wave 1/2 core pieces, then the 10
+built-from-pattern components, then the dashboard shell, then T115-119's galleries and checkpoint.
+**Commit**: (pending — this pass's component files not yet committed).
