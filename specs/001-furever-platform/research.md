@@ -232,37 +232,44 @@ sources only. Sources are linked inline for every other finding.
 - Sources: [Supabase Auth email templates](https://supabase.com/docs/guides/auth/auth-email-templates),
   [Passwordless email sign-in](https://supabase.com/docs/guides/auth/auth-email-passwordless).
 
-## 13. Identity linking by verified email (new, 2026-10-18)
+## 13. Identity linking by verified email (updated, T121 spike, 2026-10-26)
 
-- **Decision**: Rely on Supabase Auth's documented **automatic linking** behavior: when a user signs in
-  with a new provider (e.g. Google) that reports the same **verified** email as an existing account (e.g.
-  created via email-code), Supabase Auth links the two identities to one user automatically — no manual
-  `linkIdentity()` call or dashboard setting is required for this specific case. Manual linking (a
-  different project setting, off by default) is a separate feature for linking identities with
-  *different* emails and is not needed for AUTH-06's stated behavior.
-- **Rationale**: This is the documented default behavior, confirmed from Supabase's own blog/docs
-  announcing identity linking; it matches `spec.md`'s AUTH-06 requirement ("the same verified email across
-  email-code and Google resolves to one account") without extra configuration. **Not yet exercised against
-  this project's actual settings** — see `plan.md`'s Open Questions for the pre-D02 confirmation step.
-- **Alternatives considered**: Building custom account-merge logic — rejected, Supabase already does this
-  for the exact case the spec needs.
-- Sources: [Supabase Auth: Identity Linking announcement](https://supabase.com/blog/supabase-auth-identity-linking-hooks),
-  [JavaScript API reference: linkIdentity](https://supabase.com/docs/reference/javascript/auth-linkidentity).
-
-**Addendum, 2026-10-19 (`/speckit-analyze` finding M1) — the Account screen's explicit "Add Google"/"Add
-email sign-in" actions are a different case from the paragraph above.** Those two new buttons (`tasks.md`
-T174) let an already-signed-in owner attach a second identity **on purpose**, which may not share the
-current sign-in email at all — that is exactly what Supabase calls **Manual Linking**, not automatic
-linking. Per official docs: Manual Linking is **disabled by default**, is currently **in beta**, and is
-turned on per-project via the dashboard's Auth settings or, for self-hosted/local, `auth.enable_manual_linking
-= true` in `config.toml` (`GOTRUE_SECURITY_MANUAL_LINKING_ENABLED` as the underlying env var). The caller
-must be signed in before calling `linkIdentity()`, and users who signed up via SAML SSO cannot be a
-linking target. The official docs do **not** detail what error `linkIdentity()` returns when the target
-identity already belongs to a different account — `tasks.md` T175 maps whatever Supabase actually returns
-to this project's own `IDENTITY_ALREADY_LINKED` code rather than assuming a specific shape in advance.
-`tasks.md` T121 is the spike that confirms, against this project's real settings, whether Manual Linking
-needs enabling before T174-T176 can work at all; T122 enables it locally if so.
-Sources: [Supabase Auth: Identity Linking](https://supabase.com/docs/guides/auth/auth-identity-linking).
+- **Documented automatic behavior**: Supabase Auth documents automatic linking as the default strategy:
+  when a new OAuth sign-in has an email matching an existing user, Supabase looks up the matching user
+  and links the OAuth identity. The docs explain that unverified email identities are not safe linking
+  targets and describe removing unconfirmed identities when a verified identity can be linked. This
+  supports the intended same-verified-email email/Google case without enabling Manual Linking or calling
+  `linkIdentity()` explicitly.
+- **Local configuration observed for T121**: the host-side local Auth settings endpoint reported
+  `email=true`, `google=false`, and `apple=false`. T121 also confirmed the historical config-file value
+  was `[auth].enable_manual_linking = false`. T122 then changed only that setting to
+  `true` in `backend/supabase/config.toml`; independent TOML parsing confirmed the file value. The local
+  Auth container has not restarted, so runtime application of `true` is unconfirmed. No Google or Apple
+  OAuth credentials are configured in the local project. Therefore the automatic email/Google behavior
+  is documented, but FurEver cannot runtime-confirm it against the local project while Google is
+  disabled. These are local observations; no staging or production project was accessed, so hosted
+  settings remain unknown.
+- **Explicit OAuth linking**: Supabase documents Manual Linking (currently marked beta) for a signed-in
+  user to link an OAuth identity, including `supabase.auth.linkIdentity({ provider: 'google' })`. It is
+  disabled by default and must be enabled in project Auth configuration (or with
+  `GOTRUE_SECURITY_MANUAL_LINKING_ENABLED=true` when self-hosting). T122 set the local config-file
+  value to true, but the local Auth container has not restarted and runtime state is unconfirmed. If
+  this feature ships, the equivalent hosted project toggle is also a prerequisite; the local setting
+  does not change hosted projects.
+- **T179 contract mismatch, unresolved**: T179 plans to let a signed-in Google-only owner attach an
+  email-code identity using `verify-otp-guard`'s `send-code`/`verify-code` flow. Current Supabase docs
+  describe Manual Linking as OAuth identity linking and document adding email/password authentication
+  to an OAuth account with `updateUser({ password: '...' })`. They do not establish that a signed-in
+  Google-only owner can attach a second email-code identity through the planned `verify-otp-guard`
+  flow. Do not assume that flow is supported or substitute an undocumented API sequence. The T179
+  email-code linking contract remains unresolved; this research does not choose an implementation.
+- **Scope and alternatives**: This spike confirms the documented default and current local settings; it
+  does not exercise OAuth locally or settle T179's email-code linking design. No custom account-merge
+  behavior or linking API flow is selected here.
+- **Official sources**: [Supabase Auth: Identity Linking](https://supabase.com/docs/guides/auth/auth-identity-linking),
+  [JavaScript API reference: linkIdentity](https://supabase.com/docs/reference/javascript/auth-linkidentity),
+  [JavaScript API reference: updateUser](https://supabase.com/docs/reference/javascript/auth-updateuser),
+  [Supabase CLI config reference](https://supabase.com/docs/guides/local-development/cli/config).
 
 ## 14. Apple private relay email (new, 2026-10-18)
 
@@ -338,6 +345,25 @@ Sources: [Supabase Auth: Identity Linking](https://supabase.com/docs/guides/auth
   ships. Nothing stops a client (or anyone with the anon key, which is not secret) from calling those two
   endpoints directly and skipping `verify-otp-guard` entirely. If Supabase's own limits on those endpoints
   are looser than our rule, the guard's lockout is enforced only for traffic that politely goes through it.
+- **T120 local development spike (2026-10-26; partial local observations)**:
+  - **Delegated sandbox limitation**: the prior Codex dispatch could not access Docker, so its note
+    incorrectly reported that the local stack and Auth endpoints could not be inspected. The host-side
+    orchestration commands used for the observations below could access the running local Supabase stack.
+  - **Observed facts**: the project-pinned Supabase CLI was version 2.121.0. Sanitized status reported
+    API `http://127.0.0.1:54321` and Mailpit `http://127.0.0.1:54324`; local keys were present and were
+    not printed. Using only a synthetic address (`t120-20261026@example.test`) and the local anon key,
+    three direct `POST /auth/v1/otp` requests spaced 1.2 seconds apart each returned HTTP 200, and the
+    local inbox contained three messages. Six direct `POST /auth/v1/verify` requests with the same
+    deliberately invalid token each returned HTTP 403 with `error_code=otp_expired`.
+  - **Limits and inference**: the three HTTP 200 responses show that the direct send endpoint accepted
+    three requests for one synthetic test address. They do not establish that three codes were cancelled
+    under the policy lockout; no wrong-code flow was completed. The six `otp_expired` responses do not
+    provide evidence about the wrong-attempt counter, because the current local email template rendered a
+    sign-in link rather than a visible numeric code. We could not test five wrong attempts followed by the
+    correct code, or directly observe cancellation or reset of a valid code. Keep the direct verification
+    portion of T120 open for retest after the OTP email template is configured.
+  - **A+ coverage**: these observations do not test CAPTCHA or a longer OTP length and do not change the
+    existing A/A+/B/C options or recommendation. No mitigation is chosen by this spike.
 - **What Supabase Auth enforces natively on the direct path** (from the official rate-limits page):
   - `POST /auth/v1/otp` (send): default **60-second window per user** (i.e. per email address) before a
     new code can be requested for that address. Configurable, but there is **no concept of "3 cancelled

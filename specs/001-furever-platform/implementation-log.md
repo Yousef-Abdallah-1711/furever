@@ -1143,3 +1143,25 @@ housekeeping. **Result**: PASS.
 # D01 STATUS: COMPLETE — VERIFIED — CLOSED
 
 **Commit**: (pending — this pass's regenerated screenshots and this entry not yet committed).
+
+## D02 documentation checkpoint — T120-T122 (2026-10-26)
+
+T121 is complete as a verified investigation: local Auth settings reported `email=true`, `google=false`,
+`apple=false`; official Supabase documentation confirms automatic same-email linking and describes
+Manual Linking as a separate beta OAuth identity flow. Google was disabled locally, so automatic linking
+was not runtime-exercised. T179's planned email-code identity attachment through `verify-otp-guard` is
+not established by the official docs and remains unresolved.
+
+T122 is complete as a configuration-file change: only
+`backend/supabase/config.toml`'s `auth.enable_manual_linking` changed from `false` to `true`; Python
+`tomllib` independently parsed and confirmed the value. The local Auth container was not restarted, so
+runtime application is unconfirmed. Staging/production Manual Linking toggles remain prerequisites.
+
+T120 remains open. Supabase CLI 2.121.0 status reported local API `127.0.0.1:54321` and Mailpit
+`127.0.0.1:54324`. Three direct `POST /auth/v1/otp` sends for synthetic
+`t120-20261026@example.test`, 1.2 seconds apart, returned 200 and produced three inbox messages. Six
+direct `POST /auth/v1/verify` requests with an invalid token returned 403 / `error_code=otp_expired`.
+The default local email rendered a sign-in link, not a visible six-digit code. Therefore the exact
+five-wrong-attempt cancellation, three-cancelled-code lockout, and correct-after-five experiment remain
+unverified. A+ is already evaluated in research §17; no mitigation was selected. Neither T120 nor D02
+is complete.

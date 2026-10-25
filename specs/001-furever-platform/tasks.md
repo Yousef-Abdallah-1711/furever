@@ -496,12 +496,12 @@ environments only, not local dev.
   section** (CAPTCHA protection on the Auth endpoints from a React Native client; a longer email OTP
   length) and record findings there too, without choosing between A/A+/B/C — that stays an owner decision.
   No dependency; run first in D02 so the result shapes T140/T141 below.
-- [ ] T121 [D02] **Spike (new, remediation pass)**: confirm Supabase Auth's automatic email/Google
+- [x] T121 [D02] **Spike (new, remediation pass)**: confirm Supabase Auth's automatic email/Google
   identity-linking behavior against this project's actual Auth settings (resolves `plan.md` Open Question
   2), and confirm whether **Manual Linking** needs enabling for the Account screen's "Add Google"/"Add
   email sign-in" actions (T179 below) — per official Supabase docs, Manual Linking is **disabled by
   default** and is a different mechanism from the automatic linking AUTH-06 otherwise relies on. [AUTH-06]
-- [ ] T122 [D02] **New, remediation pass**: if T121 found Manual Linking is off, enable it in
+- [x] T122 [D02] **New, remediation pass**: if T121 found Manual Linking is off, enable it in
   `backend/supabase/config.toml` (`auth.enable_manual_linking = true`) for local dev; add the staging/
   production dashboard toggle to the manual-prerequisites list below. Depends on T121. [AUTH-06]
 
