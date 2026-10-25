@@ -956,6 +956,125 @@ scan — none found.
 **Files this pass**: `mobile/app/_dev/gallery.tsx`, `web/src/app/[locale]/_dev/gallery/page.tsx`.
 
 **Worker**: Codex (`gpt-6-luna`, `high`), 2-way parallel dispatch, no redispatch needed. **Result**: PASS.
-**Remaining D01 work**: T117 (4-combination screenshot check against both galleries, in progress), T118
-(prop-drift checker, in progress), T119 (final checkpoint).
+**Commit**: `795bba7`.
+
+## D01h — Prop-drift checker (T118)
+
+**Scope**: `scripts/check-component-props.ts`, comparing every one of the 18 `.d.ts`-backed components'
+real prop interfaces against their mobile/web ports. Dispatched to Codex (`gpt-6-luna`, `high`), one
+batch.
+
+**The checker's first version reported 32 "violations" that were all false positives, caught by actually
+reading the diff output rather than trusting the self-reported "did not pass" summary as proof the
+*components* were wrong** (the mandate's own instruction not to fabricate or accept a weakened passing
+result cuts both ways — a failing result also has to be checked, not assumed correct): every single
+reported mismatch was one of two cosmetic-only differences, not real drift —
+(1) whitespace around union/arrow-function punctuation (`'info'|'warning'` in the hand-written `.d.ts`
+files vs `'info' | 'warning'` in the TypeScript-formatted port files — the identical type, different
+spacing) and (2) qualified vs. unqualified references to the same type (`React.ReactNode` in the `.d.ts`
+files, which `import * as React`, vs bare `ReactNode` in the ports, which `import type { ReactNode }` —
+again the identical type). The checker's own `normalizeType` only collapsed whitespace runs to a single
+space, which doesn't remove spacing around `|`/`=>`, and did nothing about the qualifier difference.
+Separately, Codex's own report claimed the two contract directories contain "19" components, contradicting
+`tasks.md`'s stated 18 — independently re-ran the exact same `readdirSync` logic the script itself uses
+and got 18, confirming that specific self-reported number was simply wrong (no script bug behind it; not
+investigated further since the script's own file-discovery code was already verified correct by this
+direct re-run).
+
+**Fix, delegated as a delta brief resuming the same Codex session** (not a fresh dispatch — the session's
+`threadId` from the first run let Codex pick up with full context of what it had just built): extended
+`normalizeType` to strip all whitespace (not just collapse it) and to strip every `React.` qualifier from
+the normalized string on both sides before comparing — a narrow, textual canonicalization of two verified-
+equivalent spellings, not a loosening of the actual structural comparison (prop presence, optionality,
+and the remaining type text are still compared exactly). Re-verified independently (not trusting the
+self-report): `pnpm exec tsx scripts/check-component-props.ts` run directly by the orchestrator now
+reports `0 prop-drift violations across 18 components (36 port files checked)`, exit code 0.
+
+**Files this pass**: `scripts/check-component-props.ts`.
+**Worker**: Codex (`gpt-6-luna`, `high`), one initial dispatch plus one same-session delta fix after
+orchestrator review found the false positives; both re-verified directly by the orchestrator, not
+trusted from either report. **Result**: PASS — independently confirmed.
+**Commit**: (pending — grouped with T117 below).
+
+## D01i — Gallery screenshot check (T117)
+
+**Scope**: Playwright specs capturing both galleries in all 4 locale/theme combinations
+(`mobile/tests/d01-gallery-screenshots.spec.ts`, `web/tests/d01-gallery-screenshots.spec.ts`), modeled on
+D00e's existing `d00e-screenshots.spec.ts` pattern. Dispatched to Codex (`gpt-6-luna`, `high`), one batch.
+
+**Mobile half passed cleanly on the first attempt** (all 4 PNGs captured, a fresh `expo export
+--platform web` worked around the same "existing `mobile/dist` is stale" issue D00e's own entry already
+documented). **Web half failed inside Codex's sandbox**: `next dev`'s SWC native binding couldn't
+initialize because its cache-validation step rejected every candidate cache directory as having an
+"untrusted owner SID" under the sandbox's restricted token — the same `@swc/core` binding error this log
+has now seen reported by essentially every Codex `typecheck` run all through D01a-i, but this is the
+first time it actually blocked something load-bearing (a real server start) rather than just the `next
+typegen` step that a direct `tsc --noEmit` has always been able to route around. Ran the web half directly
+instead (same `pnpm exec playwright test`, outside the sandbox) — the dev server started fine, confirming
+this really is sandbox-specific, not a real environment problem.
+
+**Two real, independently-discovered bugs fixed in this pass, neither caught by typecheck or lint — found
+by actually running the pages and reading the console, same house style as D00e's three bugs and this
+log's recurring pattern:**
+
+1. **The web gallery page was completely unreachable — a genuine 404, not a transient failure.** Running
+   the test directly reproduced it immediately against a fresh `next dev`. Root cause: `web/src/app/
+   [locale]/_dev/gallery/page.tsx` (D01g's corrected path) sits inside a folder literally named `_dev` —
+   and Next.js App Router treats **any** folder prefixed with a literal underscore as a "private folder,"
+   excluded from routing entirely, a separate and independent convention from the `[locale]`-segment issue
+   D01g already found and fixed. Confirmed against Next.js's own documented escape hatch
+   (`%5F`, the URL-encoded underscore, which produces the identical `_dev` URL segment while opting out of
+   the private-folder exclusion) rather than guessing. **Fix**: moved the page to `web/src/app/[locale]/
+   %5Fdev/gallery/page.tsx` — same URL (`/en/_dev/gallery`, `/ar/_dev/gallery`), now actually routable.
+   The move itself hit a second, unrelated obstacle: the original `_dev` directory had been created by a
+   Codex `workspace-write` sandbox process and inherited that sandbox's restricted ACL
+   (`BUILTIN\Users` had only Read+Execute, no Modify/Delete; confirmed via `icacls`) — a plain rename or
+   `git mv` failed with Access Denied, and so did `icacls`'s own attempt to re-grant rights (no
+   `WRITE_DAC`) and `takeown` (no `SeTakeOwnershipPrivilege` without admin). A plain recursive delete
+   (`rm -rf`) succeeded where rename didn't — Windows evaluates "delete this child" against the *parent*
+   folder's permissions, a materially different check from "rename/modify this object," which is why one
+   worked and the other didn't. Recreated the page fresh at the correct path afterward. Worth remembering
+   for any future case where a Codex-sandbox-created directory needs moving rather than just edited in
+   place: try delete-and-recreate before assuming a permissions dead end.
+2. **A `next-themes` server/client hydration mismatch on the gallery's own theme-switch button** — the
+   exact same bug class D00e already found and fixed once in `ShellControls.tsx` (recorded in that pass's
+   log entry), reintroduced here because the gallery page built its own theme toggle from scratch instead
+   of reusing `ShellControls`. The button read `theme` from `useTheme()` directly with no mounted guard, so
+   the server-rendered label (computed before `next-themes` can know the persisted theme) didn't match the
+   client's first real render, surfacing as a console hydration-mismatch error caught by actually opening
+   the page and reading the browser console — not by anything the test's own assertions checked, and not
+   something Playwright fails a test over by default, so it would have been shipped as a silent defect if
+   the console output hadn't been inspected. **Fix**: applied the identical `useSyncExternalStore`-based
+   `useMounted()` guard `ShellControls.tsx` already established, gating the button's label the same way.
+   Re-ran the test after the fix — the specific hydration-mismatch diff for this button no longer appears.
+   One remaining console diff (a `style={{caret-color:"transparent"}}` attribute flagged on several
+   `<input>` elements) was investigated and left alone: it reproduces identically before and after this
+   fix, on unrelated `Input`/`SearchBar` instances, and matches a well-known Chromium/autofill-injected
+   style — React's own hydration-mismatch message explicitly names "a browser extension ... before React
+   loaded" as a known external cause distinct from an application bug; not treated as blocking.
+
+**All 8 screenshots (4 mobile + 4 web) visually inspected directly by the orchestrator, not just checked
+for file existence** — this is the actual evidence for T119's checkpoint, not an assertion: all 4
+combinations render every section without clipping or overflow; dark/light tokens apply correctly in both
+apps; the web gallery's RTL (Arabic) screenshots show genuine structural mirroring (sidebar, `DataTable`
+column order, `Stepper` progress direction, form label alignment all flip, confirming the logical-
+property classNames across every ported component actually work under `dir="rtl"`, not just in isolated
+unit review). One limitation recorded, not silently resolved: the **mobile** Arabic screenshots show no
+layout mirroring — expected and consistent with PRD §12's own documented constraint that mobile RTL needs
+`I18nManager.forceRTL()` followed by an `expo-updates` reload to take effect, which a live Playwright
+session (no app reload) cannot exercise; this is the same category of deferred-to-a-real-device
+verification D00g's handoff already flagged for mobile screenshots generally, not a new gap. Also noted,
+not fixed: `Rating`'s filled vs. unfilled stars are distinguished only by stroke color
+(`warning` vs `text-secondary`), not a solid-vs-outline icon, since Lucide's `star` is outline-only and
+this was the deliberate, specified design from D01b's brief — legible on close inspection but low-
+contrast at a glance; a cosmetic observation, not a defect, and not something to change this late in D01.
+
+**Files this pass**: `mobile/tests/d01-gallery-screenshots.spec.ts`, `web/tests/d01-gallery-screenshots.spec.ts`,
+`web/src/app/[locale]/%5Fdev/gallery/page.tsx` (moved from the `_dev` path, with the `useMounted` fix),
+8 PNGs under `design/screenshots/d01-gallery/`.
+**Worker**: Codex (`gpt-6-luna`, `high`) for both spec files and the mobile run; the web run, the private-
+folder path fix, the ACL/permissions workaround, and the hydration-mismatch fix were all done directly by
+the orchestrator after the sandboxed run hit its SWC blocker. **Result**: PASS — independently verified
+with real screenshots, not self-reported.
+**Remaining D01 work**: T119, the final checkpoint — re-verify everything together and close the phase.
 **Commit**: (pending — this pass's files not yet committed).

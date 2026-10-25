@@ -460,8 +460,13 @@ skeleton (constitution III, VII; D00 scope rule).
   original task text would 404; confirmed by reading `web/src/middleware.ts` and `web/src/i18n/
   routing.ts` before implementing) rendering all 28 components + the 6 dashboard-shell pieces. Depends
   on T081-T114.
-- [ ] T117 [D01] Automated 4-combination screenshot check for both galleries. Depends on T115, T116.
-- [ ] T118 [D01] Write the prop-drift check `scripts/check-component-props.ts` comparing every ported
+- [x] T117 [D01] Automated 4-combination screenshot check for both galleries. Depends on T115, T116.
+  Corrected a second path issue found while implementing this task: the web gallery (T116) lived at a
+  literal `_dev` folder, which Next.js App Router treats as a "private folder" excluded from routing
+  entirely (undocumented in any task text, found by this task's own screenshot run 404ing) — moved to
+  `web/src/app/[locale]/%5Fdev/gallery/page.tsx` (the documented `%5F` escape), URL unchanged
+  (`/en/_dev/gallery`, `/ar/_dev/gallery`).
+- [x] T118 [D01] Write the prop-drift check `scripts/check-component-props.ts` comparing every ported
   component's exported prop types against `design/system/components/**/*.d.ts`. Depends on T081-T098.
 - [ ] T119 [D01] **Checkpoint**: both galleries render all components correctly in all 4 combinations
   (T117); the raw-hex/px rule (D00e) reports 0 violations against the new component code; the prop-drift
