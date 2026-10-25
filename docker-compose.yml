@@ -1,0 +1,92 @@
+name: furever
+
+volumes:
+  pnpm-store:
+  web-node-modules:
+  shared-node-modules:
+  i18n-node-modules:
+  design-tokens-node-modules:
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      target: dev
+    profiles: ["dev"]
+    ports:
+      # Host port 3010, not 3000: this is a shared dev machine with other projects'
+      # containers already holding 3000 (confirmed via `docker ps` while testing this
+      # stack). The container's own internal port stays 3000.
+      - "3010:3000"
+    environment:
+      WATCHPACK_POLLING: "true"
+    env_file:
+      - web/.env.local
+    volumes:
+      - ./web:/app/web
+      - ./packages:/app/packages
+      - web-node-modules:/app/web/node_modules
+      - shared-node-modules:/app/packages/shared/node_modules
+      - i18n-node-modules:/app/packages/i18n/node_modules
+      - design-tokens-node-modules:/app/packages/design-tokens/node_modules
+      - pnpm-store:/root/.local/share/pnpm/store
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  lint:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      target: tools
+    profiles: ["tools", "ci"]
+    command: pnpm lint
+
+  typecheck:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      target: tools
+    profiles: ["tools", "ci"]
+    command: pnpm typecheck
+
+  unit-test:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      target: tools
+    profiles: ["tools", "ci"]
+    command: pnpm test
+
+  pgtap:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      target: tools
+    profiles: ["tools", "ci"]
+    # Needs local Supabase already running on the host (`pnpm stack:up` or
+    # `supabase start`). `host.docker.internal` reaches its Postgres from inside this
+    # container — Windows Docker Desktop containers don't share the host's network
+    # namespace, so plain 127.0.0.1 never reached it (same class of limitation
+    # research.md §11 already documents for Metro). `supabase test db` additionally
+    # spawns its own pg_prove container even against a --db-url, so the Docker socket
+    # (and the Docker CLI baked into the tools image) are still required.
+    #
+    # KNOWN LIMITATION (D00f): connects and spawns correctly, but reports "no pgTAP
+    # tests found" — the spawned pg_prove container is a Docker *sibling* (created via
+    # the host's daemon through the mounted socket), so it gets the host's own
+    # filesystem view, not this container's. It never sees /app/backend/supabase/tests,
+    # which only exists inside this image's layers. Fixing this needs either a bind
+    # mount whose host-side path this container can also discover, or dropping the
+    # Docker-socket approach for a native-pg_prove image instead of shelling out to the
+    # Supabase CLI. Until then, `pnpm db:test` (host-side, not through Docker) is the
+    # verified, reliable way to run pgTAP — see implementation-log.md's D00f entry.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: pnpm --filter backend exec supabase test db --db-url postgresql://postgres:postgres@host.docker.internal:54322/postgres?sslmode=disable

@@ -1,0 +1,16 @@
+**/node_modules
+**/.next
+**/.turbo
+**/.expo
+**/.git
+**/dist
+**/test-results
+**/playwright-report
+**/blob-report
+**/coverage
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example
+**/*.tsbuildinfo
+**/.DS_Store
