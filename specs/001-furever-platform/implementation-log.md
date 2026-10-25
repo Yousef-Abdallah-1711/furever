@@ -185,16 +185,131 @@ pin the Expo SDK number, not React Native directly; Expo's own fork/patches are 
 caveats documented in `COMPATIBILITY.md`'s "Compatibility finding" and "Source details and limitations"
 sections. No further action needed before T002.
 
+## D00f — Docker and compose (completed 2026-10-25)
+
+**Scope**: T065-T073 — `web/Dockerfile` (deps/dev/tools/build/runner stages), root
+`docker-compose.yml` (dev/tools/ci profiles), `.dockerignore`s, named volumes, the
+`stack:up`/`stack:down`/`stack:reset`/`db:test`/`build:prod-web` orchestration scripts
+(root `package.json` + PowerShell wrappers in `scripts/`), and `README.md`'s Docker
+section. This machine has Docker Desktop installed but not running at the start of this
+pass; it was launched and reached ready during the work.
+
+**Real bugs found by actually running the stack, not by reading the Dockerfile/compose
+file**:
+
+1. **Alpine/musl vs. the Supabase CLI's glibc binary**: the `tools` image (built on
+   `node:22.13.0-alpine`) installed `@supabase/cli-linux-x64` (a `"libc": ["glibc"]`
+   package per its own `package.json`) with an empty `bin/` directory — no ENOENT until
+   something actually tried to spawn it (`supabase test db`). Switched `base`/`deps` (and
+   therefore `dev`/`tools`/`build`) to `node:22.13.0` (Debian, glibc); `runner` stays
+   alpine since nothing in it ever executes a CLI post-build. After switching, a
+   **stale Docker build cache** (both a manually-tagged image and docker-compose's
+   separately-cached `furever-pgtap` image) kept reproducing the exact same empty-`bin/`
+   symptom even after the base-image fix — only a `--no-cache` rebuild of *both* actually
+   picked up a real, populated 112MB `supabase` binary. Re-verified `lint`/`typecheck`/
+   `unit-test` tool containers stayed green on the new base, and re-ran the entire
+   `stack:up`/`stack:down`/`stack:reset`/`build:prod-web` sequence again from scratch
+   (below) since the base-image change also touches the app-serving `dev` and `build`
+   stages, not just `tools`.
+2. **`web/.env.local` didn't exist**: `docker-compose.yml`'s `web` service references
+   `env_file: web/.env.local`, but only `.env.example` ever existed (by design —
+   `.env.local` is gitignored). First `stack:up` failed outright (`env file ... not
+   found`). Created `web/.env.local` from the example with the local Supabase instance's
+   own well-known demo anon key (same value on every developer's machine — not a secret)
+   and `http://host.docker.internal:54321` so the containerized app can reach the host's
+   Supabase. This file is intentionally not committed (gitignored); a future README/
+   quickstart pass should make this copy-step explicit for new clones.
+3. **Host port 3000 was already taken**: this is a shared development machine running
+   several *other, unrelated* projects' Docker containers (`list-school-web-1` among
+   them) — one of them already held `0.0.0.0:3000`. `docker compose up` failed with
+   `port is already allocated`. None of those containers were touched; FurEver's own
+   `web` service was remapped to host port **3010** instead (container-internal port
+   stays 3000). `stack-up.ps1` and `README.md` both updated to print/state the real port.
+4. **pgTAP tool container — partially fixed, one real limitation remains.** Three
+   consecutive real failures, each fixed, before hitting a structural one:
+   - `ENOENT` spawning the Supabase CLI binary → fixed by item 1 above.
+   - `ECONNREFUSED 127.0.0.1:54322` — the container's own loopback isn't the host's;
+     added `extra_hosts: host.docker.internal:host-gateway` and pointed `supabase test
+     db --db-url` at `host.docker.internal:54322`.
+   - `tls error: The server does not support SSL` — local Supabase's Postgres doesn't
+     speak TLS; appended `?sslmode=disable` to the connection string.
+   - `docker: command not found` — `supabase test db` spawns its own `pg_prove`
+     container via the Docker socket even when given an external `--db-url`; mounted
+     `/var/run/docker.sock` and baked a static Docker CLI binary into the `tools` stage.
+   - **Final, unresolved state**: it now connects and successfully spawns the nested
+     `pg_prove` container, but that container reports `no pgTAP tests found in
+     /app/backend/supabase/tests` — the spawned container is a Docker **sibling**
+     (created by the *host's* daemon through the mounted socket), so it gets the host's
+     filesystem, not this container's; `/app/backend/supabase/tests` only exists inside
+     this image's own layers, never on the real host filesystem. This is an architecture
+     mismatch (image-copied source vs. the DinD-via-socket pattern's assumption of a
+     shared bind-mount path), not a one-line config fix, and not something a container
+     image rebuild can solve on its own. Documented in `docker-compose.yml`'s `pgtap`
+     service and left as a known limitation. **`pnpm db:test` (host-side, not through
+     Docker) remains the verified, reliable path** — re-confirmed working this pass
+     (`Result: PASS`, `Files=1, Tests=2`, same as T023's original checkpoint).
+
+**T073 checkpoint — all four required commands run for real, end to end** (after the
+Debian-base switch, i.e. against the final Dockerfile):
+- `pnpm stack:up` → Supabase starts, `web` image builds, container starts, health check
+  reaches `healthy`. Content independently verified past the health check: `curl
+  localhost:3010/api/health` → `{"status":"ok"}`; `curl localhost:3010/ar/login` →
+  `lang="ar" dir="rtl"` with real Arabic body text. **Also opened in actual Google
+  Chrome via Playwright** (`channel: 'chrome'`, per the user's explicit ask) against the
+  live container — screenshots confirmed both English/light and Arabic/dark render
+  correctly with working locale/theme toggles, not just a curl-level check.
+- `pnpm stack:down` → containers and network removed cleanly, Supabase stopped.
+- `pnpm stack:reset` → named volumes and Supabase data discarded (`--no-backup`), then
+  brought back up clean to `healthy` again.
+- `pnpm build:prod-web` → builds the `runner` target, runs it once on a throwaway port,
+  polls until Docker reports `healthy`, tears the test container down in a `finally`
+  block. Separately also manually verified the prod container's actual behavior beyond
+  the healthcheck: root `/` redirects to `/en` (307), `/ar/login` renders RTL Arabic
+  correctly in the compiled standalone build too, not just dev mode.
+
+**Two lint/typecheck bugs the `tools` container caught, fixed inline (same class as
+D00e's checkpoint-driven fixes)**:
+- `ShellControls.tsx`'s `useEffect(() => setMounted(true), [])` (D00e's hydration fix)
+  triggered `react-hooks/set-state-in-effect`. Replaced with the react.dev-recommended
+  `useSyncExternalStore(() => () => {}, () => true, () => false)` pattern, which needs no
+  effect at all. Applied the identical fix to `mobile/src/hooks/use-color-scheme.web.ts`
+  (Expo's own default-template file, not something D00e wrote, but it hit the exact same
+  rule and is reachable from the still-present template `explore` tab).
+- `web/vitest.config.ts` used CommonJS `require()`/`module.exports` while every other
+  config file in the repo (`next.config.ts`, `playwright.config.ts`) uses ESM — flagged
+  by `@typescript-eslint/no-require-imports`. Converted to `import`/`export default` to
+  match.
+- `web/package.json`'s `typecheck` script ran bare `tsc --noEmit`, which only passes if
+  `.next/types` already exists from a prior `next build`/`next dev` — true on this
+  machine (leftover from earlier manual testing) but false on a fresh clone or inside the
+  `tools` image, where it failed with `Cannot find name 'LayoutProps'`. Changed to `next
+  typegen && tsc --noEmit` (`next typegen` generates route types without a full build).
+
+**New/changed files this pass**: `web/Dockerfile`, `.dockerignore` (root and `web/`),
+`docker-compose.yml`, `web/src/app/api/health/route.ts` (the HEALTHCHECK target),
+`README.md` (new, Docker section only — see T072's tasks.md note),
+`scripts/{stack-up,stack-down,stack-reset,db-test,types-gen,tokens-build,build-prod-web}.ps1`,
+five new root `package.json` scripts, `web/.env.local` (gitignored, not committed).
+
+**Worker**: orchestrator (Claude Code), direct — continuing the deviation from this
+log's stated delegation model that D00e's entry already flagged (the owner was asked and
+chose to keep working directly for this pass too). **Result**: PASS — D00f complete; D00g
+may begin. **Commit**: (pending — not committed by this pass yet).
+
 ## Handoff note
 
 - **Done**: D00d source attribution and merge-safe i18n updates; corrected the T039 commit reference.
-  D00e (T040-T064) completed and checkpointed — see "D00e — App shells, RTL/theme, observability" below.
-- **Next**: D00f — Docker and compose (T065-T073).
+  D00e (T040-T064) and D00f (T065-T073) completed and checkpointed — see their entries above.
+- **Next**: D00g — CI and docs (T074-T080).
 - **Risks**: one dynamic `/complete-profile` translation still needs a manual key; screen inventory
-  attribution still needs a documentation update (both carried over from D00d, untouched by D00e). The
+  attribution still needs a documentation update (both carried over from D00d, untouched since). The
   `middleware` → `proxy` file-convention rename Next.js 16 now recommends (deprecation warning only, not
   an error) is undone; worth doing opportunistically in a later pass. True device/emulator screenshots for
-  T063's mobile surface remain deferred to when an EAS/emulator environment exists (see T063's note).
+  T063's mobile surface remain deferred to when an EAS/emulator environment exists (see T063's note) — this
+  also means **no APK has been built or installed**; there is no Android SDK/emulator in this environment
+  (confirmed: `ANDROID_HOME`/`ANDROID_SDK_ROOT` unset, no `adb`/`emulator` on PATH), and EAS builds need the
+  manual-prerequisite Expo/EAS account tracked ahead of D02. The pgTAP Docker tool container has the
+  structural limitation recorded in D00f's entry above; `pnpm db:test` is the real, verified path.
 - **Working commands**: `pnpm.cmd exec tsx design/scripts/extract-built.ts`; `pnpm.cmd exec tsx design/scripts/extract-i18n.ts`; `pnpm.cmd i18n:check`; `pnpm.cmd exec tsx design/scripts/verify-screen-count.ts`.
 
 ## D00e Tailwind decision

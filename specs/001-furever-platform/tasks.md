@@ -277,33 +277,47 @@ skeleton (constitution III, VII; D00 scope rule).
 
 ## D00f — Docker and compose
 
-- [ ] T065 [D00f] Write `web/Dockerfile` with `deps`/`dev`/`build`/`runner` stages, Next.js
+- [x] T065 [D00f] Write `web/Dockerfile` with `deps`/`dev`/`build`/`runner` stages, Next.js
   `output: 'standalone'`, a non-root user, and a `HEALTHCHECK` instruction. Depends on T044, T047.
-- [ ] T066 [D00f] Write root `docker-compose.yml` with `dev`/`tools`/`ci` profiles: a `web` service (dev
+  **Correction (this pass)**: `base`/`deps`/`dev`/`tools`/`build` run on `node:22.13.0` (Debian, glibc),
+  not `-alpine` — the pnpm lockfile resolves the Supabase/Sentry/Biome CLIs to their glibc binaries, which
+  don't run under Alpine's musl libc (confirmed by actually running `supabase test db` and hitting `spawn
+  .../cli-linux-x64/bin/supabase ENOENT`). Only `runner` (where no CLI ever executes) stays alpine.
+- [x] T066 [D00f] Write root `docker-compose.yml` with `dev`/`tools`/`ci` profiles: a `web` service (dev
   target, `WATCHPACK_POLLING=true` for Windows bind-mount file watching — research.md §10) and tool
-  containers for lint/typecheck/unit-test/pgTAP under `tools`. Depends on T065.
-- [ ] T067 [P] [D00f] Add `.dockerignore` at the repo root and under `web/`, excluding `node_modules`,
+  containers for lint/typecheck/unit-test/pgTAP under `tools`. Depends on T065. Web's host port is 3010,
+  not 3000 — this is a shared dev machine with other projects' containers already holding 3000. lint,
+  typecheck, and unit-test all verified green inside the actual containers. pgTAP has a known limitation —
+  see its docker-compose.yml comment and the implementation log's D00f entry.
+- [x] T067 [P] [D00f] Add `.dockerignore` at the repo root and under `web/`, excluding `node_modules`,
   `.next`, `.turbo`, local env files.
-- [ ] T068 [D00f] Add named Docker volumes for the pnpm store and `node_modules` to `docker-compose.yml`
+- [x] T068 [D00f] Add named Docker volumes for the pnpm store and `node_modules` to `docker-compose.yml`
   (research.md §10). Depends on T066.
-- [ ] T069 [D00f] Write the orchestration scripts as root `package.json` scripts **and**
+- [x] T069 [D00f] Write the orchestration scripts as root `package.json` scripts **and**
   PowerShell-compatible wrappers `scripts/stack-up.ps1`, `scripts/stack-down.ps1`,
   `scripts/stack-reset.ps1`: `stack:up` (starts local Supabase via the Supabase CLI, then
   `docker compose --profile dev up`, waiting for both health checks), `stack:down`, `stack:reset`. Depends
   on T068.
-- [ ] T070 [P] [D00f] Write `db:test`/`types:gen`/`tokens:build`/`i18n:check` as root `package.json`
+- [x] T070 [P] [D00f] Write `db:test`/`types:gen`/`tokens:build`/`i18n:check` as root `package.json`
   scripts plus PowerShell-compatible wrappers in `scripts/`, each wrapper noting that
   `-ExecutionPolicy Bypass` may be required on Windows and that script files stay LF-encoded
   (`.gitattributes`, T008) even though they run on Windows.
-- [ ] T071 [D00f] Add `scripts/build-prod-web.ps1` + npm equivalent: build the `runner` target, run it
-  once, confirm the `HEALTHCHECK` reports `healthy`. Depends on T065.
-- [ ] T072 [P] [D00f] Document in `README.md`'s Docker section what explicitly does **not** run in
+- [x] T071 [D00f] Add `scripts/build-prod-web.ps1` + npm equivalent: build the `runner` target, run it
+  once, confirm the `HEALTHCHECK` reports `healthy`. Depends on T065. Verified via `pnpm build:prod-web`:
+  image builds, container starts, `/api/health` responds, Docker reports `healthy`.
+- [x] T072 [P] [D00f] Document in `README.md`'s Docker section what explicitly does **not** run in
   Docker: the Metro bundler, the Android emulator, and all EAS builds (research.md §11), each with the
-  host-side command to use instead.
-- [ ] T073 [D00f] **Checkpoint**: run D00f's exit check — `pnpm stack:up` brings up `web` + local Supabase
+  host-side command to use instead. `README.md` created this pass with only this section populated — its
+  top banner says so; D00g's T077 extends it with repo layout and the one-command run rather than
+  replacing it.
+- [x] T073 [D00f] **Checkpoint**: run D00f's exit check — `pnpm stack:up` brings up `web` + local Supabase
   with passing health checks; `pnpm stack:down`/`pnpm stack:reset` both work (including the PowerShell
   wrappers); the production `web` image builds and passes its healthcheck (T071). Do not start D00g until
-  this passes.
+  this passes. **PASSED** — all four commands run for real, end to end, including a real Chrome browser
+  check of the running dev stack (both locales, both themes). See the implementation log's D00f entry for
+  three more real bugs this checkpoint caught beyond the Debian/alpine one: a missing `web/.env.local` (no
+  `env_file` referenced it), a port-3000 collision with another project's container on this shared machine,
+  and the pgTAP sibling-container filesystem limitation.
 
 ## D00g — CI and docs
 
