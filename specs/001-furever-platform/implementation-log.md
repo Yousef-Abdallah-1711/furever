@@ -296,11 +296,120 @@ log's stated delegation model that D00e's entry already flagged (the owner was a
 chose to keep working directly for this pass too). **Result**: PASS — D00f complete; D00g
 may begin. **Commit**: (pending — not committed by this pass yet).
 
+## D00g — PRD, README, fresh-clone verification (completed 2026-10-25, CI/CD excluded by owner instruction)
+
+**Scope adjustment, stated up front by the owner (2026-10-25)**: GitHub Actions, CI/CD workflows, and
+`renovate.json` (T074-T076) were explicitly excluded from this pass — "do not implement, configure,
+investigate, or spend time on" them, and do not mark them done or create placeholders. This pass covers
+only T077 (README), T078 (amended PRD), and T079 (fresh-clone quickstart verification). T080's
+checkpoint is correspondingly **not** claimed complete — see its tasks.md note.
+
+**T078 — amended PRD**: replaced the byte-identical T010 placeholder `docs/PRD.md` with a real rewrite,
+grounded section by section in `plan.md`'s 10 PRD amendments plus `spec.md`/`data-model.md`/`research.md`
+(never invented). Touched far more of the document than just §6 Authentication, since the sign-in method
+change alone appears in the product map, tech stack table, Epic A stories, risks, sprint plan, and open
+questions — a single-section edit would have left the rest contradicting itself. Full list of what
+changed: queue ticket shape (`doctors.queue_prefix` + `queue_tickets.ticket_number`, the `A-14` display
+convention, added to the schema table and three screen descriptions that previously didn't mention it);
+the `#6B6B6B` vs `#737373` text-secondary correction (verified against the actual
+`design/system/tokens/colors.css` value, not just trusted from plan.md's prose); the full email-based
+verification lockout (5-wrong-attempt cancellation, 3-cancellation/15-minute lock, throttling, no
+enumeration — replacing phone-OTP/Twilio prose everywhere it appeared: sign-in methods table, flows,
+Google/Apple setup checklist, abuse controls, Edge Functions table, AUTH-01/02/03 stories, risks, sprint
+plan, open questions); the 2-hour cancellation policy (BKG-04 story and the booking-detail screen row,
+previously vague "inside the allowed window"); pet creation as part of first-run onboarding (new
+onboarding-table rows for the pet-species/basics/photo/health-passport steps and `/onboarding/summary`,
+none of which existed in the placeholder PRD at all); Apple sign-in restricted to iOS only, stated
+explicitly everywhere it's mentioned rather than left implicit; the design system as prop-for-prop source
+of truth (new subsection — this concept didn't exist anywhere in the placeholder PRD); clinic-verified
+record edit rights restricted to the creating clinic (permission matrix, RLS table, patient-detail screen,
+CS-08 story — previously only covered *adding* records, not the *editing* restriction); and the Phase 4
+hooks restated for emphasis per constitution VI.
+
+**Two additional gaps found and fixed while cross-checking against the other spec documents, not part of
+the 10 amendments but genuine PRD/implementation mismatches**: the `verify-otp-guard` Edge Function —
+central to the whole amended auth flow — was completely absent from the Edge Functions table; and the
+pets/vaccinations/health_records RLS row said admin access was merely "audited" when `data-model.md` is
+more precise (no direct admin SELECT at all, RPC-only, each RPC writing its own audit row).
+
+**Two genuinely open items flagged explicitly rather than silently resolved, per the instruction not to
+invent decisions**: (1) `spec.md`'s stated Egyptian phone-number format (10 digits, leading 0, starting
+10/11/12/15) contradicts the already-implemented `packages/shared/src/schemas/base.ts` `phoneSchema`,
+which uses a generic E.164 `^\+[1-9][0-9]{7,14}$` pattern predating the sign-in method change — recorded
+as an unresolved contradiction in the PRD's constraints section, not picked one way or the other; (2)
+whether the email-code lockout can be bypassed by calling Supabase Auth's public `/auth/v1/otp`/`/verify`
+endpoints directly (research.md §17's still-open decision) — recorded in §6's Flows, Risks, and Open
+questions sections as explicitly unresolved.
+
+**Verification**: all PRD tables checked programmatically for consistent column counts (clean); UTF-8
+round-trip byte-check on the whole file (clean, no mojibake — relevant given this project's prior Arabic
+corruption incident in D00e); no markdown linter is configured in this repo, so table/link structure was
+verified by direct reading and the scripts above rather than a tool, and that limitation is stated rather
+than silently skipped.
+
+**T077 — README.md**: extended D00f's Docker-only README (kept verbatim, not replaced) with project
+purpose/status, repo layout, prerequisites, environment configuration (and the `backend/.env.example` gap
+`docs/environments.md` references three times but was never created — flagged explicitly, not silently
+assumed to exist), first-run steps, how to access the running placeholders and switch language/theme, a
+full command table cross-checked against the actual `package.json` scripts and `docker-compose.yml`
+service names (caught and fixed one bad row that tried to cram three commands into one cell with escaped
+pipes), and links to the PRD/quickstart/plan/tasks/COMPATIBILITY docs. Every relative link in the file
+verified to actually resolve via a small script, not by eye.
+
+**T079 — fresh-clone verification, found three more real bugs no static review caught**: cloned the repo
+into a genuinely separate directory and ran `pnpm install && pnpm stack:up` verbatim, exactly as
+`quickstart.md` instructs. It failed. Three real, confirmed-by-reproduction bugs, each fixed and
+re-verified:
+
+1. **Every `scripts/*.ps1` file contained an em-dash (U+2014) in a comment, which breaks Windows
+   PowerShell 5.1's parser outright** — "The string is missing the terminator" cascading into brace-match
+   failures through the whole file. Isolated with `[System.Management.Automation.PSParser]::Tokenize()`
+   directly (not guesswork): a minimal repro without the em-dash parsed fine; adding it back reproduced
+   the failure; stripping all em-dashes from all eight scripts and re-tokenizing confirmed every file
+   parses clean. Not an isolated case — all eight `.ps1` files had at least one.
+2. **`stack-up.ps1`'s own `supabase start 2>&1 | Tee-Object` redirected the native CLI's stderr**, which
+   Windows PowerShell 5.1 wraps in a terminating `NativeCommandError` under `$ErrorActionPreference =
+   "Stop"` even when the command exits 0 — triggered in practice by Supabase's own harmless "Stopped
+   services: [...]" cleanup notice. This is the exact anti-pattern this environment's own PowerShell tool
+   guidance already warns about, introduced by this pass's own new code. Fixed by capturing stdout only
+   (the status JSON `stack-up.ps1` needs was never on stderr anyway).
+3. **`docker-compose.yml`'s `web` service bind-mounts `./packages` over the image**, shadowing whatever
+   `web/Dockerfile`'s `dev` stage generated into `packages/design-tokens/dist/` at build time. Every
+   previous D00f test run "worked" only because this machine's `packages/design-tokens/dist/` already
+   existed locally from earlier manual `pnpm tokens:build` runs — masking the bug entirely until a
+   genuinely fresh clone (which has no local `dist/` at all) 500'd on every page: `Can't resolve
+   '../../../packages/design-tokens/dist/variables.css'`. Fixed by regenerating tokens in the container's
+   own startup command (`pnpm tokens:build && pnpm --filter web dev`), which runs *after* the bind mounts
+   are in place, not just once at image build time.
+
+Also found and fixed along the way (not a bug, but necessary for the one-command promise to hold):
+**`web/.env.local` didn't exist** — `docker-compose.yml` references it via `env_file`, but nothing had
+ever created it, so `docker compose up` failed outright with "env file not found" on the very first fresh
+attempt (this is the same gap D00f's own entry already found and worked around manually on the original
+repo — T079 is what makes the fix automatic instead of a manual step the docs would otherwise need to
+spell out). `stack-up.ps1` now auto-creates it from `web/.env.example`, reusing `supabase start`'s own
+printed anon key and pointing at `host.docker.internal` so the containerized app can reach the host's
+Supabase.
+
+**Re-verification after all four fixes, on the fresh clone, each step independently confirmed**: `pnpm
+stack:up` reached a healthy web container; `curl http://localhost:3010/ar/login` returned `200` with real
+Arabic body text and `dir="rtl"` (not just a health-check pass); `pnpm stack:down` and `pnpm stack:reset`
+both still worked afterward. `quickstart.md` updated with what `stack-up.ps1` now does automatically and
+a dated verification note. The fresh clone and its Docker images were deleted after verification.
+
+**Worker**: orchestrator (Claude Code), direct — same continuing deviation from this log's delegation
+model already flagged in D00e's and D00f's entries. **Result**: T077, T078, T079 PASS and committed.
+T074-T076 genuinely not started (owner-scoped exclusion, not an oversight). T080 left unchecked — see its
+tasks.md note for exactly which half is and isn't met. **Commits**: `docs(T078)` (PRD),
+`docs(T077)` (README), `fix(T079)` (the three fresh-clone bugs + quickstart.md).
+
 ## Handoff note
 
 - **Done**: D00d source attribution and merge-safe i18n updates; corrected the T039 commit reference.
-  D00e (T040-T064) and D00f (T065-T073) completed and checkpointed — see their entries above.
-- **Next**: D00g — CI and docs (T074-T080).
+  D00e (T040-T064) and D00f (T065-T073) completed and checkpointed; D00g's T077-T079 completed and
+  committed (T074-T076 excluded by owner instruction, T080 correspondingly left open) — see entries above.
+- **Next**: either build T074-T076 for real to formally close D00 (T080), or get explicit owner sign-off
+  to start D01 (design system port) without a closed T080 — this pass does not assume either answer.
 - **Risks**: one dynamic `/complete-profile` translation still needs a manual key; screen inventory
   attribution still needs a documentation update (both carried over from D00d, untouched since). The
   `middleware` → `proxy` file-convention rename Next.js 16 now recommends (deprecation warning only, not

@@ -322,24 +322,53 @@ skeleton (constitution III, VII; D00 scope rule).
 ## D00g — CI and docs
 
 - [ ] T074 [D00g] Write `.github/workflows/ci.yml` (PR checks: Biome, typecheck, unit tests, `pgTAP`
-  against local Supabase, `i18n:check`, `tokens:build`, the RLS check, web build).
+  against local Supabase, `i18n:check`, `tokens:build`, the RLS check, web build). **Explicitly out of
+  scope, owner instruction (2026-10-25)**: GitHub Actions/CI work is excluded from this pass. Not
+  attempted, not a placeholder — genuinely not started. Revisit when CI/CD is back in scope.
 - [ ] T075 [P] [D00g] Write deploy-skeleton workflows `.github/workflows/deploy-web.yml`,
   `.github/workflows/eas-build.yml`, `.github/workflows/db-migrate.yml` (triggers/job shells only — real
-  targets land in D08).
-- [ ] T076 [P] [D00g] Add `renovate.json` at the repo root.
-- [ ] T077 [D00g] Write `README.md` covering repo layout, the one-command run, and a link to
-  `quickstart.md`.
-- [ ] T078 [D00g] **Blocking task**: replace the placeholder `docs/PRD.md` (from T010) with the amended
+  targets land in D08). **Explicitly out of scope, same owner instruction as T074** — not started.
+- [ ] T076 [P] [D00g] Add `renovate.json` at the repo root. **Explicitly out of scope, same owner
+  instruction as T074** — not started.
+- [x] T077 [D00g] Write `README.md` covering repo layout, the one-command run, and a link to
+  `quickstart.md`. Extends D00f's Docker-only README (kept intact) with status, repo layout,
+  prerequisites, environment configuration (including the `backend/.env.example` gap `docs/
+  environments.md` references but was never created), first-run steps, how to access/switch
+  language+theme, a command table cross-checked against `package.json`/`docker-compose.yml`, known
+  limitations, and links to the PRD/quickstart/plan/tasks/COMPATIBILITY docs.
+- [x] T078 [D00g] **Blocking task**: replace the placeholder `docs/PRD.md` (from T010) with the amended
   PRD — fold `plan.md`'s 10 PRD amendments (queue ticket shape, `#6B6B6B`, verification lockout,
   cancellation policy, onboarding, platform specifics, design system as source of truth, clinic-verified
   edit rights, Phase 4 hooks, and the 2026-10-18 sign-in method change) directly into the PRD's prose at
-  their respective sections. **D02 must not start until this is checked off.**
-- [ ] T079 [D00g] Run `quickstart.md` end to end from a genuinely fresh clone (a new directory, not this
+  their respective sections. **D02 must not start until this is checked off.** **Done** — all 10
+  amendments folded in throughout (not just §6); also fixed two gaps found while cross-checking against
+  spec.md/data-model.md (missing `verify-otp-guard` Edge Function row, admin-SELECT precision) and flagged
+  two genuinely open items explicitly rather than inventing a resolution: the `profiles.phone` format
+  contradiction between spec.md and `packages/shared`'s already-built `phoneSchema`, and whether the
+  email-code lockout is bypass-proof against Supabase Auth's public endpoints. `docs/PRD.md` is no longer
+  byte-identical to the T010 placeholder — **D02's PRD prerequisite is satisfied.**
+- [x] T079 [D00g] Run `quickstart.md` end to end from a genuinely fresh clone (a new directory, not this
   working copy) on the Windows machine, following every step verbatim; fix `quickstart.md` itself if any
-  step needed an undocumented manual correction. Depends on T074, T075, T076, T077, T078.
+  step needed an undocumented manual correction. Originally "Depends on T074, T075, T076, T077, T078" —
+  run anyway with T074-076 explicitly out of scope per the owner instruction above, since nothing about
+  reproducing the Docker/Supabase one-command run actually requires CI workflows to exist. **Done, and
+  found real bugs no static review caught**: a fresh `git clone` + `pnpm install` + `pnpm stack:up`
+  failed outright twice before being fixed — see `fix(T079)` commit and `implementation-log.md`'s D00g
+  entry for the three real bugs (an em-dash breaking Windows PowerShell 5.1's parser in every `.ps1`
+  script, a `2>&1` redirect turning a native CLI's stderr into a terminating error, and the dev
+  container's bind-mounted `./packages` shadowing its own build-time-generated design tokens). Re-ran the
+  full sequence clean after each fix; confirmed healthy with real content (both locales, RTL) via direct
+  `curl` against the fresh clone, not just a health-check pass.
 - [ ] T080 [D00g] **Checkpoint** (D00 overall): CI is green on a trivial PR; `renovate.json` validates;
   `quickstart.md` reproduces the one-command run from a fresh clone (T079); `docs/PRD.md` is the amended
-  version (T078), not the placeholder. **Delivery Phase D00 is complete; D01 may begin.**
+  version (T078), not the placeholder. **Delivery Phase D00 is complete; D01 may begin.** **Partially
+  met, left unchecked rather than claimed complete**: the quickstart/PRD halves are genuinely verified
+  (see T079/T078 above). The CI-green and `renovate.json`-validates halves are **not met** — T074-076
+  were explicitly excluded from this pass, not attempted, so there is no CI and no `renovate.json` to
+  validate. This box stays unchecked until a future pass either builds T074-076 for real or the owner
+  formally descopes them from D00's exit criteria (not assumed here). **Practical effect**: D00's
+  Docker/doc/PRD deliverables are solid enough to work against, but D00 is not formally closed, and D01
+  should not be considered unconditionally unblocked by this checkpoint alone.
 
 **Manual (human) prerequisites — not automated tasks.** Needed before later phases; the ones marked
 **blocks D02** must exist before D02's first screen/auth task can be tested end to end:
