@@ -452,10 +452,14 @@ skeleton (constitution III, VII; D00 scope rule).
 
 ## Gallery and verification
 
-- [ ] T115 [P] [D01] Build the mobile component gallery `mobile/app/_dev/gallery.tsx` rendering all 28
+- [x] T115 [P] [D01] Build the mobile component gallery `mobile/app/_dev/gallery.tsx` rendering all 28
   components. Depends on T081-T108.
-- [ ] T116 [P] [D01] Build the web component gallery `web/src/app/_dev/gallery/page.tsx` rendering all
-  28 components + the 6 dashboard-shell pieces. Depends on T081-T114.
+- [x] T116 [P] [D01] Build the web component gallery `web/src/app/[locale]/_dev/gallery/page.tsx`
+  (corrected from the task's original `web/src/app/_dev/gallery/page.tsx` — this app's `next-intl`
+  middleware rewrites every non-API/asset route under a `[locale]` segment, so the literal path in the
+  original task text would 404; confirmed by reading `web/src/middleware.ts` and `web/src/i18n/
+  routing.ts` before implementing) rendering all 28 components + the 6 dashboard-shell pieces. Depends
+  on T081-T114.
 - [ ] T117 [D01] Automated 4-combination screenshot check for both galleries. Depends on T115, T116.
 - [ ] T118 [D01] Write the prop-drift check `scripts/check-component-props.ts` comparing every ported
   component's exported prop types against `design/system/components/**/*.d.ts`. Depends on T081-T098.

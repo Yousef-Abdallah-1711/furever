@@ -912,4 +912,50 @@ component-build tasks (T081-T114) are done.**
 **Remaining D01 work**: T115 (mobile gallery), T116 (web gallery, including the 6 dashboard-shell
 pieces), T117 (4-combination screenshot check), T118 (prop-drift checker against the 18 real `.d.ts`
 files), T119 (final checkpoint) — the phase's gate for D02.
-**Commit**: (pending — this pass's component files not yet committed).
+**Commit**: `ec7f924`.
+
+## D01g — Component galleries (T115, T116)
+
+**Scope**: T115 (`mobile/app/_dev/gallery.tsx`) and T116 (the web gallery), rendering all 28 shared
+components plus (web only) the 6 dashboard-shell pieces — 28 mobile usages, 34 web usages. Two Codex
+batches (`gpt-6-luna`, `high`), 2-way parallel, both succeeded on the first attempt (no redispatch
+needed).
+
+**Real path correction found and fixed before dispatch, not after**: `tasks.md`'s own text names T116's
+path as `web/src/app/_dev/gallery/page.tsx`. Checked this against the actual app before writing the
+brief — `web/src/middleware.ts`'s `next-intl` matcher (`/((?!api|trpc|_next|_vercel|.*\\..*).*)`) catches
+every non-API/asset route, and `web/src/i18n/routing.ts` sets `defaultLocale: 'en'` with next-intl's
+default always-prefixed strategy (the same reason the existing login page lives at `[locale]/(auth)/
+login`, reachable at `/en/login`, never bare `/login`). The literal task path would 404 under this
+app's own routing. Built at the corrected path instead: `web/src/app/[locale]/_dev/gallery/page.tsx`,
+reachable at `/en/_dev/gallery` and `/ar/_dev/gallery` — exactly the two URLs T117's screenshot check
+needs to hit directly, same pattern as D00e's `d00e-screenshots.spec.ts` navigating `/en/login`/`/ar/
+login`. `tasks.md`'s T116 line corrected to record the real path and why.
+
+**Both galleries reviewed component-by-component against each one's real prop interface** (not just
+typechecked): confirmed all 28/34 imports resolve to the real component files, every interactive
+component (`Rating`, `PhoneInput`, `OtpInput`, `SearchBar`, `Select`, `DateField`, `SlotChip`,
+`ConfirmSheet`, `Modal`, `Sidebar`, `TopBar`'s dummy locale/theme state, `DataTable`) is wired to real
+local `useState` rather than static placeholders, and `ConfirmSheet`/`Modal` are correctly gated behind
+their own trigger `Button`s matching each one's real mount-controlled (`ConfirmSheet`) vs.
+`open`-controlled (`Modal`) contract. One usage worth noting, not a bug: the web gallery passes
+`w="var(--sp-12)"` / `r="var(--r-full)"` etc. to `Skeleton`'s `w`/`h`/`r` props (typed `number|string`) —
+valid and clever on web specifically, since these are real CSS custom properties resolved by the
+browser inside an inline `style` object; this is NOT the mobile `var()`/`currentColor` anti-pattern
+D01a-d already fixed repeatedly (that restriction is mobile-only, inline `style` objects on web resolve
+`var()` normally).
+
+**Verification performed** (orchestrator's own re-run, both files): `pnpm --filter mobile typecheck` and
+`pnpm --filter web typecheck` both clean (the web check also confirms `DataTable`'s generic type
+inference and every dashboard-shell prop usage in the gallery is real, correctly-typed API surface);
+`pnpm --filter mobile lint` and `pnpm --filter web lint` both clean (same pre-existing warnings as every
+prior D01 pass); `Grep`-based scans for raw hex/`px` literals and hardcoded `ml-`/`mr-`/`text-left`/
+`text-right`/`float-left`/`float-right` classes — 0 matches in either file; a direct `U+FFFD` mojibake
+scan — none found.
+
+**Files this pass**: `mobile/app/_dev/gallery.tsx`, `web/src/app/[locale]/_dev/gallery/page.tsx`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`), 2-way parallel dispatch, no redispatch needed. **Result**: PASS.
+**Remaining D01 work**: T117 (4-combination screenshot check against both galleries, in progress), T118
+(prop-drift checker, in progress), T119 (final checkpoint).
+**Commit**: (pending — this pass's files not yet committed).
