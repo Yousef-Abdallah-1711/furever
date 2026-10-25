@@ -14,6 +14,11 @@
     "i18n:check": "tsx packages/i18n/scripts/check-parity.ts",
     "tokens:build": "tsx packages/design-tokens/scripts/build.ts",
     "types:gen": "tsx packages/shared/scripts/gen-types.ts",
+    "db:test": "pnpm --filter backend exec supabase test db",
+    "stack:up": "powershell -ExecutionPolicy Bypass -File scripts/stack-up.ps1",
+    "stack:down": "powershell -ExecutionPolicy Bypass -File scripts/stack-down.ps1",
+    "stack:reset": "powershell -ExecutionPolicy Bypass -File scripts/stack-reset.ps1",
+    "build:prod-web": "powershell -ExecutionPolicy Bypass -File scripts/build-prod-web.ps1",
     "prepare": "husky"
   },
   "devDependencies": {
