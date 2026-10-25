@@ -322,14 +322,16 @@ skeleton (constitution III, VII; D00 scope rule).
 ## D00g — CI and docs
 
 - [ ] T074 [D00g] Write `.github/workflows/ci.yml` (PR checks: Biome, typecheck, unit tests, `pgTAP`
-  against local Supabase, `i18n:check`, `tokens:build`, the RLS check, web build). **Explicitly out of
-  scope, owner instruction (2026-10-25)**: GitHub Actions/CI work is excluded from this pass. Not
-  attempted, not a placeholder — genuinely not started. Revisit when CI/CD is back in scope.
+  against local Supabase, `i18n:check`, `tokens:build`, the RLS check, web build). **Formally descoped
+  from D00, owner decision 2026-10-25** (instruction, then explicit sign-off to close D00g/D00 without
+  it — see T080): GitHub Actions/CI work is out of scope for this delivery pass. Genuinely not started,
+  not a placeholder. If picked up later, treat as net-new against the then-current codebase, not as
+  resuming mid-flight work.
 - [ ] T075 [P] [D00g] Write deploy-skeleton workflows `.github/workflows/deploy-web.yml`,
   `.github/workflows/eas-build.yml`, `.github/workflows/db-migrate.yml` (triggers/job shells only — real
-  targets land in D08). **Explicitly out of scope, same owner instruction as T074** — not started.
-- [ ] T076 [P] [D00g] Add `renovate.json` at the repo root. **Explicitly out of scope, same owner
-  instruction as T074** — not started.
+  targets land in D08). **Formally descoped, same 2026-10-25 owner decision as T074** — not started.
+- [ ] T076 [P] [D00g] Add `renovate.json` at the repo root. **Formally descoped, same 2026-10-25 owner
+  decision as T074** — not started.
 - [x] T077 [D00g] Write `README.md` covering repo layout, the one-command run, and a link to
   `quickstart.md`. Extends D00f's Docker-only README (kept intact) with status, repo layout,
   prerequisites, environment configuration (including the `backend/.env.example` gap `docs/
@@ -359,16 +361,17 @@ skeleton (constitution III, VII; D00 scope rule).
   container's bind-mounted `./packages` shadowing its own build-time-generated design tokens). Re-ran the
   full sequence clean after each fix; confirmed healthy with real content (both locales, RTL) via direct
   `curl` against the fresh clone, not just a health-check pass.
-- [ ] T080 [D00g] **Checkpoint** (D00 overall): CI is green on a trivial PR; `renovate.json` validates;
+- [x] T080 [D00g] **Checkpoint** (D00 overall): CI is green on a trivial PR; `renovate.json` validates;
   `quickstart.md` reproduces the one-command run from a fresh clone (T079); `docs/PRD.md` is the amended
-  version (T078), not the placeholder. **Delivery Phase D00 is complete; D01 may begin.** **Partially
-  met, left unchecked rather than claimed complete**: the quickstart/PRD halves are genuinely verified
-  (see T079/T078 above). The CI-green and `renovate.json`-validates halves are **not met** — T074-076
-  were explicitly excluded from this pass, not attempted, so there is no CI and no `renovate.json` to
-  validate. This box stays unchecked until a future pass either builds T074-076 for real or the owner
-  formally descopes them from D00's exit criteria (not assumed here). **Practical effect**: D00's
-  Docker/doc/PRD deliverables are solid enough to work against, but D00 is not formally closed, and D01
-  should not be considered unconditionally unblocked by this checkpoint alone.
+  version (T078), not the placeholder. **Delivery Phase D00 is complete; D01 may begin.** **Owner sign-off
+  recorded 2026-10-25**: T074-T076 (GitHub Actions CI, deploy-skeleton workflows, `renovate.json`) are
+  formally descoped from D00's exit criteria for this delivery pass, not merely deferred — the owner
+  explicitly instructed excluding CI/CD work and then signed off on proceeding to D01 with D00g's
+  Docker/doc/PRD deliverables as the closing state. The quickstart/PRD halves of this checkpoint are
+  genuinely verified (T079/T078 above); the CI/renovate halves are closed by this descoping decision, not
+  by having been built. If CI/CD work resumes later, treat T074-076 as net-new tasks against whatever the
+  codebase looks like then, not as finishing something left mid-flight here. **Delivery Phase D00 is
+  complete under this descoping; D01 may begin.**
 
 **Manual (human) prerequisites — not automated tasks.** Needed before later phases; the ones marked
 **blocks D02** must exist before D02's first screen/auth task can be tested end to end:

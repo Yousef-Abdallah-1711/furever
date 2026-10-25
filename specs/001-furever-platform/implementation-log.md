@@ -406,10 +406,17 @@ tasks.md note for exactly which half is and isn't met. **Commits**: `docs(T078)`
 ## Handoff note
 
 - **Done**: D00d source attribution and merge-safe i18n updates; corrected the T039 commit reference.
-  D00e (T040-T064) and D00f (T065-T073) completed and checkpointed; D00g's T077-T079 completed and
-  committed (T074-T076 excluded by owner instruction, T080 correspondingly left open) — see entries above.
-- **Next**: either build T074-T076 for real to formally close D00 (T080), or get explicit owner sign-off
-  to start D01 (design system port) without a closed T080 — this pass does not assume either answer.
+  D00e (T040-T064), D00f (T065-T073), and D00g's T077-T079 completed and checkpointed. **D00 overall is
+  now formally closed (T080 checked, 2026-10-25)**: the owner signed off on descoping T074-T076
+  (GitHub Actions CI, deploy-skeleton workflows, `renovate.json`) from D00's exit criteria rather than
+  building them — see T080's tasks.md note for the exact terms. D00 is complete under that descoping.
+- **Next**: **D01 — design system port** (T081-T119): port `design/system/components/**/*.d.ts` prop-
+  for-prop into `mobile/src/components/` and the web equivalent, plus the dashboard shell and two
+  galleries (plan.md's Coverage Table / tasks.md's D01 section has the full breakdown). This is the first
+  phase that touches real UI component code rather than scaffolding — read `design/system/components/
+  **/*.d.ts` as the authoritative prop reference (PRD §12's "design system as source of truth" amendment)
+  before porting anything, and cross-check against `design/screen-map.md` for which components each
+  screen actually needs.
 - **Risks**: one dynamic `/complete-profile` translation still needs a manual key; screen inventory
   attribution still needs a documentation update (both carried over from D00d, untouched since). The
   `middleware` → `proxy` file-convention rename Next.js 16 now recommends (deprecation warning only, not
