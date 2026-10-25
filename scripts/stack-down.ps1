@@ -1,4 +1,4 @@
-# Stops the web dev container and the local Supabase stack. Data volumes are kept —
+# Stops the web dev container and the local Supabase stack. Data volumes are kept -
 # use stack-reset.ps1 to also discard them.
 # Usage: pnpm stack:down  (or: powershell -ExecutionPolicy Bypass -File scripts/stack-down.ps1)
 

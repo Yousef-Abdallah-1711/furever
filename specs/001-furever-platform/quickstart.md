@@ -28,11 +28,27 @@ pnpm stack:up
 1. The Supabase local stack (via the Supabase CLI, which itself drives Docker) — Postgres, Auth with the
    **local email inbox** enabled (no real email is ever sent from a dev machine — owners sign in by email
    code, not phone/SMS, as of the 2026-10-18 sign-in method change), Storage, Realtime, PostgREST.
-2. The `web` dev server (containerized, hot reload via polling on Windows bind mounts).
-3. Prints the mobile command to run next (Metro runs on the host, not in Docker — `research.md` §11):
+2. **`web/.env.local`**, if it doesn't exist yet (true on a fresh clone): `stack-up.ps1` creates it from
+   `web/.env.example`, reusing `supabase start`'s own printed anon key and pointing
+   `NEXT_PUBLIC_SUPABASE_URL` at `http://host.docker.internal:54321` so the containerized web app can reach
+   the host's local Supabase. Found as a genuine gap by running this exact one-command path from a real
+   fresh clone (T079, 2026-10-25) — `docker compose up` previously failed outright with "env file ... not
+   found" before this fix existed. If you need different values (a real Sentry/PostHog DSN, for example),
+   edit the generated `web/.env.local` afterward; it's gitignored.
+3. The `web` dev server (containerized, hot reload via polling on Windows bind mounts). Its startup command
+   regenerates `packages/design-tokens/dist/` *inside the running container* before starting `next dev` —
+   also found via the same fresh-clone run: the compose file bind-mounts `./packages` over whatever the
+   Docker image generated at build time, so a host that has never locally run `pnpm tokens:build` (true of
+   every fresh clone) would otherwise 500 on `Can't resolve '.../design-tokens/dist/variables.css'`.
+4. Prints the mobile command to run next (Metro runs on the host, not in Docker — `research.md` §11):
    ```powershell
    pnpm --filter mobile start
    ```
+
+**Verified 2026-10-25 (T079)**: `pnpm install` then `pnpm stack:up` was run verbatim from a genuinely fresh
+`git clone` (a new directory, not an existing working copy) and reached a healthy web container serving the
+real themed login placeholder in both locales — the two fixes above are what made that true; before them,
+the same two steps failed on a fresh clone every time.
 
 ## Validation scenarios (what "D00 is done" looks like)
 
