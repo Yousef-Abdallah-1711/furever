@@ -1184,3 +1184,22 @@ lint: 0 errors / 4 existing warnings. Web Vitest: 2 files / 3 tests pass; web ty
 lint: 0 errors / 1 existing warning. `i18n:check` passes with 598 matching keys; `git diff --check`
 passes. No native development build or runtime test was run; the NetInfo native module requires rebuilt
 development binaries. D02 is not complete.
+
+## D02 mobile Supabase encrypted session storage — T164 (2026-10-26)
+
+T164 is complete. The mobile Supabase client uses an encrypted storage adapter: an AES-256-GCM
+key is persisted in SecureStore, while versioned ciphertext envelopes are stored in AsyncStorage.
+Legacy plaintext is migrated on read by encrypting it, persisting and reading back the envelope,
+then returning the session; failures attempt to restore the original plaintext. GCM authentication
+data binds each envelope to its storage key and version.
+
+The focused Jest coverage exercises round-trip storage, plaintext migration, persistence recovery,
+malformed/tampered values, missing keys, and serialized operations. Crypto execution was unit-tested
+through a mocked crypto adapter; no native device or build runtime was exercised, so end-to-end native
+encryption is unverified.
+
+Independent orchestrator gates: mobile tests pass (6 suites / 10 tests); mobile typecheck passes;
+mobile lint passes (4 existing warnings, 0 errors); `git diff --check` passes. `expo install --check`
+reports only existing version drift: `@expo/ui` 57.0.25 vs expected ~57.0.26, `expo` 57.0.30 vs
+~57.0.31, and `expo-router` 57.0.28 vs ~57.0.29. It reports no drift for the newly added
+`expo-crypto` or `expo-secure-store` packages. T165 remains open.

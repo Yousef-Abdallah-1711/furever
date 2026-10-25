@@ -641,7 +641,7 @@ environments only, not local dev.
 
 ## Supabase clients
 
-- [ ] T164 [D02] Mobile Supabase client + encrypted session storage adapter in
+- [x] T164 [D02] Mobile Supabase client + encrypted session storage adapter in
   `mobile/src/lib/supabase.ts` (AES key in `expo-secure-store`, ciphertext in `AsyncStorage`, a migration
   path from any legacy plaintext value — research.md §6).
 - [ ] T165 [D02] Mobile: `AppState` foreground session refresh + `detectSessionInUrl: false` in
