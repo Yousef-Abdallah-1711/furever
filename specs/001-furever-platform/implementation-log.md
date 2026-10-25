@@ -1165,3 +1165,22 @@ The default local email rendered a sign-in link, not a visible six-digit code. T
 five-wrong-attempt cancellation, three-cancelled-code lockout, and correct-after-five experiment remain
 unverified. A+ is already evaluated in research §17; no mitigation was selected. Neither T120 nor D02
 is complete.
+
+
+## D02 offline infrastructure checkpoint: T170-T172 (2026-10-26)
+
+T170 adds the mobile `useNetworkStatus` NetInfo hook and a focused connectivity-change test. It
+falls back to `isConnected` when `isInternetReachable` is `null`. T171 adds mobile and web
+`OfflineBanner` compositions using the existing `Banner`: mobile uses T170's hook, while web uses
+a web-native, SSR-safe browser-event hook without importing mobile code. Added the generic bilingual
+`common.offlineActionRequiresConnection` message; both locale files were verified as UTF-8.
+
+T172's reusable `useOfflineGuardedAction` hook and test are present. Representative-screen wiring is
+deferred because `/pets/new` does not yet exist and cannot be wired without starting D03. No D03
+route or screen was created, and T172 remains open.
+
+Independent orchestrator gates: mobile Jest: 5 suites / 5 tests pass; mobile typecheck passes; mobile
+lint: 0 errors / 4 existing warnings. Web Vitest: 2 files / 3 tests pass; web typecheck passes; web
+lint: 0 errors / 1 existing warning. `i18n:check` passes with 598 matching keys; `git diff --check`
+passes. No native development build or runtime test was run; the NetInfo native module requires rebuilt
+development binaries. D02 is not complete.

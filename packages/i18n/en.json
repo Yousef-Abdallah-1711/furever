@@ -1,5 +1,6 @@
 {
   "common": {
+    "offlineActionRequiresConnection": "You're offline. Connect to continue.",
     "appName": "FurEver",
     "shellProof": "A token-styled shell is ready.",
     "tokenSample": "Primary token",

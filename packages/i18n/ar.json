@@ -1,5 +1,6 @@
 {
   "common": {
+    "offlineActionRequiresConnection": "أنت غير متصل بالإنترنت. اتصل بالإنترنت للمتابعة.",
     "appName": "فورإيفر",
     "shellProof": "واجهة بتصميم النظام جاهزة.",
     "tokenSample": "الرمز الأساسي",

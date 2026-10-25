@@ -659,10 +659,10 @@ environments only, not local dev.
 
 ## Offline infrastructure (new, remediation pass — PLT-03/FR-058)
 
-- [ ] T170 [D02] Build the shared `mobile/src/hooks/useNetworkStatus.ts` (wraps
+- [x] T170 [D02] Build the shared `mobile/src/hooks/useNetworkStatus.ts` (wraps
   `@react-native-community/netinfo`) returning `{ isOnline }`, plus a unit test asserting it flips on a
   mocked connectivity change. [PLT-03]
-- [ ] T171 [D02] Build `OfflineBanner` — `mobile/src/components/OfflineBanner.tsx` +
+- [x] T171 [D02] Build `OfflineBanner` — `mobile/src/components/OfflineBanner.tsx` +
   `web/src/components/OfflineBanner.tsx` — composed from the existing `Banner` component (T082) +
   `useNetworkStatus` (T170), showing the explanatory offline text from `packages/i18n` when offline and
   nothing when online. Depends on T170. [PLT-03]
