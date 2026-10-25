@@ -20,7 +20,7 @@ FurEver is three deployable parts, one backend, one mobile app for pet owners, a
 ```text
 FurEver
 ├── Mobile app (owners)
-│   ├── Sign-in: phone OTP, Google, Apple, profile setup            [Phase 1]
+│   ├── Sign-in: email code, Google, Apple (iOS only), profile setup  [Phase 1]
 │   ├── Home: search, categories, next booking, vaccines due          [Phase 1]
 │   ├── Pets: profile, health passport, vaccinations, records         [Phase 1]
 │   ├── Clinics: browse, doctors, booking, my bookings, live queue    [Phase 1]
@@ -92,7 +92,7 @@ Phase 1 is built now; Phases 2 to 4 are fully specified in this PRD but built la
 
 | Phase | Name | What ships | Status |
 | --- | --- | --- | --- |
-| 1 | Core (MVP) | Auth (phone OTP, Google, Apple), profile, pets, health passport, vaccinations and reminders, push notifications, clinics, doctors, services, booking with pay-at-clinic, live queue, reviews, emergency directory, admin dashboard, clinic dashboard | Build now |
+| 1 | Core (MVP) | Auth (email sign-in code, Google, Apple on iOS), profile, pets, health passport, vaccinations and reminders, push notifications, clinics, doctors, services, booking with pay-at-clinic, live queue, reviews, emergency directory, admin dashboard, clinic dashboard | Build now |
 | 2 | Shop | Catalog, cart, checkout with cash on delivery, orders and tracking, addresses, inventory and order management in dashboard | Later |
 | 3 | Community | Verified adoption hub and mating hub, listings, verification workflow, match requests, in-app chat, reports and moderation | Later |
 | 4 | Payments and video | Online payments (Paymob or Fawry), refunds, auto-delivery subscriptions, video teleconsultation | Later |
@@ -108,9 +108,11 @@ These make payments and video additive instead of a migration project.
 - **UI slots:** the booking summary screen renders a `PaymentMethodSelector` component that shows only "Pay at clinic" until `payments_enabled` is true; the booking flow has a `consultation type` step that is skipped until `video_enabled` is true.
 - **Flags:** `payments_enabled`, `video_enabled`, `shop_enabled`, `mating_enabled`, `adoption_enabled`, all false by default, read from `app-config` at launch.
 
+These hooks stay inert through Phase 1 by construction, not by convention: the money columns are written only with `pay_at_clinic`/`EGP`, the `video` appointment type is unreachable while its flag is false, and `PaymentMethodSelector` has nothing else to render until `payments_enabled` flips. No Phase 1 work should assume any of this changes before Phase 4.
+
 ### Phase 1 definition of done
 
-A new owner can sign up with phone or Google, add a pet, record vaccinations, get a reminder, book an in-clinic appointment, see the live queue, and rate the visit; a clinic can manage doctors, schedules, services and the live queue; an admin can manage users, clinics and reference data; everything works in Arabic and English, light and dark.
+A new owner can sign up with an emailed sign-in code or Google (and Sign in with Apple on iOS), add a pet, record vaccinations, get a reminder, book an in-clinic appointment, see the live queue, and rate the visit; a clinic can manage doctors, schedules, services and the live queue; an admin can manage users, clinics and reference data; everything works in Arabic and English, light and dark.
 
 ## 3. Personas and roles
 
@@ -140,7 +142,8 @@ Four roles use the system, and every permission in the backend is derived from t
 | --- | --- | --- | --- | --- |
 | Manage own profile and pets | Yes | Own profile only | Own profile only | Own profile only |
 | Read pet health data | Own pets | Only pets with an appointment at their clinic | Yes (audited) | Yes (audited) |
-| Add vaccination or health record | Own pets (marked self-reported) | For pets seen at their clinic (marked clinic-verified) | Yes | Yes |
+| Add vaccination or health record | Own pets (marked self-reported) | For pets with an appointment at their clinic (marked clinic-verified, `created_by_clinic_id` set) | Yes | Yes |
+| Edit a clinic-verified vaccination or health record | No | Only entries their own clinic created — never another clinic's, never the owner's | Yes | Yes |
 | Browse active clinics, doctors, services | Yes | Yes | Yes | Yes |
 | Book, reschedule, cancel own appointment | Yes | No | No | No |
 | Manage appointments of their clinic, run the queue | No | Yes | Yes | Yes |
@@ -231,14 +234,14 @@ The whole stack is TypeScript on top of standard PostgreSQL, so the team writes 
 | Need | Tool | Notes |
 | --- | --- | --- |
 | Database and API | Supabase Postgres + PostgREST | Auto REST API from the schema; RLS enforces access |
-| Auth | Supabase Auth (GoTrue) | Phone OTP, Google, Apple, email and password for dashboard, MFA (TOTP) for admins |
+| Auth | Supabase Auth (GoTrue) | Email sign-in code, Google, Apple (iOS only), email and password for dashboard, MFA (TOTP) for admins |
 | Role in JWT | Custom Access Token Hook | Adds `user_role` to the token so RLS avoids a join per row |
 | Files | Supabase Storage | Private buckets with signed URLs |
 | Live updates | Supabase Realtime | Queue board and chat; subscribe with filters only |
 | Server logic | Edge Functions (Deno, TypeScript) | Zod validation, shared helpers in `_shared/` |
 | Scheduled jobs | `pg_cron` + `pg_net` | Reminder generation, outbox drain, cleanup |
 | Extensions | `postgis`, `pg_trgm`, `btree_gist`, `pgcrypto`, `pg_stat_statements` | Nearby clinics, fuzzy search, no double booking, query stats |
-| SMS for OTP | Twilio Verify (via Supabase Auth) | Restrict allowed countries to stop SMS pumping fraud |
+| Email delivery | Custom SMTP (provider TBD — see Open questions) | Required for sign-in itself, not just invites/password-reset; needs a verified sending domain (SPF, DKIM, DMARC) |
 | Push | Expo Push Service | Called only from `send-push` |
 | Rate limiting | Supabase Auth limits + Upstash Redis in Edge Functions | Optional until a public Edge endpoint needs it |
 | DB tests | pgTAP via `supabase test db` | Every RLS policy and RPC has a test |
@@ -294,45 +297,82 @@ Session storage note: a Supabase session is larger than the 2 KB `expo-secure-st
 
 ### Packages deliberately not used
 
-No Redux (React Query plus Zustand is enough), no ORM in Phase 1 (generated types cover it; Prisma or Drizzle can be added later for a separate service), no custom Express server, no GraphQL layer.
+No Redux (React Query plus Zustand is enough), no ORM in Phase 1 (generated types cover it; Prisma or Drizzle can be added later for a separate service), no custom Express server, no GraphQL layer. *Amended 2026-10-18:* no Twilio Verify or any other SMS provider — phone/SMS sign-in was removed from Phase 1 entirely in favor of email-based sign-in.
 
 ## 6. Authentication and authorization
 
-Owners sign in with phone OTP, Google, or Apple on mobile; clinic staff and admins sign in with email and password on the web (admins with a second factor); all of it runs on Supabase Auth, and the role travels inside the JWT.
+*Amended 2026-10-18: owner sign-in is phone-free.* Owners sign in with a 6-digit code emailed to
+them, Google, or Sign in with Apple on iOS only; clinic staff and admins sign in with email and
+password on the web (admins with a second factor); all of it runs on Supabase Auth, and the role
+travels inside the JWT. **Phone/SMS sign-in is removed from Phase 1 entirely — Twilio Verify is
+not part of this stack.** A phone number remains on the profile as an optional, unverified contact
+field only (validated against the Egyptian format when a value is present), never a sign-in
+credential.
 
 ### Sign-in methods
 
 | Surface | Method | Required | Notes |
 | --- | --- | --- | --- |
-| Mobile | Phone OTP (+20 default, 6 digits) | Yes | Primary method for Egypt; delivered through Twilio Verify |
+| Mobile | Email sign-in code (6 digits, typed into the app) | Yes | No magic link, no deep link — see Flows below |
 | Mobile | Google Sign-In (native) | Yes | `signInWithIdToken({ provider: 'google', token })` |
-| Mobile | Sign in with Apple | Yes on iOS | App Store review expects it when another social login is offered |
-| Mobile | Email OTP | Optional | Fallback if SMS is down or too expensive; flag-controlled |
+| Mobile | Sign in with Apple | iOS only, hidden entirely on Android | Not "de-emphasized on Android" — not shown at all |
 | Web | Email and password | Yes | Staff are invited; there is no public signup |
 | Web | TOTP second factor (MFA) | Admin and super\_admin | Enforced with AAL2 in RLS and in middleware |
 | Web | Password reset by email | Yes | Standard recovery link |
 
 ### Flows
 
-**Phone OTP (mobile)**
+**Email sign-in code (mobile)**
 
-1. User enters a phone number; the app normalizes it to E.164 (`+20...`) and calls `signInWithOtp({ phone })`.
-2. Auth sends a 6-digit code (valid 5 minutes, resend after 60 seconds, limited attempts).
-3. User enters the code; `verifyOtp({ phone, token, type: 'sms' })` returns a session.
-4. If the profile is incomplete, the app opens Complete Profile (name, city, optional avatar); otherwise Home.
+1. User enters an email address; the app calls `signInWithOtp({ email })`. The response is
+   identical whether or not the address already has an account (no account enumeration), and
+   sends are throttled per email address and per IP.
+2. Auth emails a 6-digit code (`{{ .Token }}` in the template, not `{{ .ConfirmationURL }}` — this
+   is what makes it "type a code," not "click a link"). Code length is fixed at 6 digits by
+   Supabase; expiry defaults to 10 minutes.
+3. User enters the code; a wrong attempt is counted, not immediately rejected outright: **5
+   consecutive wrong attempts cancel that code** (a new one is required, available after the
+   60-second resend wait), and **3 cancelled codes within 60 minutes lock that email address for
+   15 minutes**, with the unlock time shown. This is enforced by the `verify-otp-guard` Edge
+   Function plus an `otp_attempts` table keyed by a normalized identifier — Supabase Auth has no
+   native per-identifier lockout of this shape.
+4. If the profile is incomplete, the app opens Complete Profile (name, city, optional phone,
+   optional avatar); otherwise Home.
+
+   **Open decision, not yet resolved as of this PRD amendment**: Supabase Auth's own
+   `/auth/v1/otp` and `/auth/v1/verify` endpoints are public (reachable with the project's
+   non-secret anon key) and enforce *different* limits than the policy above — a 60-second
+   per-email send cooldown with no 3-cancellation lock, and a 30-requests-per-5-minutes-per-IP
+   verify limit with no per-email wrong-attempt cancellation. A caller that skips the app and
+   calls those endpoints directly is bound by Supabase's native limits, not FurEver's stricter
+   ones, unless `verify-otp-guard` is built to not rely on Supabase's OTP primitives for the
+   security-sensitive check at all (generate and verify its own code, mint the session only
+   through a service-role-only path). **Which approach to build is an open, owner-level decision
+   — do not assume the lockout above is unconditionally bypass-proof until it is made.**
 
 **Google (mobile)**
 
 1. App calls `GoogleSignin.signIn()` with the web client ID configured; Google returns an ID token.
 2. App calls `supabase.auth.signInWithIdToken({ provider: 'google', token })`.
-3. A database trigger creates the profile from Google's name, email, and avatar; the same completion rules as phone apply (city is still required).
-4. If the user later adds a phone number, the app uses `linkIdentity` so both methods open the same account.
+3. A database trigger creates the profile from Google's name, email, and avatar; the same completion rules as the email flow apply (city is still required).
+4. If the same **verified** email later signs in via the email-code method (or vice versa), Supabase Auth's automatic identity linking resolves both to the one account with no extra call needed — this is documented default behavior for matching verified emails, distinct from the separate, beta, opt-in "Manual Linking" feature a signed-in user triggers on purpose from Account settings to attach a second identity that does *not* share the current email.
 
-**Apple (iOS)**
+**Apple (iOS only)**
 
 1. `expo-apple-authentication` returns an identity token (use a hashed nonce).
 2. `signInWithIdToken({ provider: 'apple', token, nonce })`.
 3. Apple shares the name only on first sign-in, so the app writes it to the profile immediately.
+4. If the user chose "Hide My Email," Apple returns a private relay address
+   (`<random>@privaterelay.appleid.com` or `private.icloud.com`) instead of their real one. FurEver
+   stores that relay address as the account's email. It will **not** automatically link to an
+   email-code or Google account using the person's real address — the strings don't match — and
+   sending FurEver's login-code email *to* a relay address requires the sending domain to be
+   separately registered with Apple (Developer portal → Certificates, Identifiers & Profiles →
+   Services → Sign in with Apple for Email Communication), on top of the general SPF/DKIM/DMARC
+   setup every transactional email needs. Skipping that registration doesn't break Apple sign-in
+   itself — it only means a user who later tries the email-code method on that same relay address
+   never receives the code.
+5. The Apple button never renders on Android — this is a platform restriction, not a style choice; App Store review expects it when another social login is offered, but there is no equivalent Google Play expectation.
 
 **Dashboard login (web)**
 
@@ -352,8 +392,9 @@ Owners sign in with phone OTP, Google, or Apple on mobile; clinic staff and admi
 - Add the Supabase callback `https://<project-ref>.supabase.co/auth/v1/callback` (or the custom domain version) to the Web client.
 - In Supabase set the redirect URL allow list: `furever://auth/callback`, `https://admin.furever.app/**`, the staging dashboard URL, and `http://localhost:3000/**` (development only).
 - Follow Supabase's current Expo Google guide for the iOS nonce setting; it has changed between releases.
-- Apple: enable the Sign in with Apple capability for the bundle ID, create a Services ID and key, and add them to the Supabase Apple provider.
+- Apple: enable the Sign in with Apple capability for the bundle ID, create a Services ID and key, and add them to the Supabase Apple provider. Separately register the sending domain for "Sign in with Apple for Email Communication" (see the Apple flow above) so login-code emails reach hidden-relay addresses.
 - Native Google and Apple sign-in need an EAS development build; Expo Go cannot test them.
+- An SMTP provider with a verified sending domain (SPF, DKIM, DMARC) is a hard prerequisite now, not an optional upgrade — owner sign-in itself depends on email delivery, not just invites or password resets.
 
 ### Tokens, sessions, and roles
 
@@ -365,9 +406,9 @@ Owners sign in with phone OTP, Google, or Apple on mobile; clinic staff and admi
 
 ### Abuse and fraud controls
 
-- Twilio Verify geo permissions limited to the countries you serve (start with Egypt) to prevent SMS pumping.
-- Auth rate limits for OTP and sign-in kept at defaults or stricter; CAPTCHA (Cloudflare Turnstile) on web login and password reset.
-- Local development uses fixed test OTP numbers from `config.toml`, so no SMS is sent outside production.
+- Email sign-in codes are throttled per email address and per IP (see Flows above); the identical-response rule prevents account enumeration regardless of throttling.
+- Auth rate limits for sign-in kept at defaults or stricter; CAPTCHA (Cloudflare Turnstile) on web login and password reset.
+- Local development reads codes from Supabase's local email inbox (the CLI's built-in mail catcher, exposed over HTTP) — no real email is ever sent from a dev machine, and there are no test phone numbers to configure since there is no phone sign-in.
 
 ### Account deletion and data export
 
@@ -440,14 +481,19 @@ The schema is plain PostgreSQL with RLS on every table, and the Phase 1 tables b
 | Table | Purpose | Key columns |
 | --- | --- | --- |
 | `clinics` | Partner clinics | `name_en`, `name_ar`, `description_*`, `phone`, `whatsapp`, `city_id`, `address_*`, `location geography(Point)`, `logo_path`, `cover_path`, `opening_hours jsonb`, `is_24h`, `supports_emergency`, `status`, `rating_avg`, `rating_count` |
-| `doctors` | Vets at a clinic | `clinic_id`, `user_id` (nullable), `full_name`, `specialty_id`, `bio`, `years_experience`, `photo_path`, `is_active` |
+| `doctors` | Vets at a clinic | `clinic_id`, `user_id` (nullable), `full_name`, `specialty_id`, `bio`, `years_experience`, `photo_path`, `is_active`, `queue_prefix` (one letter, unique per clinic) |
 | `services` | What a clinic offers | `clinic_id`, `name_en`, `name_ar`, `duration_min`, `price_minor`, `currency`, `species[]`, `is_active` |
 | `doctor_services` | Which doctor offers which service | `doctor_id`, `service_id` |
 | `doctor_schedules` | Weekly working hours | `doctor_id`, `weekday` (0 to 6), `start_time`, `end_time`, `slot_minutes` |
 | `schedule_exceptions` | Days off and special hours | `doctor_id`, `date`, `is_closed`, `start_time`, `end_time`, `reason` |
 | `appointments` | Bookings | `owner_id`, `pet_id`, `clinic_id`, `doctor_id`, `service_id`, `type`, `starts_at`, `ends_at`, `status`, `payment_status`, `price_minor`, `notes`, `cancel_reason`, `cancelled_by`, `idempotency_key` (unique per owner) |
-| `queue_tickets` | Live queue | `appointment_id`, `clinic_id`, `doctor_id`, `queue_date`, `ticket_number`, `status`, `called_at` |
+| `queue_tickets` | Live queue | `appointment_id`, `clinic_id`, `doctor_id`, `queue_date`, `ticket_number` (integer, resets per doctor per day), `status`, `called_at` |
 | `reviews` | One review per completed visit | `appointment_id` (unique), `owner_id`, `clinic_id`, `rating` (1 to 5), `comment`, `is_hidden` |
+
+*Amended: a ticket's stored shape is `doctors.queue_prefix` (one letter, unique per clinic) plus
+`queue_tickets.ticket_number` (a plain integer, unique per `(doctor_id, queue_date)` — not globally
+unique, not clinic-wide). Apps never display the raw integer alone; they compose the `A-14`-style
+string client-side from the two columns.*
 
 **Platform**
 
@@ -472,7 +518,16 @@ The schema is plain PostgreSQL with RLS on every table, and the Phase 1 tables b
 - **One review per visit:** unique `reviews.appointment_id`, and an insert policy that requires `status = 'completed'` and ownership.
 - **One ticket per appointment:** unique `queue_tickets.appointment_id`; unique `(doctor_id, queue_date, ticket_number)`.
 - **Sane values:** checks for `rating between 1 and 5`, `weight_kg > 0`, `ends_at > starts_at`, `birth_date <= current_date`, `price_minor >= 0`.
-- **Phone format:** `profiles.phone` matches `^\+[1-9][0-9]{7,14}$`.
+- **Phone format — unresolved contradiction, flagged here rather than silently picked:** `spec.md`'s
+  Assumptions section (and the 2026-10-18 sign-in method change generally) describes the
+  now-optional `profiles.phone` field as validated against the **Egyptian mobile format** (10
+  digits starting `10`/`11`/`12`/`15`, a leading 0 accepted, no country code). The already-built
+  `packages/shared/src/schemas/base.ts` `phoneSchema` instead implements the generic E.164 pattern
+  `^\+[1-9][0-9]{7,14}$` (requires a `+` country code, rejects a bare leading-0 local number) — this
+  predates the sign-in method change and was never updated to match it. These two descriptions
+  disagree on what a valid value looks like. Resolve before the Complete Profile screen's phone
+  field ships: either update `phoneSchema` to the Egyptian-local pattern, or confirm the PRD/spec's
+  stated format should itself change to E.164-with-`+20`.
 - **Notification dedupe:** unique `notification_outbox.dedupe_key` (for example `vaccination:<id>:7d`) so cron can run twice safely.
 
 ### Indexes (day one)
@@ -515,7 +570,7 @@ Policies use `(select auth.uid())` and `(select auth.jwt() ->> 'user_role')` so 
 | Table | Select | Insert / update / delete |
 | --- | --- | --- |
 | `profiles` | Own row; admin all; clinic staff only owners with an appointment at their clinic (name and phone) | Own row, excluding `role` and `status` |
-| `pets`, `vaccinations`, `health_records`, `record_attachments` | Owner; clinic staff for pets with an appointment at their clinic; admin (audited) | Owner for own pets; clinic staff may insert records and vaccinations with `source = 'clinic'` for such pets |
+| `pets`, `vaccinations`, `health_records`, `record_attachments` | Owner; clinic staff for pets with an appointment at their clinic; **no direct admin SELECT** — admins read only through `admin_get_pet`/`admin_get_pet_timeline` RPCs, each writing its own `audit_logs` row before returning data (data-model.md, more precise than "admin, audited" alone) | Owner for own pets; clinic staff may insert records and vaccinations with `source = 'clinic'` and `created_by_clinic_id` set to their own clinic for such pets, and may only **update/delete** a `source = 'clinic'` row where `created_by_clinic_id` matches their own clinic — never another clinic's entry, never an owner's self-reported one |
 | `clinics`, `doctors`, `services`, `doctor_schedules`, `schedule_exceptions` | Everyone for `status = 'active'` rows; that clinic's staff and admins for all | Clinic manager for own clinic (not `status`); admin all |
 | `appointments`, `queue_tickets` | Owner for own; clinic staff for own clinic; admin | Only through RPC (direct writes revoked) |
 | `reviews` | Everyone for `is_hidden = false` | Owner once per completed visit; admin may hide |
@@ -561,7 +616,7 @@ The domain `furever.app` below is a placeholder; replace it with your real domai
 
 | Environment | API base | Dashboard | Notes |
 | --- | --- | --- | --- |
-| Local | `http://127.0.0.1:54321` | `http://localhost:3000` | `supabase start`; test OTP numbers, no real SMS |
+| Local | `http://127.0.0.1:54321` | `http://localhost:3000` | `supabase start`; codes land in the local email inbox (mail catcher), no real email sent |
 | Staging | `https://api-staging.furever.app` | `https://admin-staging.furever.app` | Auto-deployed from `main`; seeded demo data |
 | Production | `https://api.furever.app` | `https://admin.furever.app` | Deployed from release tags; PITR backups on |
 
@@ -580,8 +635,8 @@ Every request carries `apikey: <anon key>` and, for signed-in users, `Authorizat
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| POST | `/otp` | Send phone or email OTP |
-| POST | `/verify` | Verify OTP and create the session |
+| POST | `/otp` | Send an email sign-in code. In practice, Phase 1 clients call `verify-otp-guard` (Edge Function, below) rather than this endpoint directly, so the lockout/throttle rules in §6 apply — see §6's open decision on whether the public endpoint itself needs closing off |
+| POST | `/verify` | Verify a code and create the session — same routing-through-the-guard note as `/otp` above |
 | POST | `/token?grant_type=id_token` | Google or Apple ID token sign-in |
 | POST | `/token?grant_type=password` | Dashboard email and password sign-in |
 | POST | `/token?grant_type=refresh_token` | Refresh session |
@@ -625,6 +680,7 @@ Dashboard calls use the same endpoints with staff or admin tokens; RLS returns o
 | Method | Name | Caller | Purpose |
 | --- | --- | --- | --- |
 | GET | `app-config` | anyone | Feature flags for the platform, minimum app version, support contacts |
+| POST | `verify-otp-guard` | anyone (unauthenticated) | Fronts the email sign-in code flow (§6): enforces the 5-wrong-attempt cancellation and 3-cancellation/15-minute lockout via `otp_attempts`, throttles sends per email and per IP, and returns an identical response whether or not the email has an account |
 | POST | `send-push` | cron or service role | Drain `notification_outbox` through Expo Push, mark results, retry with backoff |
 | POST | `admin-create-staff` | admin, clinic manager | Create and invite a clinic staff user |
 | POST | `admin-set-user-status` | admin | Suspend or restore a user (profile status plus Auth ban) |
@@ -707,16 +763,29 @@ The owner app has four tabs in Phase 1 (Home, Pets, Bookings, Profile) with a fi
 
 ### Auth and onboarding (Phase 1)
 
+*Amended 2026-10-18 for the sign-in method change, and to make pet creation part of first-run
+onboarding (not a separate post-onboarding step) per the `mobile-entry` prototype:* a first-run
+owner goes Language → intro slides → Welcome (**Get Started**) → email → verify code → profile
+(name, city, Terms, optional phone) → pet species → pet basics → pet photo → health passport
+(upload, manual entry, or skip) → notifications primer → Setup Summary → Home. The pet step may be
+skipped, after which Home shows an "Add your first pet" card instead. A returning owner goes
+Welcome (**I Have an Account**) → sign-in (email or Google) → verify (email path only) → Home.
+
 | Route | Screen | UI and behavior |
 | --- | --- | --- |
 | `/` | Splash | Logo on the brand gradient; restores session, loads fonts, fetches `app-config`; routes to Home, Welcome, or Force Update |
 | `/language` | Language | Two large cards, العربية and English; choosing applies RTL or LTR and reloads once; remembered for the next launch |
 | `/onboarding` | Onboarding | Three slides (health passport, booking with live queue, emergency care), dots, Skip, Next |
 | `/welcome` | Welcome | Title "Welcome to FurEver!", subtitle "The best care for your fur family.", primary button **Get Started**, secondary button **I Have an Account** (colors from the case study) |
-| `/sign-in` | Sign in | Phone field with country picker (+20 default) and **Continue**; divider; **Continue with Google**; **Continue with Apple** (iOS only); links to Terms and Privacy |
-| `/otp` | Verify code | Six boxes with SMS autofill, 60-second resend countdown, **Change number**, inline errors, loading state on verify |
-| `/complete-profile` | Complete profile | Name, city picker, optional avatar, consent checkbox for Terms and Privacy; **Save** |
+| `/sign-in` | Sign in | Email field and **Continue**; divider; **Continue with Google**; **Continue with Apple** (iOS only, hidden entirely on Android); links to Terms and Privacy |
+| `/otp` | Verify code | Six boxes with OS-level code autofill where supported, 60-second resend countdown, **Change email**, inline errors, loading state on verify; after 5 wrong attempts the code is cancelled and a new one is required; after 3 cancelled codes within 60 minutes the email is locked for 15 minutes with the unlock time shown |
+| `/complete-profile` | Complete profile | Name, city picker, optional phone (validated as Egyptian format only when entered — never required, never gates sign-in), optional avatar, consent checkbox for Terms and Privacy; **Save** |
+| `/onboarding/pet-species` | Pet species | First of the onboarding pet-creation steps; **Skip** leaves Home showing an "Add your first pet" card instead |
+| `/onboarding/pet-basics` | Pet basics | Name, breed picker, birth date or age, sex |
+| `/onboarding/pet-photo` | Pet photo | Camera or library, optional |
+| `/onboarding/health-passport` | Health passport | Upload an existing record, enter vaccinations manually, or skip |
 | `/permissions` | Permissions primer | Explains why notifications (reminders) and location (nearby clinics) are asked for; **Allow** or **Not now**; the app works without either |
+| `/onboarding/summary` | Setup Summary | Recaps what was just set up (profile, pet if created) before handing off to Home |
 
 ### Home (Phase 1)
 
@@ -752,7 +821,7 @@ The owner app has four tabs in Phase 1 (Home, Pets, Bookings, Profile) with a fi
 | `/book/summary` | Booking step 5 | Clinic, doctor, service, date and time, price, `PaymentMethodSelector` (only **Pay at clinic**), cancellation policy text, **Confirm booking** with a spinner; a double tap cannot double submit |
 | `/book/success` | Confirmation | Check animation, booking summary, **View booking** and **Back to home** |
 | `/(tabs)/bookings` | My bookings | Tabs Upcoming, Past, Cancelled; booking cards with status badge; empty state |
-| `/bookings/[id]` | Booking detail | Status stepper (Confirmed, Checked in, In progress, Completed); QR code for check-in; **Live queue card** (your number, now serving, people ahead, estimated wait) once checked in; Call clinic, Directions, Reschedule, Cancel (reason sheet) |
+| `/bookings/[id]` | Booking detail | Status stepper (Confirmed, Checked in, In progress, Completed); QR code for check-in; **Live queue card** (your `A-14`-style ticket — doctor's one-letter prefix plus their per-day number — now serving, people ahead, estimated wait) once checked in; Call clinic, Directions, Reschedule; **Cancel** (free, no reason needed) until 2 hours before the visit — inside that window the Cancel action is replaced entirely by the policy message and a **Call clinic** button, not disabled or hidden |
 | `/bookings/[id]/review` | Rate visit | Five stars, optional comment, **Submit**; available once after completion |
 | `/emergency` | Emergency | Banner "Emergency vets near you"; list of 24-hour and emergency clinics sorted by distance, each with large **Call** and **Directions** buttons; without location permission it falls back to the saved city |
 
@@ -764,7 +833,7 @@ The owner app has four tabs in Phase 1 (Home, Pets, Bookings, Profile) with a fi
 | `/(tabs)/profile` | Profile | Avatar, name, phone; rows to Edit profile, Settings, Account, Help, Legal, About |
 | `/profile/edit` | Edit profile | Name, city, avatar |
 | `/profile/settings` | Settings | **Language** (العربية, English), **Theme** (System, Light, Dark), **Notifications** (vaccination reminders, booking updates, offers) |
-| `/profile/account` | Account | Linked sign-in methods (phone, Google, Apple) with **Add phone** and **Link Google**; **Log out**; **Export my data**; **Delete account** with re-authentication and typed confirmation |
+| `/profile/account` | Account | Linked sign-in methods (email code, Google, Apple) with explicit **Add Google**/**Add email sign-in** actions (Manual Linking, distinct from the automatic linking that happens when the same verified email signs in two ways — §6) to attach a second identity on purpose; **Log out**; **Export my data**; **Delete account** with re-authentication and typed confirmation |
 | `/profile/help` | Help | FAQ accordion; contact by WhatsApp, phone, or email (from `app-config`); **Report a problem** |
 | `/legal/terms`, `/legal/privacy` | Legal | Rendered in-app, in the current language, version recorded on acceptance |
 | `/profile/about` | About | App version and build, open source licenses |
@@ -881,7 +950,7 @@ One Next.js app serves two portals, an **admin portal** at `/[locale]/admin` and
 | `/clinic/queue` | Live queue board | One column per doctor with lanes Waiting, Called, In progress; buttons **Check in** (scan the owner's QR or type the booking code), **Call next**, **Start**, **Complete**, **Skip**, **No-show**; optional sound on new check-in; updates in realtime |
 | `/clinic/appointments` | Appointments | Calendar (day and week, by doctor) and list views; detail drawer with owner, pet, notes, history; confirm, reschedule, cancel with reason |
 | `/clinic/patients` | Patients | Pets seen at this clinic (pet, owner, species, last visit, visit count); search |
-| `/clinic/patients/[petId]` | Patient detail | Read-only passport; **Add vaccination** and **Add record** (marked clinic-verified, with attachments); visit history |
+| `/clinic/patients/[petId]` | Patient detail | Read-only passport; **Add vaccination** and **Add record** (marked clinic-verified, with attachments) for pets with an appointment at this clinic; **editing** an existing clinic-verified entry is only possible when this clinic created it — another clinic's entries and the owner's self-reported ones are read-only here; visit history |
 | `/clinic/doctors` | Doctors | List; add and edit (photo, specialty, bio, services); **weekly schedule editor** (several ranges per weekday, slot length) and **days off** calendar |
 | `/clinic/services` | Services | Table with name (ar, en), duration, price, species, active toggle; inline edit |
 | `/clinic/profile` | Clinic profile | Names, descriptions, contacts, WhatsApp, address, map pin, opening hours, 24-hour and emergency toggles, logo, cover, gallery; banner while status is Pending |
@@ -916,12 +985,12 @@ Each story has an ID that tickets, tests, and pgTAP files reference; all are Pha
 
 | ID | Story | Acceptance criteria |
 | --- | --- | --- |
-| AUTH-01 | As a new owner I want to sign up with my phone number so that I can start quickly | Valid +20 number accepted; code arrives and verifies in under 60 seconds; wrong code shows an error and allows retry; after 5 wrong attempts or on resend within 60 seconds the user sees a wait message |
-| AUTH-02 | As an owner I want to continue with Google so that I do not wait for an SMS | One tap opens the Google account chooser; on success a session and profile exist; cancelling returns to Sign in without an error toast |
-| AUTH-03 | As an iPhone owner I want to continue with Apple | Works on iOS builds; the name from the first sign-in is saved; hidden email is accepted |
-| AUTH-04 | As a new user I want to complete my profile so that clinics know who I am | Name and city required; avatar optional and resized below 1 MB; Terms and Privacy acceptance stored with version and time; cannot reach Home before this is done |
+| AUTH-01 | As a new or returning owner I want to sign in with a code sent to my email so that I don't need a phone number | Code is 6 digits, typed into the app (no magic link); resolves to a new or existing account as appropriate; a wrong attempt is counted, and the 5th consecutive wrong attempt cancels the code (a new one is required, available after the 60-second resend wait); 3 cancelled codes within 60 minutes locks that email for 15 minutes with the unlock time shown; sends are throttled per email and per IP; the response is identical whether or not the email already has an account. **Enforcement caveat**: these rules apply when the flow goes through the app's own guard; whether a client calling the provider's endpoints directly can bypass them is an open decision — see §6 |
+| AUTH-02 | As an owner I want to continue with Google so that I do not have to wait for an email | One tap opens the Google account chooser; on success a session and profile exist; a second sign-in with the same identity never creates a duplicate account; cancelling returns to Sign in without an error toast |
+| AUTH-03 | As an iPhone owner I want to continue with Apple | Shown on iOS only — hidden entirely on Android, not just de-emphasized; the name from the first sign-in is saved; a hidden-relay email is accepted and treated as that account's email |
+| AUTH-04 | As a new user I want to complete my profile so that clinics know who I am | Name and city required; optional phone accepted and validated as Egyptian format only when a value is entered, never required to reach Home; avatar optional and resized below 1 MB; Terms and Privacy acceptance stored with version and time; cannot reach Home before this is done |
 | AUTH-05 | As an owner I want to choose Arabic or English and light or dark mode | Language switch flips layout direction and persists across launches; theme follows system by default and can be forced; no screen shows mixed direction or unreadable contrast |
-| AUTH-06 | As an owner I want to link Google or a phone number to my account so that I can sign in either way | Linking adds the identity to the same user; a second account is never created; conflicts show a clear message |
+| AUTH-06 | As an owner I want to link Google or email sign-in to my account so that I can sign in either way | Linking adds the identity to the same user; a second account is never created; conflicts show a clear message |
 | AUTH-07 | As an owner I want to log out | Session and push token for this device are removed; the app returns to Welcome |
 | AUTH-08 | As an owner I want to delete my account and data | Re-authentication required; pets, files, tokens, and profile removed; past appointments anonymized; user signed out; a store-compliant flow reachable in under 3 taps from Profile |
 | AUTH-09 | As an owner I want to export my data | A JSON file with profile, pets, records, and bookings is returned and shareable |
@@ -951,7 +1020,7 @@ Each story has an ID that tickets, tests, and pgTAP files reference; all are Pha
 | BKG-01 | As an owner I want to book an appointment in a few steps | Service, doctor, time, pet, and confirmation in at most 5 steps; confirmation screen and inbox item appear; booking visible in Upcoming |
 | BKG-02 | As an owner I want to be told if someone took my slot | Two users booking the same slot: exactly one succeeds, the other sees the SLOT\_TAKEN message and a refreshed list of slots; no double booking is possible at database level |
 | BKG-03 | As an owner I want a safe retry | A request repeated with the same idempotency key (bad network) creates one appointment |
-| BKG-04 | As an owner I want to cancel | Cancelling inside the allowed window frees the slot and notifies the clinic; outside the window the user sees the policy message |
+| BKG-04 | As an owner I want to cancel | Free cancellation up to 2 hours before the visit: frees the slot and notifies the clinic, no reason required. Inside that 2-hour window the Cancel action is replaced by the policy message and a Call clinic button — not disabled, not hidden. Clinic staff may cancel any booking at any time with a required reason, notifying the owner. Enforced inside the `cancel_appointment` RPC, never only in the UI |
 | BKG-05 | As an owner I want to reschedule | Pick a new slot; old slot is released and the new one reserved in one step, or nothing changes |
 | BKG-06 | As an owner I want reminders before my visit | Notifications 24 hours and 2 hours before in Cairo local time, once each |
 | QUE-01 | As an owner I want to check in on arrival | Showing the QR code or tapping Check in creates a queue ticket with the next number for that doctor and day |
@@ -979,7 +1048,7 @@ Each story has an ID that tickets, tests, and pgTAP files reference; all are Pha
 | CS-05 | As a manager I want to manage services and prices | Duration, price, species; inactive services disappear from the app |
 | CS-06 | As staff I want to see and manage today's and future appointments | Day and week calendar by doctor; open any appointment; confirm, reschedule, or cancel with a reason; the owner gets a notification |
 | CS-07 | As staff I want to run the live queue | Check in by QR or code; call next; start; complete; skip; mark no-show; owners see changes in under 3 seconds; two staff members acting on the same ticket never produce an inconsistent state |
-| CS-08 | As a vet I want to add records and vaccinations to a visit | Entries are marked clinic-verified, linked to the clinic, and appear in the owner's timeline; vet can attach files |
+| CS-08 | As a vet I want to add records and vaccinations to a visit | Entries are marked clinic-verified, linked to the clinic that created them, and appear in the owner's timeline; vet can attach files. The vet (or manager) can later edit an entry only while it's still their own clinic's — never another clinic's entry, never the owner's self-reported one |
 | CS-09 | As a manager I want reports | Bookings per day, no-show rate, busiest hours, top services for a chosen range; CSV export |
 | CS-10 | As a manager I want to manage staff | Invite by email with a level; change level; remove access immediately |
 
@@ -1043,14 +1112,14 @@ Light values are from the case study; dark values and semantic colors are propos
 | `surface` | `#FFFFFF` | `#251C1E` | Cards, sheets, dialogs |
 | `border` | `#E6D3D0` | `#4A393C` | Dividers, input borders |
 | `text-primary` | `#4A4A4A` | `#F3E9E8` | Headings, labels, icons |
-| `text-secondary` | `#737373` | `#B9A9A8` | Subtitles and helper text |
+| `text-secondary` | `#6B6B6B` | `#B9A9A8` | Subtitles and helper text |
 | `success` | `#3F8F5F` | `#6CC08B` | Up to date, completed |
 | `warning` | `#B7791F` | `#E0A94F` | Due soon, pending |
 | `danger` | `#C0443F` | `#E5736E` | Overdue, errors, emergency, destructive actions |
 | `info` | `#3F6FA8` | `#7FA6D6` | Confirmed, in progress |
 | `overlay` | `rgba(0,0,0,0.40)` | `rgba(0,0,0,0.60)` | Modal backdrops |
 
-Contrast checks to do before build: white on `#A96062` is about 4.6:1 (passes for normal text, with little margin); `#737373` on `#FBF6F5` is about 4.4:1, just under AA, so use `#6B6B6B` for small helper text in light mode. In dark mode, depth comes from lighter surfaces, not shadows.
+Contrast checks to do before build: white on `#A96062` is about 4.6:1 (passes for normal text, with little margin). *Amended:* `text-secondary` is `#6B6B6B` in light mode (not the originally proposed `#737373`, whose ~4.4:1 contrast against `#FBF6F5` fell just under AA) — this is already the value `packages/design-tokens` and `design/system/tokens/colors.css` ship; the correction here is to this document's prose only. In dark mode, depth comes from lighter surfaces, not shadows.
 
 ### Status colors
 
@@ -1098,6 +1167,17 @@ All variants have default, pressed, focused, disabled (50 percent opacity), and 
 2. Web: variables on `:root` and `.dark`; `next-themes` toggles the class; shadcn components read the same variables.
 3. Mobile: NativeWind `vars()` per theme with `darkMode: 'class'`; a `useTheme` hook exposes `scheme` (`system`, `light`, `dark`), saved in Zustand and `AsyncStorage` and synced to `profiles.theme` for signed-in users.
 4. Components use semantic names only (`bg-surface`, `text-text-primary`). A CI check fails when a hex color appears in `src/` outside the tokens package.
+
+### Design system as the visual source of truth
+
+*Amended, 2026-10-18 plan:* `design/system/components/**/*.d.ts` — not this document's screen
+descriptions — is the authoritative reference for a ported component's prop names and variants.
+The kits under `design/system/ui_kits/` are **web prototypes to port, not copy**: React Native
+cannot execute `color-mix()` or read CSS classes the way a browser can, so the design-token
+generator precomputes every tint and shadow hex value per theme ahead of time, and each component
+is ported prop-for-prop rather than re-implemented from a visual guess. Where this PRD's screen
+tables and this design-system section disagree with the `.d.ts` files on a prop name or variant,
+the `.d.ts` files win.
 
 ### Localization and RTL rules
 
@@ -1178,7 +1258,7 @@ FurEver stores health data about pets and personal data about people, so securit
 | Sessions | Refresh-token rotation; session stored encrypted on mobile; HTTP-only cookies on web; sign-out revokes the session |
 | Input | Zod validation at every boundary; parameterized SQL only; HTML from users is never rendered unescaped |
 | Web hardening | Content Security Policy, `X-Frame-Options`, `Referrer-Policy`, CORS limited to dashboard origins, CAPTCHA on login |
-| Abuse | OTP rate limits and SMS geo restriction; Edge Function rate limiting for public endpoints; account suspension flow |
+| Abuse | Email sign-in code rate limits and the 5-wrong-attempt/3-cancellation lockout (§6, including its open bypass-mitigation decision); Edge Function rate limiting for public endpoints; account suspension flow |
 | Audit | Admin actions and admin reads of health data are logged to `audit_logs` (append-only) |
 | Dependencies | Renovate pull requests weekly; `pnpm audit` in CI; pinned versions |
 | Review | A security review (RLS, storage, auth, secrets) before each store submission |
@@ -1256,7 +1336,7 @@ Phase 1 takes about 9 two-week sprints (around 18 weeks) for one to two develope
 ### Phase 1 sprint plan
 
 1. **Sprint 0, foundations (weeks 1 to 2).** Repo with `backend`, `mobile`, `web`, `packages`; three Supabase projects; CI; design tokens; i18n; theme and RTL shells in both apps; migration pipeline. *Exit:* a hello-world screen in Arabic and English, light and dark, on mobile and web, with CI green.
-2. **Sprint 1, auth and profiles (weeks 3 to 4).** Phone OTP, Google, Apple, profile completion, access token hook, dashboard login with MFA, role routing, first RLS tests. *Exit:* AUTH-01 to AUTH-10 and AD-01.
+2. **Sprint 1, auth and profiles (weeks 3 to 4).** Email sign-in code (with `verify-otp-guard`'s lockout), Google, Apple (iOS only), profile completion, access token hook, dashboard login with MFA, role routing, first RLS tests. *Exit:* AUTH-01 to AUTH-10 and AD-01.
 3. **Sprint 2, pets and passport (weeks 5 to 6).** Pets CRUD, breeds seed, storage buckets, documents. *Exit:* PET-01 to PET-03 and PET-05.
 4. **Sprint 3, vaccinations and notifications (weeks 7 to 8).** Vaccinations, timeline, outbox, cron reminders, `send-push`, inbox, preferences, passport sharing. *Exit:* PET-04, PET-06 to PET-09, NTF-01 to NTF-03.
 5. **Sprint 4, clinics (weeks 9 to 10).** Admin creates and approves clinics, reference data, clinic profile, doctors, services, schedules; mobile clinic browse and detail. *Exit:* AD-02, AD-04, CS-01 to CS-05, CLN-01 to CLN-03.
@@ -1284,7 +1364,8 @@ Later phases are estimated at six to eight weeks each (Shop, Community, Payments
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
 | Too few clinics at launch | App feels empty; owners churn | Sign 3 to 5 pilot clinics before launch; admin onboards them; sell the clinic benefit (fewer no-shows, ordered queue) |
-| SMS cost, fraud, or poor delivery in Egypt | High verification cost; users cannot sign in | Twilio Verify with geo permissions; Google and Apple sign-in; optional email OTP; monitor cost per verification weekly |
+| Email deliverability (spam filtering, slow delivery, bounces to Apple hidden-relay addresses) | Owners cannot sign in at all — not just a degraded fallback, since phone/SMS sign-in no longer exists | Verified sending domain (SPF, DKIM, DMARC) through custom SMTP; separate domain registration with Apple for hidden-relay delivery; Google and Apple sign-in as alternatives that don't depend on email delivery; monitor delivery rate |
+| **Open**: the email sign-in code's 5-attempt/3-cancellation lockout may be bypassable by a client calling Supabase Auth's public `/auth/v1/otp`/`/auth/v1/verify` endpoints directly, since those enforce different, looser native limits | A sign-in path with weaker fraud protection than this document otherwise describes | Not yet decided — see §6. The fix with no open gap is `verify-otp-guard` generating and verifying its own code instead of using Supabase's OTP primitives at all, but this is still an owner-level decision pending as of this PRD amendment |
 | Weak or slow RLS policies | Data leak or slow screens | Helper functions, pgTAP tests for every policy, `explain analyze`, load tests |
 | RTL and Arabic layout defects | Poor reviews in the main market | RTL from sprint 0; four-combination screenshots; logical properties only |
 | Store rejection | Launch delay | Checklist in section 14; no medical diagnosis claims in Phase 1; Sign in with Apple and account deletion present |
@@ -1301,12 +1382,13 @@ These need your decision; the PRD carries the stated assumption until you answer
 1. **Domain and brand names.** The PRD uses `furever.app` as a placeholder. What are the real domain, store listing names, and bundle IDs?
 2. **Launch city and pilot clinics.** Which city first, and how many clinics are already interested? (assumed: one city, 3 to 5 clinics)
 3. **Clinic onboarding.** Admin-created only, or clinics can apply and wait for approval? (assumed: admin-created)
-4. **Cancellation window.** Assumed free cancellation up to 2 hours before the visit; confirm the policy.
+4. ~~Cancellation window.~~ **Settled, 2026-10-18 plan**: free cancellation up to 2 hours before the visit, enforced in `cancel_appointment` (§6, FR-026/BKG-04) — no longer open.
 5. **Walk-in patients.** Phase 1 queues only app bookings; do clinics need staff-created queue entries for people without the app?
 6. **Revenue model.** Free for clinics, commission per booking, clinic subscription, shop margin, or a mix? This shapes the Phase 4 payment design.
-7. **SMS provider.** Twilio Verify is assumed; confirm Egyptian pricing and delivery, or plan a local provider through Supabase's SMS hook.
+7. **Email delivery provider** *(replaces the former "SMS provider" question — phone/SMS sign-in was removed 2026-10-18)*. Which SMTP provider, and is the sending domain (SPF, DKIM, DMARC) registered? This now blocks D02 entirely, not just invites/password-reset, since owner sign-in itself depends on it. Also pending: registering that domain separately with Apple for "Sign in with Apple for Email Communication" so codes reach hidden-relay addresses (§6).
 8. **Supabase region.** Choose a European region close to Egypt (for example Frankfurt); confirm this is acceptable under the data protection review.
-9. **Digits.** Western digits (0 to 9) are assumed in Arabic; confirm or switch to Arabic-Indic digits.
+9. ~~Digits.~~ **Settled**: Western digits (0 to 9) in both languages — this is the implemented default, not an open question (§12 Localization).
 10. **Species at launch.** Breeds and vaccine rules are seeded for cats and dogs; other species are allowed but have no seeded data. Confirm.
 11. **Doctor verification.** Do you need to collect and verify veterinary licenses for doctors before they appear in the app?
 12. **Order of later phases.** Shop first, or Adoption and Mating first? (assumed: Shop, then Community, then Payments and video)
+13. **Email sign-in code: is the lockout bypass-proof enough to ship?** (new, 2026-10-18) Supabase Auth's public OTP endpoints enforce looser native limits than this PRD's 5-attempt/3-cancellation policy, so a client that skips the app can bypass it (§6, Risks). The closing design — the guard generating and verifying its own code instead of using Supabase's OTP primitives — is understood but not yet decided or built. This blocks the guard's hardening work (not the email-code flow itself) until answered.
