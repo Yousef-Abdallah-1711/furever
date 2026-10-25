@@ -750,4 +750,57 @@ complete.**
 none has an existing `.d.ts`; each needs its prop shape inferred from the kits' inline usage, same care
 as a new design), then the 6 web-only dashboard-shell pieces (T109-T114), then T115-119's galleries,
 prop-drift check, screenshot check, and checkpoint.
+**Commit**: `ca343b5`.
+
+## D01d — Design system port, Wave 4: 7 of the 10 built-from-pattern components
+
+**Scope**: T099 (`PhoneInput`), T100 (`OtpInput`), T101 (`SearchBar`), T104 (`CategoryCard`), T105
+(`DoctorCard`), T106 (`ListRow`), T108 (`ScreenHeader`) — 7 of the 10 components with no existing
+`.d.ts`. Before writing any brief, mined the actual kit usage for each (grepped
+`design/system/ui_kits/**/*.babel` for the real inline patterns these components replace): the phone
+field at `mobile/kit-auth.babel`, the hidden-input/visible-boxes OTP pattern at
+`mobile-entry/e-auth.babel`, the search-trigger `Input` usage at `mobile-entry/e-home.babel` and
+`mobile/kit-booking.babel`, the category grid and settings-row list at `mobile/kit-home.babel`, the
+doctor roster/picker at `mobile/kit-booking.babel`, and two slightly different `Header` implementations
+(`mobile-entry/e-core.babel`, `mobile/kit-shell.babel`) merged into one `ScreenHeader` spec. Each brief
+specified the full prop interface directly (there being no `.d.ts` to point Codex at) and explicitly
+corrected one stale-from-the-kit detail: the OTP screen's kit prototype mentions SMS delivery, but this
+app's real, already-amended auth flow sends the code by email — the brief told Codex not to carry over
+any SMS-autofill affordance (`autoComplete="one-time-code"` etc.), matching `tasks.md`'s own note for
+this task. Two Codex batches (`gpt-6-luna`, `high`) dispatched together this time (Batch J: PhoneInput/
+OtpInput/SearchBar; Batch K: CategoryCard/DoctorCard/ListRow/ScreenHeader) — **dialed back from 3-way to
+2-way parallelism** per D01c's reliability finding.
+
+**`OtpInput` still needed a solo redispatch**: Batch J's mobile file was left as the single word `xyz`
+(an aborted placeholder) and the web file was never created; Codex's own report correctly flagged this
+one as incomplete this time (unlike D01c's wrongly-pessimistic PetCard report). Removed the stub and
+redispatched `OtpInput` alone — succeeded cleanly on the first attempt, including the trickier bits (ref-
+based focus-forwarding to a visually-hidden input, and an `onComplete`-fires-once-per-completion guard
+via a ref flag that resets once the code drops below full length).
+
+**One more instance of the same recurring mojibake bug** (now the third occurrence; see D01a/D01c):
+`DoctorCard.tsx`'s specialty/experience separator (`[specialty, experience].filter(Boolean).join(' · ')`)
+came back as the Unicode replacement character on **both** platforms again, identical to D01c's `PetCard`
+corruption. Fixed directly (same remedy: replace with the real `·`, U+00B7, verified by codepoint) and
+re-scanned every one of this wave's 14 files for `U+FFFD` — none found elsewhere. This is now a
+consistent enough pattern (3 for 3 on any middle-dot-style separator Codex has written on this machine)
+that any future brief asking for a non-ASCII separator character should budget for checking it
+afterward, the same way this log already treats `.ps1` em-dashes as a known landmine.
+
+**Verification performed** (orchestrator's own re-run on the full merged tree, all 14 Wave 4 files):
+`pnpm --filter mobile typecheck` and `pnpm --filter web typecheck` both clean; `pnpm --filter mobile
+lint` and `pnpm --filter web lint` both clean (same pre-existing warnings as prior D01 passes); `Grep`-
+based token-rule re-check (raw hex in quotes, raw `px` literal) — 0 matches across all 14 files; a direct
+`U+FFFD` scan of all 14 files — only the one `DoctorCard` instance above, now fixed.
+
+**Files this pass**: `mobile/src/components/{CategoryCard,DoctorCard,ListRow,OtpInput,PhoneInput,
+ScreenHeader,SearchBar}.tsx` + the same seven under `web/src/components/`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`), 2-way parallel dispatch, one solo redispatch
+(`OtpInput`); the mojibake fix was applied directly by the orchestrator. **Result**: PASS.
+**Remaining D01 work**: `Select` and `DateField` (the last 2 of the 10 built-from-pattern components —
+`Select` follows the kits' own `Sheet`+`Pick` bottom-sheet pattern; `DateField` uses the libraries
+`tasks.md` specifies, `@react-native-community/datetimepicker`/`react-day-picker`, not the kits' plain
+`<input type="date">` prototype), `Toast`, then the 6 dashboard-shell pieces (T109-T114), then T115-119's
+galleries, prop-drift check, screenshot check, and checkpoint.
 **Commit**: (pending — this pass's component files not yet committed).

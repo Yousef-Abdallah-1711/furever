@@ -423,19 +423,19 @@ skeleton (constitution III, VII; D00 scope rule).
   `statusLabel`, `onClick`).
 - [x] T097 [P] [D01] Port `SlotChip` (`SlotChip.d.ts`: `time`, `on`, `disabled`, `onClick`).
 - [x] T098 [P] [D01] Port `Stepper` (`Stepper.d.ts`: `steps`, `current`).
-- [ ] T099 [P] [D01] Build the missing `PhoneInput` (country prefix + `Input` composition, from the
+- [x] T099 [P] [D01] Build the missing `PhoneInput` (country prefix + `Input` composition, from the
   kits' local usage pattern).
-- [ ] T100 [P] [D01] Build the missing `OtpInput` (6-box code entry; used for the email sign-in code, not
+- [x] T100 [P] [D01] Build the missing `OtpInput` (6-box code entry; used for the email sign-in code, not
   SMS — no SMS autofill applies).
-- [ ] T101 [P] [D01] Build the missing `SearchBar`.
+- [x] T101 [P] [D01] Build the missing `SearchBar`.
 - [ ] T102 [P] [D01] Build the missing `Select` (bottom-sheet picker on mobile, popover on web).
 - [ ] T103 [P] [D01] Build the missing `DateField` (`@react-native-community/datetimepicker` on mobile,
   `react-day-picker` on web).
-- [ ] T104 [P] [D01] Build the missing `CategoryCard` (tinted `Card` variant per PRD section 9).
-- [ ] T105 [P] [D01] Build the missing `DoctorCard`.
-- [ ] T106 [P] [D01] Build the missing `ListRow`.
+- [x] T104 [P] [D01] Build the missing `CategoryCard` (tinted `Card` variant per PRD section 9).
+- [x] T105 [P] [D01] Build the missing `DoctorCard`.
+- [x] T106 [P] [D01] Build the missing `ListRow`.
 - [ ] T107 [P] [D01] Build the missing `Toast`.
-- [ ] T108 [P] [D01] Build the missing `ScreenHeader`.
+- [x] T108 [P] [D01] Build the missing `ScreenHeader`.
 
 ## Dashboard shell (web only)
 
