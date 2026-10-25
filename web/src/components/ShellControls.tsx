@@ -2,14 +2,19 @@
 
 import { useTheme } from 'next-themes';
 import { useLocale } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Link } from '@/i18n/navigation';
+
+const noopSubscribe = () => () => {};
+/** True once running on the client, without a setState-in-effect (avoids react-hooks/set-state-in-effect). */
+function useMounted() {
+  return useSyncExternalStore(noopSubscribe, () => true, () => false);
+}
 
 export function ShellControls() {
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
   const otherLocale = locale === 'en' ? 'ar' : 'en';
   // Until mounted, next-themes hasn't resolved the persisted theme yet; render the
   // server's assumption (defaultTheme="light" -> "Dark" to switch) to avoid a
