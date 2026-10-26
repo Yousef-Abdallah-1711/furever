@@ -1,40 +1,50 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createClient } from '@supabase/supabase-js';
-import { AppState } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createClient } from "@supabase/supabase-js";
 import {
   AESEncryptionKey,
   AESSealedData,
   aesDecryptAsync,
   aesEncryptAsync,
   getRandomBytesAsync,
-} from 'expo-crypto';
-import * as SecureStore from 'expo-secure-store';
-import 'react-native-url-polyfill/auto';
+} from "expo-crypto";
+import * as SecureStore from "expo-secure-store";
+import { AppState, Platform } from "react-native";
+import { MemoryAuthStorage } from "./memory-auth-storage";
+import "react-native-url-polyfill/auto";
 
-const ENVELOPE_FORMAT = 'furever-session';
+const ENVELOPE_FORMAT = "furever-session";
 const ENVELOPE_PREFIX = `${ENVELOPE_FORMAT}:`;
 const ENVELOPE_VERSION = 1;
 const AES_KEY_SIZE_BITS = 256;
 const GCM_NONCE_SIZE_BYTES = 12;
 const GCM_TAG_SIZE_BYTES = 16;
-const SECURE_STORE_KEY = 'furever.supabase.session-encryption-key.v1';
+const SECURE_STORE_KEY = "furever.supabase.session-encryption-key.v1";
 
 type AsyncKeyValueStorage = Pick<
   typeof AsyncStorage,
-  'getItem' | 'setItem' | 'removeItem'
+  "getItem" | "setItem" | "removeItem"
 >;
 
 type SecureKeyValueStorage = Pick<
   typeof SecureStore,
-  'getItemAsync' | 'setItemAsync'
+  "getItemAsync" | "setItemAsync"
 >;
 
 export type SessionCrypto = {
   generateKey: () => Promise<string>;
   importKey: (encodedKey: string) => Promise<AESEncryptionKey>;
   randomBytes: (size: number) => Promise<Uint8Array>;
-  encrypt: (value: string, key: AESEncryptionKey, nonce: Uint8Array, additionalData: Uint8Array) => Promise<string>;
-  decrypt: (value: string, key: AESEncryptionKey, additionalData: Uint8Array) => Promise<string>;
+  encrypt: (
+    value: string,
+    key: AESEncryptionKey,
+    nonce: Uint8Array,
+    additionalData: Uint8Array,
+  ) => Promise<string>;
+  decrypt: (
+    value: string,
+    key: AESEncryptionKey,
+    additionalData: Uint8Array,
+  ) => Promise<string>;
 };
 
 type EncryptedSessionStorageOptions = {
@@ -46,17 +56,17 @@ type EncryptedSessionStorageOptions = {
 type EncryptedEnvelope = {
   format: typeof ENVELOPE_FORMAT;
   version: typeof ENVELOPE_VERSION;
-  algorithm: 'AES-256-GCM';
+  algorithm: "AES-256-GCM";
   ciphertext: string;
 };
 
 const utf8Encoder = new TextEncoder();
-const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+const utf8Decoder = new TextDecoder("utf-8", { fatal: true });
 
 const crypto: SessionCrypto = {
   generateKey: async () =>
-    (await AESEncryptionKey.generate(AES_KEY_SIZE_BITS)).encoded('hex'),
-  importKey: (encodedKey) => AESEncryptionKey.import(encodedKey, 'hex'),
+    (await AESEncryptionKey.generate(AES_KEY_SIZE_BITS)).encoded("hex"),
+  importKey: (encodedKey) => AESEncryptionKey.import(encodedKey, "hex"),
   randomBytes: getRandomBytesAsync,
   encrypt: async (value, key, nonce, additionalData) => {
     const sealed = await aesEncryptAsync(utf8Encoder.encode(value), key, {
@@ -64,7 +74,7 @@ const crypto: SessionCrypto = {
       additionalData,
       tagLength: GCM_TAG_SIZE_BYTES,
     });
-    return sealed.combined('base64');
+    return sealed.combined("base64");
   },
   decrypt: async (value, key, additionalData) => {
     const sealed = AESSealedData.fromCombined(value);
@@ -73,18 +83,25 @@ const crypto: SessionCrypto = {
       sealed.tagSize !== GCM_TAG_SIZE_BYTES ||
       sealed.combinedSize < GCM_NONCE_SIZE_BYTES + GCM_TAG_SIZE_BYTES
     ) {
-      throw new Error('Invalid encrypted session payload');
+      throw new Error("Invalid encrypted session payload");
     }
-    const plaintext = await aesDecryptAsync(sealed, key, { output: 'bytes', additionalData });
+    const plaintext = await aesDecryptAsync(sealed, key, {
+      output: "bytes",
+      additionalData,
+    });
     return utf8Decoder.decode(plaintext);
   },
 };
 
 function isValidBase64(value: string): boolean {
-  if (value.length === 0 || value.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) {
+  if (
+    value.length === 0 ||
+    value.length % 4 !== 0 ||
+    !/^[A-Za-z0-9+/]*={0,2}$/.test(value)
+  ) {
     return false;
   }
-  const paddingIndex = value.indexOf('=');
+  const paddingIndex = value.indexOf("=");
   if (paddingIndex >= 0 && paddingIndex < value.length - 2) return false;
   return true;
 }
@@ -95,26 +112,29 @@ function parseEnvelope(raw: string): EncryptedEnvelope | null {
   try {
     parsed = JSON.parse(raw.slice(ENVELOPE_PREFIX.length));
   } catch {
-    throw new Error('Malformed encrypted session envelope');
+    throw new Error("Malformed encrypted session envelope");
   }
 
-  if (typeof parsed !== 'object' || parsed === null) throw new Error('Malformed encrypted session envelope');
+  if (typeof parsed !== "object" || parsed === null)
+    throw new Error("Malformed encrypted session envelope");
 
   const value = parsed as Partial<EncryptedEnvelope>;
   if (
     value.format !== ENVELOPE_FORMAT ||
     value.version !== ENVELOPE_VERSION ||
-    value.algorithm !== 'AES-256-GCM' ||
-    typeof value.ciphertext !== 'string' ||
+    value.algorithm !== "AES-256-GCM" ||
+    typeof value.ciphertext !== "string" ||
     !isValidBase64(value.ciphertext)
   ) {
-    throw new Error('Malformed encrypted session envelope');
+    throw new Error("Malformed encrypted session envelope");
   }
   return value as EncryptedEnvelope;
 }
 
 function additionalDataFor(storageKey: string): Uint8Array {
-  return utf8Encoder.encode(`${ENVELOPE_FORMAT}:${ENVELOPE_VERSION}:${storageKey}`);
+  return utf8Encoder.encode(
+    `${ENVELOPE_FORMAT}:${ENVELOPE_VERSION}:${storageKey}`,
+  );
 }
 
 /**
@@ -135,35 +155,48 @@ export class EncryptedSessionStorage {
 
   private serialize<T>(operation: () => Promise<T>): Promise<T> {
     const result = this.queue.then(operation);
-    this.queue = result.then(() => undefined, () => undefined);
+    this.queue = result.then(
+      () => undefined,
+      () => undefined,
+    );
     return result;
   }
 
-  private async getEncryptionKey(createIfMissing: boolean): Promise<AESEncryptionKey> {
+  private async getEncryptionKey(
+    createIfMissing: boolean,
+  ): Promise<AESEncryptionKey> {
     let encodedKey = await this.secureStore.getItemAsync(SECURE_STORE_KEY);
     if (encodedKey === null) {
-      if (!createIfMissing) throw new Error('Encrypted session key is missing');
+      if (!createIfMissing) throw new Error("Encrypted session key is missing");
       const generatedKey = await this.crypto.generateKey();
       await this.secureStore.setItemAsync(SECURE_STORE_KEY, generatedKey);
       encodedKey = await this.secureStore.getItemAsync(SECURE_STORE_KEY);
       if (encodedKey !== generatedKey) {
-        throw new Error('Unable to persist encrypted session key');
+        throw new Error("Unable to persist encrypted session key");
       }
     }
     if (!/^[0-9a-f]{64}$/i.test(encodedKey)) {
-      throw new Error('Invalid encrypted session key');
+      throw new Error("Invalid encrypted session key");
     }
     return this.crypto.importKey(encodedKey);
   }
 
-  private async makeEnvelope(storageKey: string, value: string): Promise<string> {
+  private async makeEnvelope(
+    storageKey: string,
+    value: string,
+  ): Promise<string> {
     const key = await this.getEncryptionKey(true);
     const nonce = await this.crypto.randomBytes(GCM_NONCE_SIZE_BYTES);
-    const ciphertext = await this.crypto.encrypt(value, key, nonce, additionalDataFor(storageKey));
+    const ciphertext = await this.crypto.encrypt(
+      value,
+      key,
+      nonce,
+      additionalDataFor(storageKey),
+    );
     const envelope: EncryptedEnvelope = {
       format: ENVELOPE_FORMAT,
       version: ENVELOPE_VERSION,
-      algorithm: 'AES-256-GCM',
+      algorithm: "AES-256-GCM",
       ciphertext,
     };
     return `${ENVELOPE_PREFIX}${JSON.stringify(envelope)}`;
@@ -177,7 +210,11 @@ export class EncryptedSessionStorage {
       const envelope = parseEnvelope(storedValue);
       if (envelope) {
         const key = await this.getEncryptionKey(false);
-        return this.crypto.decrypt(envelope.ciphertext, key, additionalDataFor(storageKey));
+        return this.crypto.decrypt(
+          envelope.ciphertext,
+          key,
+          additionalDataFor(storageKey),
+        );
       }
 
       // A legacy value is kept in memory and restored if encryption, persistence,
@@ -188,14 +225,16 @@ export class EncryptedSessionStorage {
         await this.asyncStorage.setItem(storageKey, encryptedValue);
         const persistedValue = await this.asyncStorage.getItem(storageKey);
         if (persistedValue !== encryptedValue) {
-          throw new Error('Encrypted session migration could not be verified');
+          throw new Error("Encrypted session migration could not be verified");
         }
         return storedValue;
       } catch (error) {
         try {
           await this.asyncStorage.setItem(storageKey, storedValue);
         } catch {
-          throw new Error('Encrypted session migration failed and legacy recovery failed');
+          throw new Error(
+            "Encrypted session migration failed and legacy recovery failed",
+          );
         }
         throw error;
       }
@@ -220,20 +259,25 @@ const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY must be configured');
+  throw new Error(
+    "EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY must be configured",
+  );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: new EncryptedSessionStorage(),
+    storage:
+      Platform.OS === "web"
+        ? new MemoryAuthStorage()
+        : new EncryptedSessionStorage(),
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
   },
 });
 
-AppState.addEventListener('change', (state) => {
-  if (state === 'active') {
+AppState.addEventListener("change", (state) => {
+  if (state === "active") {
     supabase.auth.startAutoRefresh();
   } else {
     supabase.auth.stopAutoRefresh();

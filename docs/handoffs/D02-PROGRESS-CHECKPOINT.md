@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `92c9c3b` (`fix(D02): serialize staff invitation acceptance`); T210 batch pending commit.
+**Latest implementation commit:** `48ebb9b` (`feat(D02): add staff invitation acceptance flow`); T205/T206/T212 batch pending commit.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -44,6 +44,13 @@
   authenticated acceptance RPC, refreshes the session, and verifies the `clinic_staff` role claim before
   navigating to the portal. Six focused tests pass and both localized routes render locally; actual Auth
   invite/SMTP acceptance remains unverified.
+- **Complete:** T212 `/no-access` provides bilingual denial/support copy and signs the session out before
+  routing to sign-in. Unit tests cover sign-out success and error behavior; both locale routes render and
+  Arabic RTL was confirmed.
+- **Complete:** T205/T206 provide mobile force-update and maintenance routes. They read the existing
+  `min_mobile_version.version` and `maintenance.message_en/message_ar` config contracts. Expo web static
+  export and browser route checks pass, including the bilingual maintenance fallback. Native build/device
+  behavior remains unverified.
 
 The nine owner decisions are recorded in `research.md`, `spec.md`, `plan.md`, and task notes. Approval
 does not mean every decision's implementation is complete.
@@ -89,11 +96,18 @@ does not mean every decision's implementation is complete.
   PASS, 7 tests; `deno check --no-lock` for the handler passes.
 - `pnpm.cmd exec expo install --check`: reports only the pre-existing Expo SDK drift in `@expo/ui`,
   `expo`, and `expo-router`; the two newly installed native auth libraries are compatible.
-- `pnpm.cmd i18n:check`: PASS, 713 matching keys.
+- `pnpm.cmd i18n:check`: PASS, 736 matching keys.
 - T210 continuation: `pnpm.cmd --filter web test` PASS (4 files / 14 tests); direct web TypeScript check
   PASS; focused ESLint PASS; `pnpm.cmd i18n:check` PASS (727 keys); admin-create-staff Deno tests PASS
   (8) and `deno check` PASS; local `/en/accept-invite` and `/ar/accept-invite` both returned 200 with the
   expected localized content and RTL direction.
+- T212 continuation: web tests PASS (5 files / 17 tests); direct web TypeScript check and focused ESLint
+  PASS; `pnpm.cmd i18n:check` PASS (733 keys); `/en/no-access` and `/ar/no-access` returned 200 with the
+  sign-out control rendered and Arabic RTL direction confirmed.
+- T205/T206 continuation: `pnpm.cmd --filter mobile test` PASS (14 suites / 37 tests), typecheck PASS,
+  lint PASS (3 pre-existing warnings); token check 0 violations; locale parity PASS (736 keys); Expo web
+  static export PASS (17 routes); focused Playwright route checks PASS (3 tests). No native build/device
+  runtime was available.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 
@@ -108,13 +122,11 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Commit and push the T210 acceptance page, callback, and verification record. Keep SMTP delivery gated
-   by T145; do not claim real invite acceptance until a local or hosted Auth email is delivered.
-2. Extend T143 as later-phase data tables land and investigate T142's supported step-up mechanism without
-   trusting client time.
-3. Continue T173 redirect screens and mobile onboarding/auth screens only along the verified OTP/session
-   path; keep T138/T139 blocked until that path is proven.
-4. Complete T183 after authorized maintenance behavior can be exercised against real dashboard routes.
-5. Keep native OAuth/E2E tasks partial until required packages, credentials, build tooling, and devices are
+1. Commit and push the current mobile system-screen batch and T212 verification record.
+2. Continue independent dashboard work such as T208/T209. Keep T207/T211 on the verified authentication
+   path; do not add a password-reset or login route that bypasses T138's unresolved authoritative OTP design.
+3. Extend T143 as later-phase data tables land and complete T142 only when trusted backend reauthentication
+   and the coordinated deletion lifecycle are implemented.
+4. Keep native OAuth/E2E tasks partial until provider credentials, EAS, Android/Java, and test devices are
    available.
-6. Do not mark D02 complete until T216's end-to-end gate is genuinely satisfied.
+5. Do not mark D02 complete until T216's end-to-end gate is genuinely satisfied.

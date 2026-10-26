@@ -137,7 +137,10 @@
         "forceUpdateMessage": "يلزم استخدام إصدار أحدث من FurEver للمتابعة.",
         "updateApp": "تحديث التطبيق",
         "maintenanceTitle": "FurEver قيد الصيانة",
-        "maintenanceMessage": "يُرجى المحاولة مرة أخرى لاحقًا."
+        "maintenanceMessage": "يُرجى المحاولة مرة أخرى لاحقًا.",
+        "minimumMobileVersion": "الإصدار المطلوب هو {version}.",
+        "updateFromStore": "حدّث FurEver من متجر التطبيقات على جهازك، ثم افتحه مرة أخرى.",
+        "currentMobileVersion": "الإصدار المثبت: {version}"
       },
       "acceptInvite": {
         "title": "قبول الدعوة",
@@ -151,9 +154,17 @@
         "passwordMismatch": "كلمتا المرور غير متطابقتين.",
         "passwordTooShort": "استخدم 6 أحرف أو أرقام على الأقل.",
         "acceptanceFailed": "تعذر قبول الدعوة. تحقق من الرابط وحاول مرة أخرى، أو تواصل مع مسؤول العيادة.",
-        "accepting": "جارٍ إعداد حسابك?",
+        "accepting": "جارٍ إعداد حسابك…",
         "setPassword": "حفظ كلمة المرور والمتابعة",
         "success": "أصبح حسابك جاهزًا. جارٍ فتح بوابة العيادة?"
+      },
+      "noAccess": {
+        "title": "لا تملك صلاحية الوصول",
+        "message": "هذا الحساب غير مصرح له باستخدام بوابة العيادة. إذا كنت تعتقد أن هذا خطأ، فتواصل مع مسؤول العيادة أو دعم FurEver.",
+        "signOut": "تسجيل الخروج",
+        "signingOut": "جارٍ تسجيل الخروج…",
+        "signOutFailed": "تعذر تسجيل خروجك. تحقق من اتصالك وحاول مرة أخرى.",
+        "backToSignIn": "العودة إلى تسجيل الدخول"
       }
     },
     "audit": {

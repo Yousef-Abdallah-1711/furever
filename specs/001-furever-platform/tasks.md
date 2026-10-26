@@ -861,10 +861,14 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   Profile).
 - [ ] T204 [P] [D02] Build `/legal/terms`, `/legal/privacy` — `mobile/app/legal/[doc].tsx` (Spec;
   pattern: Profile). [AUTH-04]
-- [ ] T205 [P] [D02] Build `/force-update` — `mobile/app/force-update.tsx` (Spec; pattern: Splash).
-  [PLT-01]
-- [ ] T206 [P] [D02] Build `/maintenance` — `mobile/app/maintenance.tsx` (Spec; pattern: Splash,
-  includes T183's banner equivalent for mobile). [PLT-02]
+- [x] T205 [P] [D02] Build `/force-update` - `mobile/app/force-update.tsx` (Spec; pattern: Splash). [PLT-01]
+  Verified 2026-10-27: reads `min_mobile_version.version`, shows installed/required versions, and gives update
+  guidance. Expo web export and Playwright route test pass; unit tests cover version parsing. Native device/build was
+  not run and is not claimed.
+- [x] T206 [P] [D02] Build `/maintenance` - `mobile/app/maintenance.tsx` (Spec; pattern: Splash, includes T183's
+  banner equivalent for mobile). [PLT-02] Verified 2026-10-27: reads localized `maintenance.message_en/message_ar`
+  with the bilingual fallback. Expo web export and Playwright verify the route, fallback, and Arabic locale; unit
+  tests cover config parsing. Native device/build was not run and is not claimed.
 - [ ] T207 [P] [D02] Build `/login`, `/mfa` — `web/src/app/[locale]/(auth)/{login,mfa}/page.tsx` (Built).
   [CS-01][AD-01]
 - [ ] T208 [P] [D02] Build Admin team — `web/src/app/[locale]/(admin)/team/page.tsx` (Spec; pattern:
@@ -878,8 +882,10 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   states; live invitation/Auth/SMTP acceptance is not verified, so this task remains open.
 - [ ] T211 [P] [D02] Build `/forgot-password` — `web/src/app/[locale]/(auth)/forgot-password/page.tsx`
   (Spec; pattern: Sign in).
-- [ ] T212 [P] [D02] Build `/no-access` — `web/src/app/[locale]/(auth)/no-access/page.tsx` (Spec; pattern:
-  Sign in). [AD-01]
+- [x] T212 [P] [D02] Build `/no-access` - `web/src/app/[locale]/(auth)/no-access/page.tsx` (Spec; pattern:
+  Sign in). [AD-01] Verified 2026-10-27: bilingual page explains lack of clinic-portal access and offers sign-out;
+  the session is cleared before redirecting to sign-in. Unit tests cover success and failure behavior; both
+  localized routes render with Arabic RTL direction.
 
 ## E2E / unit
 

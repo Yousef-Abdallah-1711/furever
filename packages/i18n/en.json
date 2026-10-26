@@ -137,7 +137,10 @@
         "forceUpdateMessage": "A newer version of FurEver is required to continue.",
         "updateApp": "Update app",
         "maintenanceTitle": "FurEver is under maintenance",
-        "maintenanceMessage": "Please try again later."
+        "maintenanceMessage": "Please try again later.",
+        "minimumMobileVersion": "The required version is {version}.",
+        "updateFromStore": "Update FurEver from your device's app store, then open it again.",
+        "currentMobileVersion": "Installed version: {version}"
       },
       "acceptInvite": {
         "title": "Accept your invitation",
@@ -154,6 +157,14 @@
         "accepting": "Setting up your account…",
         "setPassword": "Set password and continue",
         "success": "Your account is ready. Opening the clinic portal…"
+      },
+      "noAccess": {
+        "title": "You do not have access",
+        "message": "This account is not authorized to use the clinic portal. If you think this is a mistake, contact your clinic administrator or FurEver support.",
+        "signOut": "Sign out",
+        "signingOut": "Signing out…",
+        "signOutFailed": "We could not sign you out. Check your connection and try again.",
+        "backToSignIn": "Back to sign in"
       }
     },
     "audit": {

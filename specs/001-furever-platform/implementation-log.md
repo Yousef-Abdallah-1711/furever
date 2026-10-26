@@ -2287,3 +2287,49 @@ invitation session or SMTP delivery was exercised.
 `backend/supabase/functions/admin-create-staff/index.ts` and test, `backend/supabase/config.toml`, locale
 dictionaries, `docs/environments.md`, `tasks.md`, this log, and the D02 checkpoint. **Commit**: recorded
 in the checkpoint update.
+
+## D02 - T212: no-access screen (complete, 2026-10-27)
+
+Added the localized `/no-access` page with a generic explanation, support guidance, and an explicit
+sign-out action. The action calls the browser Supabase client's `signOut()` and navigates to sign-in only
+after the session clear succeeds; failures remain on the page and show a retryable message. Added English
+and Arabic copy without exposing account, role, or suspension details.
+
+**Verification**: web tests PASS (5 files, 17 tests); direct TypeScript check and focused ESLint PASS;
+`pnpm.cmd i18n:check` PASS (733 matching keys); local Next dev server returned 200 for both
+`/en/no-access` and `/ar/no-access`, with the sign-out control present and Arabic `dir="rtl"` confirmed.
+
+**Files**: `web/src/app/[locale]/(auth)/no-access/page.tsx`,
+`web/src/components/auth/NoAccessScreen.tsx`, `web/src/lib/sign-out.ts` and test, both locale dictionaries,
+`tasks.md`, this log, and the D02 checkpoint. **Commit**: recorded in the checkpoint update.
+
+## D02 - T205/T206: mobile system screens (complete, 2026-10-27)
+
+Added `/force-update` and `/maintenance` routes. The force-update screen reads
+`app_config.min_mobile_version.version`, shows the installed and required versions, and explains how to update
+through the device's store. No store deep link was invented because `mobile/app.json` has no iOS bundle ID or
+Android package name. The maintenance screen reads the selected `message_en`/`message_ar` value from the
+existing `app_config.maintenance` contract, with the existing bilingual generic message as fallback. Both are
+standalone routes outside the protected tab group, so the tab guard does not redirect them back into itself.
+
+The first static export exposed that `mobile/babel.config.js` referenced `babel-preset-expo` without declaring it;
+added the SDK 57-compatible preset. SSR then exposed native AsyncStorage access during Supabase initialization.
+Added volatile in-memory Auth storage for web only, preserving T164's encrypted SecureStore/AsyncStorage adapter
+on native. A subsequent Metro resolution error identified the preset's JSX transform plugin as missing from
+the mobile package's pnpm dependency context, so that exact plugin was added as a dev dependency. With these
+build fixes, Expo's web static export completed and emitted all 17 routes, including both system screens.
+
+T205/T206 are complete for their screen and static-web route requirements. Browser verification exercised the
+force-update copy and maintenance fallback in English and Arabic. No native development build, emulator, or
+device is available, so native runtime and screenshot behavior are not claimed.
+
+**Verification**: `pnpm.cmd --filter mobile test` PASS (14 suites, 37 tests); `pnpm.cmd --filter mobile typecheck`
+PASS; `pnpm.cmd --filter mobile lint` PASS with 3 pre-existing warnings in unrelated i18n files;
+`pnpm.cmd i18n:check` PASS (736 keys); direct design-token lint PASS (0 violations) for the new mobile files;
+`pnpm.cmd --filter mobile exec playwright test tests/d02-system-screens.spec.ts` PASS (3 tests). Expo web static
+export PASS (17 routes) using non-secret placeholder Supabase build values. No APK/EAS build was run.
+
+**Files**: `mobile/app/force-update.tsx`, `mobile/app/maintenance.tsx`, `mobile/src/lib/system-messages.ts` and
+test, `mobile/src/lib/memory-auth-storage.ts` and test, `mobile/src/lib/supabase.ts`, `mobile/package.json`,
+`pnpm-lock.yaml`, both locale dictionaries, `tasks.md`, this log, and the D02 checkpoint. **Commit**: recorded in
+the checkpoint update.
