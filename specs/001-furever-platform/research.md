@@ -249,25 +249,34 @@ sources only. Sources are linked inline for every other finding.
   is documented, but FurEver cannot runtime-confirm it against the local project while Google is
   disabled. These are local observations; no staging or production project was accessed, so hosted
   settings remain unknown.
-- **Explicit OAuth linking**: Supabase documents Manual Linking (currently marked beta) for a signed-in
-  user to link an OAuth identity, including `supabase.auth.linkIdentity({ provider: 'google' })`. It is
-  disabled by default and must be enabled in project Auth configuration (or with
+- **Explicit identity addition**: Supabase documents Manual Linking (currently marked beta) and
+  `linkIdentity()` for linking OAuth identities. This is OAuth-specific. The current Identity Linking
+  FAQ documents adding email/password auth to an OAuth account with `updateUser({ password })`; the
+  same FAQ says email signup after OAuth with the same address is protected against account
+  enumeration. Separately, the anonymous-conversion guide documents converting an anonymous account
+  by setting an email with `updateUser({ email })` and completing email verification (OTP/link); this
+  is not evidence for linking a second email identity to an established Google-only account. Manual
+  Linking is disabled by default and must be enabled in project Auth configuration (or with
   `GOTRUE_SECURITY_MANUAL_LINKING_ENABLED=true` when self-hosting). T122 set the local config-file
   value to true, but the local Auth container has not restarted and runtime state is unconfirmed. If
   this feature ships, the equivalent hosted project toggle is also a prerequisite; the local setting
   does not change hosted projects.
 - **T179 contract mismatch, unresolved**: T179 plans to let a signed-in Google-only owner attach an
-  email-code identity using `verify-otp-guard`'s `send-code`/`verify-code` flow. Current Supabase docs
-  describe Manual Linking as OAuth identity linking and document adding email/password authentication
-  to an OAuth account with `updateUser({ password: '...' })`. They do not establish that a signed-in
-  Google-only owner can attach a second email-code identity through the planned `verify-otp-guard`
-  flow. Do not assume that flow is supported or substitute an undocumented API sequence. The T179
-  email-code linking contract remains unresolved; this research does not choose an implementation.
+  email-code identity using `verify-otp-guard`'s `send-code`/`verify-code` flow. The documented manual
+  `linkIdentity()` path is OAuth-specific, and `updateUser({ password })` adds password authentication
+  to an OAuth account. The `updateUser({ email })` plus verification example in the anonymous-conversion
+  guide is for converting an anonymous account. These docs do not establish whether `updateUser({ email })`
+  or any guarded code flow attaches a separate email identity to an established Google-only account.
+  Implementation must confirm the owner-approved secure sequence and the T138/T139 contract; do not
+  assume the guard flow is sufficient or substitute an undocumented API sequence. The T179 email-code
+  linking contract remains unresolved; this research does not choose an implementation.
+- **Conclusion**: Whether `updateUser({ email })` or a guarded code flow attaches a separate email
+  identity to an established Google-only account remains unestablished; T179 stays unresolved.
 - **Scope and alternatives**: This spike confirms the documented default and current local settings; it
   does not exercise OAuth locally or settle T179's email-code linking design. No custom account-merge
   behavior or linking API flow is selected here.
 - **Official sources**: [Supabase Auth: Identity Linking](https://supabase.com/docs/guides/auth/auth-identity-linking),
-  [JavaScript API reference: linkIdentity](https://supabase.com/docs/reference/javascript/auth-linkidentity),
+  [Supabase Auth: Anonymous sign-ins](https://supabase.com/docs/guides/auth/auth-anonymous),
   [JavaScript API reference: updateUser](https://supabase.com/docs/reference/javascript/auth-updateuser),
   [Supabase CLI config reference](https://supabase.com/docs/guides/local-development/cli/config).
 

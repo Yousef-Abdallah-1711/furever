@@ -1157,6 +1157,12 @@ T122 is complete as a configuration-file change: only
 `tomllib` independently parsed and confirmed the value. The local Auth container was not restarted, so
 runtime application is unconfirmed. Staging/production Manual Linking toggles remain prerequisites.
 
+T179 received a documentation-only research update: official docs describe OAuth `linkIdentity()` and
+`updateUser({ password })` for adding password authentication to OAuth accounts. The separate
+`updateUser({ email })` plus verification example is for anonymous-account conversion, not evidence for
+attaching a second email identity to an established Google-only account. Whether that call or any guarded
+code flow attaches such an identity remains unestablished. T179 remains open; no auth flow was selected.
+
 T120 remains open. Supabase CLI 2.121.0 status reported local API `127.0.0.1:54321` and Mailpit
 `127.0.0.1:54324`. Three direct `POST /auth/v1/otp` sends for synthetic
 `t120-20261026@example.test`, 1.2 seconds apart, returned 200 and produced three inbox messages. Six
