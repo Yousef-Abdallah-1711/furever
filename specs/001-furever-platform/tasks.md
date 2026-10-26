@@ -543,11 +543,11 @@ environments only, not local dev.
 
 ## Role claim, OTP guard, Edge Functions
 
-- [ ] T135 [D02] Extend `custom_access_token_hook` (D00b skeleton) to inject `profiles.role` as
+- [x] T135 [D02] Extend `custom_access_token_hook` (D00b skeleton) to inject `profiles.role` as
   `user_role` (research.md §8). Depends on T124. [AD-01]
-- [ ] T136 [P] [D02] RPC `record_otp_attempt(p_identifier, p_outcome)` (2026-10-18 — was
+- [x] T136 [P] [D02] RPC `record_otp_attempt(p_identifier, p_outcome)` (2026-10-18 — was
   `p_phone`). Depends on T134. [AUTH-01]
-- [ ] T137 [P] [D02] RPC `get_otp_lock_status(p_identifier)` (2026-10-18 — was `p_phone`). Depends on
+- [x] T137 [P] [D02] RPC `get_otp_lock_status(p_identifier)` (2026-10-18 — was `p_phone`). Depends on
   T134. [AUTH-01]
 - [ ] T138 [D02] **New (this fix pass)**: harden the direct-Auth path per T120's spike result and the
   owner decision recorded in `research.md`'s "Is the email-code guard bypassable?" section (a Send Email

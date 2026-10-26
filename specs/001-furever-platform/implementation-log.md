@@ -1426,4 +1426,68 @@ pass). Read all four changed files in full; no scope creep, no provider reorderi
 `mobile/src/lib/supabase.ts`, `web/src/app/providers.tsx`.
 
 **Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS.
-**Commit**: (pending — this pass's files not yet committed).
+**Commit**: `e60d382`.
+
+## D02 Batch 5 — T135, T136, T137: role claim hook and OTP lockout RPCs (2026-10-26)
+
+**Scope**: extends the T016 `custom_access_token_hook` skeleton to inject `profiles.role` as
+`user_role`; adds `record_otp_attempt(p_identifier, p_outcome)` and `get_otp_lock_status(p_identifier)`,
+the two service-only RPCs the future `verify-otp-guard` Edge Function (T139, still blocked on Decision A)
+will call. Dispatched to Codex (`gpt-6-luna`, `high`), one batch.
+
+**Same Docker-sandbox limitation as every prior batch, a new secondary symptom this time**: Codex's
+sandbox was denied Docker API access as usual, and additionally could not spawn `supabase`/`pnpm` at all
+(PowerShell execution-policy block, plus a denied write to `telemetry.json`). It fell back to applying
+the migration via `psql` directly against the host's already-running local Postgres and ran its own
+functional test there — explicitly flagged in its own report that this was **not** a clean reset, so it
+could not be trusted as the batch's real verification. Treated as informational only; full independent
+verification below is the orchestrator's own, from a genuine clean reset.
+
+**Design, read directly from the SQL (not just from Codex's report)**: `record_otp_attempt` folds
+"outcome" into the single `otp_attempts` row per identifier: `sent`/`correct`/`cancelled` reset
+`wrong_count` to 0; a `wrong` outcome increments `wrong_count`, *except* when `wrong_count` is already 4
+— the 5th wrong attempt instead resets `wrong_count` to 0 and counts as a cancellation (research.md §3's
+"5 wrong attempts cancels the code"). A cancellation (explicit or 5th-wrong-triggered) increments
+`cancelled_count` within a 60-minute sliding window anchored at `window_started_at` (a new window starts,
+and `cancelled_count` resets to 1, once the old window is more than 60 minutes stale); the 3rd
+cancellation inside a live window sets `locked_until = now() + 15 minutes`. `get_otp_lock_status` derives
+`is_locked` from `locked_until > now()` and returns a zero-row default for an identifier never recorded.
+Both RPCs and the hook are `SECURITY DEFINER`/`SET search_path = ''`; `record_otp_attempt`/
+`get_otp_lock_status` are `REVOKE ALL FROM PUBLIC, anon, authenticated` + `GRANT EXECUTE TO service_role`
+only (matching `otp_attempts`' own table-level grant model from Batch 4); the hook is `GRANT EXECUTE TO
+supabase_auth_admin` only, `REVOKE` from `PUBLIC, anon, authenticated` (matching T016's auth-hook grant
+pattern exactly).
+
+**Full independent verification, from a genuine clean reset** (`pnpm --filter backend exec supabase db
+reset` — all 16 migrations, including this batch's, applied in order) — every check below is the
+orchestrator's own direct `psql`/`docker exec` query, not Codex's self-report:
+- Ran the exact 15-wrong-attempt sequence against a fresh identifier: wrong_count climbed 1→4 three
+  times, resetting to 0 with `cancelled_count` incrementing to 1, 2, then 3 on the 5th/10th/15th wrong
+  attempt — the 15th also set `is_locked = true` with `locked_until` ≈ 15 minutes out. Reproduced
+  Codex's own reported trace exactly, independently.
+- Confirmed the lock's remaining TTL (`locked_until - now()`) was consistent with a 15-minute lock
+  granted moments earlier, and that `cancelled_count` stays at 3.
+- An unseen identifier returns the zero-row default (`is_locked=false, wrong_count=0, cancelled_count=0`),
+  not an empty result set.
+- An explicit `cancelled` outcome after one `wrong` resets `wrong_count` to 0 and records exactly one
+  cancellation strike.
+- A `correct` outcome after one `wrong` resets `wrong_count` to 0 **and preserves** the existing
+  cancellation strike count — confirming cancellation strikes survive a subsequently-correct code entry
+  within the window, as the brief required.
+- `SET ROLE anon; SELECT record_otp_attempt(...)` → `ERROR: permission denied for function
+  record_otp_attempt` — confirmed the service-only grant is enforced, not just declared.
+- Inserted a synthetic `auth.users` + `public.profiles` row (role `owner`, the only role/status insert
+  the `protect_profile_role_status` trigger allows without an admin JWT) in the disposable reset DB, then
+  called `custom_access_token_hook` with a synthetic event: returned
+  `claims.user_role = "owner"` injected alongside the existing claims, nothing else altered.
+- Called the hook again for a `user_id` with no matching profile row: returned the event **unchanged**
+  (no `user_role` key added) — confirms the documented no-profile fallback.
+- `has_function_privilege` confirmed `supabase_auth_admin` can execute the hook and `authenticated`/`anon`
+  cannot.
+
+**Files this pass**: `backend/supabase/migrations/20261026120008_role_hook_and_otp_rpcs.sql`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`); all verification above performed directly by the orchestrator
+against a genuine clean reset, not accepted from Codex's own (admittedly non-clean) test run. **Result**:
+PASS.
+**Commit**: (pending — this pass's file not yet committed).
