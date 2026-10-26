@@ -2238,3 +2238,20 @@ Function invocation were not run.
 `backend/supabase/tests/015_clinic_staff_access.test.sql` and `016_staff_invitations.test.sql` plus new
 `017_audited_staff_assignments.test.sql`; `tasks.md`, the data model and RPC/Edge Function contracts, this
 log, and the D02 checkpoint. **Commit**: `f77a56a` (implementation; checkpoint refresh follows).
+
+### T140 concurrency follow-up (2026-10-27)
+
+Added `20261027133000_serialize_invitation_acceptance.sql` as a forward-only migration. The
+`accept_staff_invitation()` RPC now locks the caller's `auth.users` row before checking profile state or
+consuming the pending invitation. Concurrent retries for one Auth user therefore serialize: the later
+request observes the accepted profile/invitation and takes the existing idempotent return path instead
+of racing into a duplicate profile or clinic assignment. The migration was applied incrementally to the
+local Supabase database; no reset or hosted database operation was used.
+
+**Verification**: `pnpm.cmd --filter backend exec supabase test db` PASS (9 files, 84 assertions) after
+the migration was applied. The existing acceptance and retry assertions pass against the updated RPC.
+Concurrent database sessions were not separately stress-tested. T140 remains partial pending SMTP
+readiness and the T210 acceptance UI/session-refresh integration.
+
+**Files**: `backend/supabase/migrations/20261027133000_serialize_invitation_acceptance.sql` and this log.
+**Commit**: recorded in the subsequent checkpoint.

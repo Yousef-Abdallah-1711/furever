@@ -99,7 +99,9 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Build T210's `/accept-invite` screen around `accept_staff_invitation()` and refresh the session so the
+1. Finish recording and committing the local-only T140 concurrency migration
+   `20261027133000_serialize_invitation_acceptance.sql`; its full pgTAP suite passes (9 files / 84
+   assertions). Then build T210's `/accept-invite` screen around `accept_staff_invitation()` and refresh the session so the
    `user_role` claim reflects the accepted clinic assignment. Keep SMTP delivery gated by T145.
 2. Extend T143 as later-phase data tables land and investigate T142's supported step-up mechanism without
    trusting client time.
