@@ -1939,3 +1939,32 @@ added. No `.env` file or `config.toml` was changed.
 balanced and the local/hosted distinctions are present. No runtime or deployment check was run.
 
 **Files**: `docs/environments.md`, `specs/001-furever-platform/tasks.md`, and this log.
+
+## D02 - T189: Maestro and Playwright setup (partial, 2026-10-26)
+
+Added `mobile/.maestro/config.yaml` as the native Maestro workspace configuration. It discovers future
+YAML flows under `.maestro/flows/`; no flow was added because the D02 native auth and screen journeys are
+incomplete. Added a separate `mobile` package script, `test:maestro`, which runs `maestro test .maestro`.
+This remains distinct from the existing `mobile/playwright.config.ts` and screenshot specs.
+
+The existing `web/playwright.config.ts`, `web` Playwright dependency, and `test:e2e` script already point
+to the web screenshot tests and the configured Next.js server; they were left unchanged. The official
+[Expo SDK 57 app config reference](https://docs.expo.dev/versions/v57.0.0/config/app/) and Maestro's
+[workspace configuration](https://docs.maestro.dev/maestro-flows/workspace-management/project-configuration)
+and [CLI installation guide](https://docs.maestro.dev/maestro-cli/how-to-install-maestro-cli) were checked.
+The Expo config currently has no iOS bundle identifier or Android package name, so future native flows
+will need those app IDs defined before they can launch a standalone build.
+
+**Checks**: `pnpm.cmd --filter web exec playwright test --list` PASS (3 tests discovered across the two
+existing screenshot spec files); Node package-script assertion PASS; `git diff --check` PASS. Maestro
+execution could not be verified: `pnpm.cmd --filter mobile exec maestro --version` fails because the
+Maestro CLI is not installed/on PATH, and neither `java` nor `adb` is available. No emulator/simulator,
+native app build, or Maestro flow was run. The YAML parser check was unavailable because the repo does not
+have the `yaml` Node package installed; no dependency was added solely for this setup check.
+
+T189 remains open/partial until the external Maestro CLI prerequisites are installed and the workspace
+configuration can be validated with the CLI. No CI workflow was added (T074/T075 remain descoped), and no
+app feature code or D03 file was changed.
+
+**Files**: `mobile/.maestro/config.yaml`, `mobile/package.json`, and this log. The T189 checkbox remains
+open in `tasks.md`.

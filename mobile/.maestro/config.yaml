@@ -1,0 +1,3 @@
+# Native Maestro flows belong under flows/ when the app journeys are ready.
+flows:
+  - flows/**/*.yaml
