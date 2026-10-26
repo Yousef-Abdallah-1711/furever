@@ -2237,4 +2237,4 @@ Function invocation were not run.
 **Files**: the new `admin-create-staff` Edge Function and tests; the three migrations above;
 `backend/supabase/tests/015_clinic_staff_access.test.sql` and `016_staff_invitations.test.sql` plus new
 `017_audited_staff_assignments.test.sql`; `tasks.md`, the data model and RPC/Edge Function contracts, this
-log, and the D02 checkpoint.
+log, and the D02 checkpoint. **Commit**: `f77a56a` (implementation; checkpoint refresh follows).
