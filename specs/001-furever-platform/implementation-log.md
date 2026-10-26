@@ -1618,4 +1618,81 @@ T213-T216's E2E logins than hand-reconstructed here.
 
 **Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS, with the fail-open gap and the two skipped
 states explicitly recorded above rather than hidden.
-**Commit**: (pending — this pass's file not yet committed).
+**Commit**: `041f836`.
+
+## D02 Batch 7 — T156-T163: pgTAP security-coverage tests (2026-10-26, two real fix cycles)
+
+**Scope**: 8 pgTAP tasks covering `profiles` role/status protection, the T157 suspended-user proxy,
+`profiles`/`consents`/`push_tokens` owner-only RLS, `write_audit_log()` correctness and immutability,
+the `feature_flags`/`app_config` audit triggers and `super_admin`-only write gate, `otp_attempts`' zero
+`authenticated` access, and `clinics.status`'s column-level revoke. Dispatched to Codex (`gpt-6-luna`,
+`high`) across two passes — the original batch, then one real fix cycle via `--session` on the exact
+prior thread — running concurrently with Batches 8-10 throughout (disjoint files throughout: `backend/supabase/tests/`
+vs. `web/src/`/`mobile/app/`, confirmed via `touchedFiles` every time).
+
+**Role-impersonation technique**, confirmed against Supabase's own current testing docs: a new
+`tests.authenticate_as(p_user_id, p_user_role)` helper (in a new `tests` schema, `REVOKE ALL ... FROM
+PUBLIC`) calls `set_config('request.jwt.claims', jsonb_build_object('sub', ..., 'role', 'authenticated',
+'user_role', ...)::text, true)`, then each test does `SET LOCAL ROLE authenticated` (or `service_role`
+for the two tasks that need it). This matches how `auth.uid()`/`auth.jwt()->>'user_role'` actually read
+claims, and is now a reusable convention for every later phase's pgTAP suite, not just D02's.
+
+**First real run (clean `supabase db reset` + `supabase test db`, the orchestrator's own — Codex's
+sandbox still can't reach Docker, same as every batch since D00b) found three real, structural bugs no
+static review caught**:
+1. `010_profile_access.test.sql`'s fixture `INSERT` into `profiles` included one row with
+   `status='suspended'`, but `protect_profile_role_status()`'s INSERT branch only allows
+   `role='owner'`/`status='active'` unless the caller's JWT claims already say `admin`/`super_admin` —
+   and at that point in the file, no claim had been set yet. Fixed by calling
+   `tests.authenticate_as(..., 'super_admin')` immediately before that insert.
+2. `011_audit_configuration.test.sql` nested data-modifying CTEs (`WITH x AS (UPDATE ... RETURNING
+   key) SELECT count(*) FROM x`) inside a scalar subquery passed as an argument to `is(...)` —
+   PostgreSQL requires a modifying `WITH` to be the top-level clause of its own statement. Fixed by
+   moving `WITH` to wrap the whole statement, with `is()` referencing the CTE from its own subquery.
+3. Every 3-argument `throws_ok(sql, errcode, description)` call across `011` and `012` was actually
+   being interpreted by pgTAP as `throws_ok(sql, errcode, errmsg)` — the 3rd argument is compared
+   against the **real exception message**, not used as a free-form description; pgTAP's 3-arg
+   overload has no separate description slot. This produced false failures on otherwise-correct
+   security behavior (the underlying REVOKEs were working exactly as intended; only the test's own
+   assertion syntax was wrong). Fixed by switching to the 4-arg form
+   `throws_ok(sql, errcode, real_errmsg, description)` with the real `permission denied for table ...`
+   messages captured directly from the first failing run's own output, and `NULL` for the two INSERT
+   cases in `011` where the exact RLS violation message wasn't independently captured (pgTAP's
+   documented `NULL`-message form: match the SQLSTATE only, skip the message comparison).
+
+**Every fix dispatched with the real failure output** (not a redescription) via `--session` continuing
+the exact prior Codex thread, per the established rework pattern.
+
+**Second, full independent run, from a genuine clean reset, after the fixes** — the orchestrator's own,
+not accepted from Codex's self-report (whose own sandbox still couldn't reach Docker to verify its own
+fix):
+```
+backend/supabase/tests/000_rls_check.test.sql .................. ok
+backend/supabase/tests/010_profile_access.test.sql .............. ok
+backend/supabase/tests/011_audit_configuration.test.sql ......... ok
+backend/supabase/tests/012_service_and_clinic_access.test.sql ... ok
+All tests successful.
+Files=4, Tests=29, Result: PASS
+```
+Also independently read every assertion against the real migrations before this run (not just after
+the failures) — confirmed `otp_attempts`/`clinics.status`'s revokes produce `permission denied for
+table ...` (not a column-specific message, worth noting since the brief had guessed differently before
+being corrected by the real output), confirmed `audit_logs`' REVOKE-ALL-including-service_role design
+(Batch 3) is exercised by this suite's `service_role` UPDATE/DELETE assertions, and confirmed the T161
+RLS-vs-grant distinction is tested correctly (an `UPDATE` blocked by RLS returns 0 affected rows,
+no error; an `INSERT` blocked by RLS's `WITH CHECK` raises a real `42501` — different Postgres
+behaviors for the same logical denial, both asserted correctly).
+
+**Infrastructure note, separate from Codex's sandbox limitation**: partway through this batch, the
+orchestrator's own local Docker Desktop stopped responding (`dockerDesktopLinuxEngine` pipe missing,
+process not running) twice in a row — unrelated to anything this batch touched, likely a resource/idle
+timeout on a machine running several concurrent dev processes this session. Restarted directly
+(`Docker Desktop.exe`, waited for `docker info` to succeed) each time before re-running the suite; not a
+code defect.
+
+**Files this pass**: `backend/supabase/tests/010_profile_access.test.sql`,
+`011_audit_configuration.test.sql`, `012_service_and_clinic_access.test.sql` (all new).
+
+**Worker**: Codex (`gpt-6-luna`, `high`), two passes; both the original and the post-fix clean-reset
+verification were performed directly by the orchestrator. **Result**: PASS, 29/29 pgTAP assertions.
+**Commit**: (pending — this pass's files not yet committed).

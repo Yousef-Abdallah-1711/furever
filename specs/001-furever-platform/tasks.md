@@ -631,15 +631,18 @@ environments only, not local dev.
 
 ## pgTAP (auth/roles/audit policy coverage)
 
-- [ ] T156 [P] [D02] pgTAP: `authenticated` cannot update `profiles.role`/`status`. [AUTH-10]
-- [ ] T157 [P] [D02] pgTAP: a suspended user's API call is rejected. [AUTH-10]
-- [ ] T158 [P] [D02] pgTAP: RLS coverage for `profiles`/`consents`/`push_tokens` (owner-only). [AUTH-04][AUTH-09]
-- [ ] T159 [P] [D02] pgTAP: `write_audit_log()` inserts a correct, immutable row.
-- [ ] T160 [P] [D02] pgTAP: writing to `feature_flags`/`app_config` auto-produces an `audit_logs` row via
+- [x] T156 [P] [D02] pgTAP: `authenticated` cannot update `profiles.role`/`status`. [AUTH-10]
+- [x] T157 [P] [D02] pgTAP: a suspended user's API call is rejected. **Proxy test, see
+  implementation-log**: no general API/RPC exists yet to reject a suspended caller against; the test
+  instead confirms a suspended user's own `profiles` row remains self-readable (status alone doesn't
+  block self-select). Revisit once a real suspension-gated RPC exists in a later phase. [AUTH-10]
+- [x] T158 [P] [D02] pgTAP: RLS coverage for `profiles`/`consents`/`push_tokens` (owner-only). [AUTH-04][AUTH-09]
+- [x] T159 [P] [D02] pgTAP: `write_audit_log()` inserts a correct, immutable row.
+- [x] T160 [P] [D02] pgTAP: writing to `feature_flags`/`app_config` auto-produces an `audit_logs` row via
   the trigger attached directly in T131/T132.
-- [ ] T161 [P] [D02] pgTAP: only `super_admin` can write `feature_flags`/`app_config`.
-- [ ] T162 [P] [D02] pgTAP: `otp_attempts` has zero `authenticated`-role access (service-role only).
-- [ ] T163 [P] [D02] pgTAP: `clinics.status` cannot be updated directly by `admin` (confirms T133's
+- [x] T161 [P] [D02] pgTAP: only `super_admin` can write `feature_flags`/`app_config`.
+- [x] T162 [P] [D02] pgTAP: `otp_attempts` has zero `authenticated`-role access (service-role only).
+- [x] T163 [P] [D02] pgTAP: `clinics.status` cannot be updated directly by `admin` (confirms T133's
   revoke).
 
 ## Supabase clients
