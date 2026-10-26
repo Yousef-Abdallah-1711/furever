@@ -683,7 +683,11 @@ environments only, not local dev.
 
 - [ ] T173 [D02] Mobile route guard `mobile/src/lib/route-guard.ts`: redirects on signed-out, profile
   incomplete, suspended, force-update, maintenance. Depends on T135, T164, T144.
-- [ ] T174 [D02] Web route guard (extends T167/T168): same five states for the dashboard. Depends on T167.
+- [x] T174 [D02] Web route guard (extends T167/T168): same five states for the dashboard. Depends on T167.
+  **Scope note**: implements signed-out (T167), role gate (T167), suspended/deleted (→ `/no-access`), and
+  maintenance (→ `/maintenance`, new `app_config` key, see implementation-log). Profile-incomplete and
+  force-update are deliberately not implemented for the web dashboard — see implementation-log's Batch 9
+  entry for why; not a silent gap.
 - [ ] T175 [D02] Onboarding flow orchestration `mobile/src/features/onboarding/router.ts` — new-user path
   (Language→Onboarding→Welcome→**Email**→Verify→Profile→pet steps→Permissions→Summary→Home, 2026-10-18 —
   was Phone) and the returning-user path (Welcome→Sign-in **by email or Google**→Verify (email path

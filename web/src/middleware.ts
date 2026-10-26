@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { routing } from './i18n/routing';
 
 const intl = createMiddleware(routing);
-const publicRoutes = new Set(['login', 'forgot-password', 'accept-invite', 'no-access', 'mfa']);
+const publicRoutes = new Set(['login', 'forgot-password', 'accept-invite', 'no-access', 'mfa', 'maintenance']);
 const dashboardRoles = new Set(['clinic_staff', 'admin', 'super_admin']);
 
 function localizedPath(pathname: string): { locale: string; route: string } {
@@ -49,6 +49,23 @@ export default async function middleware(request: NextRequest): Promise<NextResp
   const role = typeof roleClaim === 'string' ? roleClaim : null;
   if (!user) return redirectWithCookies(request, `/${locale}/login`, response);
   if (!role || !dashboardRoles.has(role)) return redirectWithCookies(request, `/${locale}/no-access`, response);
+
+  const { data: profile } = await supabase.from('profiles').select('status').eq('id', user.id).maybeSingle();
+  if (profile?.status === 'suspended' || profile?.status === 'deleted') {
+    return redirectWithCookies(request, `/${locale}/no-access`, response);
+  }
+
+  const { data: maintenanceConfig } = await supabase.from('app_config').select('value').eq('key', 'maintenance').maybeSingle();
+  const maintenanceValue = maintenanceConfig?.value;
+  if (
+    maintenanceValue &&
+    typeof maintenanceValue === 'object' &&
+    'enabled' in maintenanceValue &&
+    maintenanceValue.enabled === true
+  ) {
+    return redirectWithCookies(request, `/${locale}/maintenance`, response);
+  }
+
   if (segments[0] === 'admin') {
     const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (data?.currentLevel !== 'aal2') return redirectWithCookies(request, `/${locale}/mfa`, response);

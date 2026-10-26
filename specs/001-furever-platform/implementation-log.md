@@ -1555,4 +1555,67 @@ since the backgrounded `next dev` process didn't respond to a plain `kill`).
 
 **Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS, with the authenticated-path caveat above
 noted rather than hidden.
-**Commit**: (pending — this pass's files not yet committed).
+**Commit**: `4044205`.
+
+## D02 Batch 9 — T174: web dashboard route guard (2026-10-26)
+
+**Scope**: extends Batch 8's `web/src/middleware.ts` with the remaining states of T173's five-state
+guard (signed-out and the role gate were already covered by Batch 8): suspended/deleted, and
+maintenance. Dispatched to Codex (`gpt-6-luna`, `high`), running concurrently with the Batch 7 pgTAP
+fix-cycle (disjoint files, confirmed via `touchedFiles`).
+
+**New convention decided now, since nothing in any spec document defines it and downstream tasks
+(T183's maintenance banner, T205/T206's force-update/maintenance screens) will need the same contract
+eventually anyway**: `app_config` key `'maintenance'` → `{ enabled: boolean, message_en: string,
+message_ar: string }`; `'min_web_version'` → `{ version: string }`, reserved, not read by anything yet.
+Recorded here as a documented decision, not a silent invention.
+
+**Two states explicitly, deliberately not implemented for the web dashboard, surfaced rather than
+hidden**:
+- **Profile-incomplete**: the web dashboard is staff-only (`clinic_staff`/`admin`/`super_admin`),
+  provisioned via the not-yet-built `admin-create-staff` Edge Function (T140); there's no web
+  "complete your profile" screen tracked anywhere in `tasks.md` and no spec text defining what an
+  incomplete staff profile even means. Needs T140 to land first and define the invited-profile shape.
+- **Force-update**: there's no web build-version-reporting mechanism to compare against
+  `min_web_version` (unlike mobile, which has a real native app version). The `min_web_version` key
+  exists in `app_config` for future use but nothing reads it yet.
+
+**Suspended/deleted → `/no-access`**: `profiles.status` is NOT a JWT claim (only `profiles.role` is, via
+`custom_access_token_hook` — reconfirmed by rereading `20261026120008_role_hook_and_otp_rpcs.sql`), so
+the middleware does a real `SELECT status FROM profiles WHERE id = <user.id>` using the same
+request-scoped Supabase server client already built for `getUser()`/`getClaims()`. Confirmed the
+`profiles_select_self_or_admin` RLS policy (`20261019113455_create_profiles.sql`) actually permits this
+self-read. `deleted` status routes to the same `/no-access` target as `suspended` since there's no
+separate screen for either state.
+
+**One robustness gap surfaced rather than silently accepted, not fixed in this pass**: both the
+`profiles.status` and `app_config` maintenance lookups destructure only `{ data }` from Supabase's
+response, ignoring `error` — so a transient database error on either query is indistinguishable from "no
+row found," and the middleware **fails open** (lets the request through) rather than failing closed.
+For the maintenance check this is a defensible availability-over-strictness tradeoff; for the
+suspended/deleted check it's a thinner margin, since RLS alone doesn't enforce suspension on most other
+tables (that's a separate, later concern — most policies check row ownership, not `profiles.status`).
+Not blocking T174's completion (the task's own text doesn't ask for error-handling semantics, and this is
+a narrow availability-outage edge case, not a normal-path bug) — flagged here as a known, accepted-for-now
+gap rather than silently carried forward.
+
+**Full independent verification**: re-ran `pnpm --filter web exec tsc --noEmit` (clean), `pnpm --filter
+web lint` (0 errors, 1 pre-existing warning), `pnpm --filter web test` (2 files/3 tests pass) —
+independent of Codex's self-report, which (correctly) also noted it had no dev server to check live.
+Then, with Docker/local Supabase already up from the pgTAP fix-cycle verification, booted `pnpm --filter
+web dev` directly and curled it: `/en/admin` and `/en/maintenance` (unauthenticated) still behave exactly
+as before this batch (`307` to `/en/login`, and `404` since the maintenance screen doesn't exist yet,
+respectively) — no regression from Batch 8. Inserted a live `app_config` row
+(`key='maintenance', value={"enabled":true,...}`) via direct `psql` and re-curled `/en/admin`: still
+`307`s to `/en/login`, confirming the role/auth gate still runs before the maintenance check reaches an
+unauthenticated request (expected — maintenance mode doesn't change unauthenticated behavior). Deleted
+the test row afterward. The authenticated-session branches (an actual suspended user, an actual
+maintenance-mode redirect for a *logged-in* user) were **not** exercised live, same documented limitation
+as Batch 8 — needs a real `@supabase/ssr` cookie session from an actual login, better covered by
+T213-T216's E2E logins than hand-reconstructed here.
+
+**Files this pass**: `web/src/middleware.ts`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS, with the fail-open gap and the two skipped
+states explicitly recorded above rather than hidden.
+**Commit**: (pending — this pass's file not yet committed).
