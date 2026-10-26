@@ -2,8 +2,8 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `7246080` (`feat(D02): apply approved security and onboarding decisions`)
-**Checkpoint status:** implementation batch is committed; this checkpoint update is ready for its docs commit.
+**Latest implementation commit:** `ce75dc7` (`feat(D02): add current-schema data export`)
+**Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
 ## Completed or advanced in this batch
@@ -29,6 +29,11 @@
 - **Partial:** T142 has a backend helper that checks the signed `amr` authentication timestamp within five
   minutes after Auth verification. Six focused tests pass. The delete endpoint is not implemented because
   the required data/file cleanup and Auth deletion need a safe coordinated lifecycle.
+- **Partial:** T143 `export-my-data` validates the caller with Supabase Auth, then reads only that user's
+  profile, consents, and push-device metadata using the caller token/public key, preserving RLS. The JSON
+  download is marked `private, no-store`; raw push tokens are omitted. Pets, vaccinations, health records,
+  attachments, and appointments are explicitly listed as unavailable until their later-phase tables land.
+  Seven focused Deno tests pass; T143 remains open for complete coverage and runtime integration.
 
 The nine owner decisions are recorded in `research.md`, `spec.md`, `plan.md`, and task notes. Approval
 does not mean every decision's implementation is complete.
@@ -42,8 +47,9 @@ does not mean every decision's implementation is complete.
   client timestamps are not used. The validator is tested, but transactional cleanup/deletion is still
   unimplemented and T142 remains open.
 - **T140/T145:** invitation logic and SMTP delivery are not complete. SMTP provider and verified domain
-  are unavailable; clinic managers are approved for vet/receptionist only, while platform admins alone
-  may grant manager level.
+  are unavailable; clinic managers are approved for vet/receptionist only within their clinic, while
+  platform admins alone may grant manager level. The stale unresolved-decision note in the implementation
+  log is corrected; backend enforcement remains pending.
 - **T147/T148/T150/T184:** native OAuth config/build remains incomplete. T150 package install recovered;
   the compatible Apple package and Google Sign-In 16.1.5 installed with Expo's SDK 57 resolver. Google/
   Apple credentials, EAS account/build, Android SDK, Java, `adb`, and Maestro CLI are missing or unverified.
@@ -66,6 +72,8 @@ does not mean every decision's implementation is complete.
 - Focused web ESLint for middleware/banner/layout: PASS.
 - `npx.cmd --yes --offline deno test --no-lock backend/supabase/functions/_shared/recent-auth.test.ts`:
   PASS, 6 tests.
+- `npx.cmd --yes --offline deno test --no-lock backend/supabase/functions/export-my-data/index.test.ts`:
+  PASS, 7 tests; `deno check --no-lock` for the handler passes.
 - `pnpm.cmd exec expo install --check`: reports only the pre-existing Expo SDK drift in `@expo/ui`,
   `expo`, and `expo-router`; the two newly installed native auth libraries are compatible.
 - `pnpm.cmd i18n:check`: PASS, 713 matching keys.
@@ -83,9 +91,10 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Continue with unblocked Edge Function work, beginning with T140's server-side clinic/role checks and
-   negative tests; leave outbound invitation delivery clearly gated by T145 SMTP readiness.
-2. Implement T143 export and investigate T142's supported step-up mechanism without trusting client time.
+1. Continue T140's server-side clinic/role checks and negative tests; leave outbound invitation delivery
+   clearly gated by T145 SMTP readiness.
+2. Extend T143 as later-phase data tables land and investigate T142's supported step-up mechanism without
+   trusting client time.
 3. Continue T173 redirect screens and mobile onboarding/auth screens only along the verified OTP/session
    path; keep T138/T139 blocked until that path is proven.
 4. Complete T183 after authorized maintenance behavior can be exercised against real dashboard routes.

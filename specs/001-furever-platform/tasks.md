@@ -589,8 +589,8 @@ environments only, not local dev.
   API variables, service-role handling, exact-origin `DASHBOARD_ORIGINS` behavior and local defaults,
   optional Sentry, and the separate Supabase Auth SMTP configuration are documented. Hosted secret
   wiring and exact hosted origins remain pending: staging/production projects and verified dashboard
-  domains are not provisioned, SMTP provider choice/credentials remain pending T145, and T139/T140/
-  T142/T143 are not built yet. Do not mark complete or run `supabase secrets set` until the projects
+  domains are not provisioned, SMTP provider choice/credentials remain pending T145, T139/T140/T142 are
+  incomplete, and T143 currently exports only schema sections available in D02. Do not mark complete or run `supabase secrets set` until the projects
   and values are available. No credentials are included.
 
 ## Google and Apple sign-in (new, this fix pass — AUTH-02/AUTH-03 had no implementation task before)
