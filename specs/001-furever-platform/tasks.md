@@ -747,8 +747,11 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 - [ ] T185 [D02] PostHog instrumentation for `sign_up_completed`, `language_changed`, `theme_changed`
   (PRD section 14).
 - [ ] T186 [D02] Write `backend/supabase/scripts/check-policy-coverage.ts`: lists every policy from
-  `pg_policies` and fails CI if a policy has no matching pgTAP test reference (grep the test suite for the
-  policy/table name). Add to `ci.yml`. This becomes a standing CI gate from here through D08.
+  `pg_policies` and fails if a policy has no matching pgTAP test reference (grep the test suite for the
+  policy/table name). **Partial implementation recorded 2026-10-26**: standalone checker and focused
+  parser/matcher test are implemented; CI wiring remains unstarted because T074/T075 CI/CD work was
+  formally descoped by owner decision 2026-10-25. Do not create a workflow or mark T186 complete unless
+  that decision is reopened. If resumed, this becomes a standing CI gate through D08.
 
 ## Shared schemas, i18n, test tooling
 

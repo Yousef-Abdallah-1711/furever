@@ -1788,3 +1788,31 @@ the audit diff. No OTP task or D03 file was changed.
 **Files**: `backend/supabase/functions/admin-set-user-status/index.ts`, its `index.test.ts`,
 `backend/supabase/migrations/20261026130000_admin_set_user_status.sql`,
 `backend/supabase/tests/013_admin_set_user_status.test.sql`, and this log plus the T141 task checkbox.
+
+## D02 — T186: policy coverage checker (2026-10-26, partial)
+
+Implemented the standalone `backend/supabase/scripts/check-policy-coverage.ts`. It queries all policies
+in the `public` application schema from `pg_catalog.pg_policies`, prints them in sorted, numbered order,
+and fails with each missing policy/table reference and a pgTAP remediation hint. `psql` is launched
+through `spawnSync` with an argument array and `shell: false`; connection details come from
+`DATABASE_URL`, `PGSERVICE`, or libpq `PG*` variables. The matcher accepts an exact policy-name or
+table-name identifier in any SQL test under `backend/supabase/tests/`; table fallback is intentional for
+the current suite, whose assertions generally exercise behavior by table rather than naming policies.
+
+Added a focused parser/matcher test. T186 remains unchecked and partial because the task also asks for
+CI wiring, and T074/T075 workflows remain formally descoped by the 2026-10-25 owner decision. No D00
+record or workflow was changed, and no D03 work was started.
+
+**Verification**: `pnpm.cmd exec tsx backend/supabase/scripts/check-policy-coverage.test.ts` PASS;
+`pnpm.cmd exec biome format --write backend/supabase/scripts/check-policy-coverage.ts backend/supabase/scripts/check-policy-coverage.test.ts` PASS;
+`pnpm.cmd exec biome check backend/supabase/scripts/check-policy-coverage.ts backend/supabase/scripts/check-policy-coverage.test.ts` PASS.
+`git diff --check` PASS. A database-backed run was unavailable: `psql` is not on PATH and `docker compose
+ps` could not reach the Docker engine in this environment. A standalone `pnpm.cmd exec tsc` invocation
+did not return output and was interrupted after 90 seconds. The focused local compiler check passed:
+`node_modules/.bin/tsc.cmd --ignoreConfig --noEmit --target ES2022 --module NodeNext --moduleResolution
+NodeNext --strict --types node --skipLibCheck backend/supabase/scripts/check-policy-coverage.ts
+backend/supabase/scripts/check-policy-coverage.test.ts`.
+
+**Files**: `backend/supabase/scripts/check-policy-coverage.ts`,
+`backend/supabase/scripts/check-policy-coverage.test.ts`, this log, and the T186 status note in
+`tasks.md`.
