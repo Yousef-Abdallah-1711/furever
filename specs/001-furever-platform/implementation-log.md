@@ -1839,3 +1839,35 @@ same ESLint binary was run directly on the changed files with caching disabled.
 **Files**: `mobile/src/lib/observability.ts`, `mobile/src/lib/observability.test.ts`,
 `mobile/src/hooks/useLocale.ts`, `mobile/src/hooks/useLocale.test.tsx`, `mobile/src/hooks/useTheme.ts`,
 `mobile/src/hooks/useTheme.test.tsx`, this log, and the T185 partial status note in `tasks.md`.
+
+## D02 — T154: local Mailpit inbox helper (2026-10-26)
+
+Added `readLocalInboxCode()` to the shared package and exported it from the package entrypoint. It validates
+recipient and Mailpit URL inputs, searches Mailpit for the recipient, verifies the exact `To` address, picks
+the newest matching message, fetches its full message body, and extracts a standalone six-digit code from
+plain text or visible HTML text. The base URL, `fetch`, timeout, and poll interval are injectable. HTTP,
+malformed-response, no-match timeout, and no-code failures have clear messages that do not include inbox
+content, addresses, or codes.
+
+API contract recorded from [Supabase's local Auth email testing docs](https://supabase.com/docs/guides/local-development/cli/testing-and-linting)
+(Mailpit at `localhost:54324`) and [Mailpit's API v1 documentation](https://mailpit.axllent.org/docs/api-v1/):
+`GET /api/v1/search` with `query=to:"<recipient>"` returns matching message summaries; `GET
+/api/v1/message/{id}` returns the full message including `Text` and `HTML`. Mailpit's
+[integration testing guide](https://mailpit.axllent.org/docs/integration/) documents API use for automated
+tests. The repo pins Supabase CLI 2.121.0 and `backend/supabase/config.toml` enables `[local_smtp]` on port
+54324. No real SMTP provider or inbox credentials were added. This helper reads a local test inbox only;
+it does not establish live email delivery or Auth OTP verification. The currently observed default local
+template is link-only, so this helper reports an explicit no-code error until the email template work (T145/T152)
+actually provides a numeric code.
+
+**Verification**: `pnpm.cmd --filter @furever/shared test -- src/testing/read-local-inbox.test.ts` PASS
+(6 tests); `node_modules/.bin/tsc.cmd -p packages/shared/tsconfig.json --noEmit` PASS;
+`node_modules/.bin/biome.cmd check packages/shared/src/testing/read-local-inbox.ts
+packages/shared/src/testing/read-local-inbox.test.ts packages/shared/src/index.ts` PASS;
+`git diff --check` PASS. The tests cover newest exact-recipient selection, text and HTML code extraction,
+no-match timeout, malformed and HTTP error responses, link-only mail (including a numeric token inside the
+URL), and invalid recipient/URL inputs. No live Auth or SMTP delivery verification was performed.
+
+**Files**: `packages/shared/src/testing/read-local-inbox.ts`,
+`packages/shared/src/testing/read-local-inbox.test.ts`, `packages/shared/src/index.ts`, this log, and the T154
+status in `tasks.md`.

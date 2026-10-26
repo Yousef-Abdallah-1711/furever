@@ -620,7 +620,7 @@ environments only, not local dev.
 
 ## Local email inbox test helper (new, 2026-10-18)
 
-- [ ] T154 [D02] Build the shared test helper `packages/shared/src/testing/read-local-inbox.ts`: fetches
+- [x] T154 [D02] Build the shared test helper `packages/shared/src/testing/read-local-inbox.ts`: fetches
   the latest email sent to a given address from Supabase's local dev email inbox and extracts the 6-digit
   code, for use by both Maestro and Playwright (research.md §15).
 
