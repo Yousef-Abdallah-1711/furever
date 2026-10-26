@@ -2,8 +2,8 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest verified base before this batch:** `4f011fe` (`origin/main`)
-**Current batch:** local changes are verified but not yet committed at the time of this checkpoint.
+**Latest implementation commit:** `7246080` (`feat(D02): apply approved security and onboarding decisions`)
+**Checkpoint status:** implementation batch is committed; this checkpoint update is ready for its docs commit.
 **Phase status:** D02 remains open. No D03 work has started.
 
 ## Completed or advanced in this batch

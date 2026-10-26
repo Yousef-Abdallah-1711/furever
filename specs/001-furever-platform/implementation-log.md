@@ -94,6 +94,7 @@ admin layout and middleware; recent-auth helper/tests; task/spec/research/handof
 
 **Result**: PASS for completed gates above; T173/T183 partial; T138/T142 security paths remain open. D02
 is not complete.
+**Implementation commit**: `7246080` (`feat(D02): apply approved security and onboarding decisions`).
 
 ## D00c — Packages: tokens, i18n, shared, test runners
 
