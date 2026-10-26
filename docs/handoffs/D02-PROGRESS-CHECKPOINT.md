@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `29cd6f9` (`feat(D02): add access and system screens`).
+**Latest implementation commit:** `c54c040` (`feat(D02): add admin team and settings pages`).
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -131,10 +131,11 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Continue independent dashboard work such as T208/T209. Keep T207/T211 on the verified authentication
-   path; do not add a password-reset or login route that bypasses T138's unresolved authoritative OTP design.
+1. Resolve T138's authoritative email-code path and complete SMTP/template readiness before implementing
+   login, password-reset, or real OTP E2E flows; do not add a client path that bypasses the guard.
+2. Define and implement the platform-admin lifecycle contract before completing T208's invite/role/MFA/remove
+   actions. Complete T209 after secure profile, password, and MFA management flows are available.
 3. Extend T143 as later-phase data tables land and complete T142 only when trusted backend reauthentication
    and the coordinated deletion lifecycle are implemented.
 4. Keep native OAuth/E2E tasks partial until provider credentials, EAS, Android/Java, and test devices are
-   available.
-5. Do not mark D02 complete until T216's end-to-end gate is genuinely satisfied.
+   available. Do not mark D02 complete until T216's end-to-end gate is genuinely satisfied.
