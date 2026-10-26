@@ -508,9 +508,12 @@ environments only, not local dev.
 ## Migrations (FK-safe creation order)
 
 - [ ] T123 [D02] Migration: `cities` table + RLS + seed. Needed before `profiles` (city picker).
-- [ ] T124 [D02] Migration: `profiles` table + RLS (`email` required; `phone` nullable/optional — 2026-10-18
+  **Table + RLS done** (`20261019113454_create_cities.sql`), **seed deliberately not done** — the launch-
+  city list is an open owner decision (see implementation-log.md's D02 Batch 1 entry); table is empty by
+  design, not an oversight. Re-check this box once seed rows land.
+- [x] T124 [D02] Migration: `profiles` table + RLS (`email` required; `phone` nullable/optional — 2026-10-18
   sign-in method change). Depends on T123.
-- [ ] T125 [D02] Migration: `clinics` table (slim: identity + `status` only — `name_en/ar`, `city_id`,
+- [x] T125 [D02] Migration: `clinics` table (slim: identity + `status` only — `name_en/ar`, `city_id`,
   `status`) + RLS. Moved here from D05 because `clinic_staff`/`vaccinations`/`health_records`/
   `appointments`/`queue_tickets`/`reviews` all FK into it. D05 **extends** this table later (location,
   hours, media, rating, search indexes); D05 does not re-create it.
@@ -533,7 +536,7 @@ environments only, not local dev.
   `write_audit_log()` already exists by this point, T130). Depends on T130.
 - [ ] T132 [P] [D02] Migration: `app_config` table + RLS + the same audit trigger as T131, attached
   directly in this migration. Depends on T130. [PLT-01][PLT-02]
-- [ ] T133 [D02] REVOKE direct `UPDATE` of `clinics.status` from `authenticated` (only `set_clinic_status`,
+- [x] T133 [D02] REVOKE direct `UPDATE` of `clinics.status` from `authenticated` (only `set_clinic_status`,
   D05, may change it). Depends on T125.
 - [ ] T134 [D02] Migration: `otp_attempts` table + RLS (service-role only), **keyed by a normalized email
   `identifier`** (2026-10-18 — was `phone_number`). [AUTH-01]

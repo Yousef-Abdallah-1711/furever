@@ -1203,3 +1203,63 @@ mobile lint passes (4 existing warnings, 0 errors); `git diff --check` passes. `
 reports only existing version drift: `@expo/ui` 57.0.25 vs expected ~57.0.26, `expo` 57.0.30 vs
 ~57.0.31, and `expo-router` 57.0.28 vs ~57.0.29. It reports no drift for the newly added
 `expo-crypto` or `expo-secure-store` packages. T165 remains open.
+
+## D02 database foundation, Batch 1 — T123 (partial), T124, T125, T133 (2026-10-26)
+
+**Scope**: the core identity chain — `cities`, `profiles`, `clinics` (slim), and T133's
+`clinics.status` update revoke. First batch of D02's database foundation; everything else in Group B
+(T126-T134) and most of the rest of D02 depends on these three tables existing. Dispatched to Codex
+(`gpt-6-luna`, `high`), one batch (sequential by nature — migrations in a dependency chain, not
+independent files safe to parallelize).
+
+**T123 deliberately split**: the task is "`cities` table + RLS + seed," but the actual launch-city list
+is an open, unresolved owner decision (no PRD/spec/data-model document names one) — see Decision D in
+this session's status report. Built the table + RLS, left it with zero rows, and left T123 unchecked in
+`tasks.md` pending the seed. This is not a shortcut: the table/RLS/FK structure that everything else in
+this phase needs is fully in place, only the actual city names are missing.
+
+**Sandbox limitation, same class as D01's SWC-binding issue**: Codex's `workspace-write` sandbox could
+not reach the Docker API (`permission denied ... npipe:////./pipe/docker_engine`), so it could not run a
+true `supabase db reset` to verify from a clean slate — it applied the migrations incrementally via
+`supabase migration up --db-url` against the already-running local stack instead, then verified with
+direct SQL queries. The orchestrator then ran a genuine `supabase db reset` directly (outside the
+sandbox) against the same local stack — all 7 migrations (the 3 existing D00 ones + these 4) applied
+cleanly from a fully recreated database, confirming the sandboxed incremental-apply result wasn't masking
+an ordering or clean-install problem.
+
+**Full review of the actual SQL, not the self-report** (all 4 new files read in full): the `profiles`
+role/status-protection trigger (`protect_profile_role_status()`) correctly blocks both a privileged
+self-insert (INSERT with `role`/`status` other than the defaults) and a self-escalation UPDATE (any
+change to `role`/`status`) for any caller whose JWT `user_role` claim isn't `admin`/`super_admin` —
+correctly fails closed for *everyone* right now, since `custom_access_token_hook` (T135, not yet done)
+doesn't inject that claim yet, so no one currently has it; this is expected sequencing, not a bug. The
+`clinics.status` revoke (T133) is implemented as three statements (blanket revoke, re-grant the three
+non-status columns, redundantly re-revoke `status`) that are partially redundant with the column-scoped
+grant the `clinics` migration already used (`status` was never grantable in the first place) — harmless,
+and keeping T133 as its own explicit, auditable migration (rather than relying on an implicit side effect
+of an earlier one) is the right call for a security-relevant revoke regardless of the redundancy.
+Independently re-verified via `information_schema.column_privileges` after the clean reset: `authenticated`
+has `UPDATE` on `city_id`/`name_en`/`name_ar` but **not** `status` — confirmed, including for the
+`admin`/`super_admin` application roles, since both are still just the Postgres `authenticated` role; any
+status change (by anyone, including admins) must go through the future `set_clinic_status` RPC (D05),
+matching `data-model.md`'s stated intent that status changes are audit-logged there, not via raw SQL.
+
+**One minor, non-blocking note**: the new migration files use timestamps (`20261019113454`-`57`) that
+continue right after the three existing Oct-19 migrations rather than reflecting today's actual date —
+cosmetically inconsistent with the rest of this project's dated migration history, but functionally
+correct (they sort and apply in the right order either way). Left as-is rather than renaming, to keep
+moving; flagging here in case a future pass wants to normalize migration-file dating conventions.
+
+**Verification performed** (orchestrator's own re-run, full merged tree): `pnpm --filter backend exec
+supabase db reset` — clean, all 7 migrations applied in order; direct `psql` queries against the result
+confirmed RLS enabled on all 3 new tables, 0 `cities` rows, and the exact column-grant state described
+above.
+
+**Files this pass**: `backend/supabase/migrations/20261019113454_create_cities.sql`,
+`.../20261019113455_create_profiles.sql`, `.../20261019113456_create_clinics.sql`,
+`.../20261019113457_revoke_clinic_status_updates.sql`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`); the clean-reset verification was done directly by the
+orchestrator after the sandboxed run hit its Docker-access limitation. **Result**: PASS (T124, T125,
+T133 complete; T123's structure done, seed pending Decision D).
+**Commit**: (pending — this pass's files not yet committed).
