@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import { applyRtlForLocale } from '../lib/rtl';
+import { trackMobileEvent } from '../lib/observability';
 import { changeLocale, readSavedLocale, type AppLocale } from '../i18n';
 
 type LocaleState = {
@@ -24,6 +25,7 @@ const useLocaleStore = create<LocaleState>((set, get) => ({
     await changeLocale(locale);
     set({ locale, isHydrated: true });
     await applyRtlForLocale(locale, previous);
+    trackMobileEvent('language_changed', locale);
   },
 }));
 

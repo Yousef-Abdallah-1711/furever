@@ -1816,3 +1816,26 @@ backend/supabase/scripts/check-policy-coverage.test.ts`.
 **Files**: `backend/supabase/scripts/check-policy-coverage.ts`,
 `backend/supabase/scripts/check-policy-coverage.test.ts`, this log, and the T186 status note in
 `tasks.md`.
+
+## D02 — T185: mobile preference analytics (2026-10-26, partial)
+
+Added PostHog `language_changed` and `theme_changed` events to the existing mobile locale and theme
+setters. Hydration and unchanged values do not emit events. The observability module now retains the
+PostHog client created by its existing opt-in initialization and exposes `trackMobileEvent` for the
+allowlisted `sign_up_completed`, `language_changed`, and `theme_changed` events. Preference events send
+only the new locale or theme value; the signup event accepts no properties, so callers cannot attach
+email, profile, or other identifiers through this API.
+
+T185 remains unchecked and partial because there is not yet a successful auth verification handler to
+wire `sign_up_completed` to. No auth flow or D00/D03 work was added.
+
+**Verification**: `pnpm.cmd exec jest --runInBand src/lib/observability.test.ts
+src/hooks/useLocale.test.tsx src/hooks/useTheme.test.tsx` from `mobile/` PASS (3 suites, 4 tests);
+`pnpm.cmd typecheck` from `mobile/` PASS; `pnpm.cmd exec eslint` against the six changed mobile source/test
+files with `--no-cache` PASS (0 errors, 0 warnings); `git diff --check` PASS. The package script
+`pnpm.cmd lint` could not write Expo's ESLint cache under `mobile/.expo/cache/eslint` (EPERM), so the
+same ESLint binary was run directly on the changed files with caching disabled.
+
+**Files**: `mobile/src/lib/observability.ts`, `mobile/src/lib/observability.test.ts`,
+`mobile/src/hooks/useLocale.ts`, `mobile/src/hooks/useLocale.test.tsx`, `mobile/src/hooks/useTheme.ts`,
+`mobile/src/hooks/useTheme.test.tsx`, this log, and the T185 partial status note in `tasks.md`.

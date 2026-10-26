@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { useColorScheme } from 'nativewind';
+import { trackMobileEvent } from '../lib/observability';
 
 export type AppTheme = 'light' | 'dark';
 const THEME_STORAGE_KEY = 'furever.theme';
@@ -22,8 +23,10 @@ const useThemeStore = create<ThemeState>((set, get) => ({
     set({ theme: saved === 'dark' ? 'dark' : 'light', isHydrated: true });
   },
   setTheme: async (theme) => {
+    if (get().theme === theme) return;
     await AsyncStorage.setItem(THEME_STORAGE_KEY, theme);
     set({ theme, isHydrated: true });
+    trackMobileEvent('theme_changed', theme);
   },
 }));
 
