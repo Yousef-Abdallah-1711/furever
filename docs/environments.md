@@ -61,6 +61,73 @@ are not an Edge Function secret. The SMTP provider remains undecided (T145), so 
 provider-specific credentials or values are documented here. Local development uses
 the Supabase local email inbox.
 
+## Google and Apple sign-in providers
+
+Google and Apple are configured independently for local development and for each hosted
+Supabase project. The local provider blocks in `backend/supabase/config.toml` are present
+and both have `enabled = false`. This repository contains no provider credentials or
+verified app IDs; `backend/.env.example` contains placeholders only. Hosted Supabase
+provider settings and external account/credential readiness have not been inspected or
+verified. Keep each provider disabled until the applicable provider account, app IDs, and
+credentials are confirmed for that environment.
+
+For local Supabase development, provide these variables to the shell that runs
+`supabase start` (or the local CLI command that reads this config):
+
+```dotenv
+SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=<web-client-id>,<android-client-id>,<ios-client-id>
+SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<google-client-secret>
+SUPABASE_AUTH_EXTERNAL_APPLE_CLIENT_ID=<apple-services-id>,<native-app-id>
+SUPABASE_AUTH_EXTERNAL_APPLE_SECRET=<apple-client-secret>
+```
+
+Use only the IDs for registered platforms, with comma-separated values and no spaces.
+For Google, put the web client ID first, followed by Android and then iOS client IDs as
+available. For Apple, put the Services ID first for web OAuth, followed by native App
+IDs as needed. The local config resolves secrets from environment variables and does not
+enable either provider by itself. Keep actual values in ignored local environment storage;
+`backend/.env.example` contains placeholder-only values and is not a credential source.
+
+Before enabling a provider locally, register the local callback with the provider:
+
+- Google OAuth web client: authorized JavaScript origin `http://localhost:<web-port>`
+  (use the actual local web origin) and authorized redirect URI
+  `http://127.0.0.1:54321/auth/v1/callback`.
+- Apple Services ID: configure the exact Auth domain and callback shown for the local
+  Auth endpoint, represented as `https://<local-auth-domain>/auth/v1/callback`. Apple
+  requires the registered Services ID website domain and return URL to match; if the
+  local stack is not reachable through a provider-accepted HTTPS domain, local Apple
+  OAuth cannot be used until an appropriate HTTPS development domain is provisioned.
+
+For staging and production, configure providers separately in each project's Supabase
+Dashboard under **Authentication > Providers** (select Google or Apple). Add that
+project's provider client IDs and secret there, enable the provider only after setup is
+complete, and use the callback URL shown on that provider's Dashboard page in the
+provider console. The expected hosted callback shape is
+`https://<project-ref>.supabase.co/auth/v1/callback`; use the exact Dashboard value,
+especially if a custom Auth domain is configured. Configure the site's URL and allowed
+redirect URLs under **Authentication > URL Configuration** for each actual environment
+domain, for example `https://<staging-app-domain>` and
+`https://<production-app-domain>` (placeholders only).
+
+For Google, create the OAuth web client with the actual hosted app origin(s) and the
+Supabase callback URL; put the web client ID first in the comma-separated Client IDs
+field, followed by Android and iOS IDs as applicable. For Apple, provision and verify
+the Apple Developer Team, App ID(s), Services ID, and signing key; register the hosted
+Supabase Auth domain and exact callback URL in the Services ID website configuration.
+Use the Services ID first in the Apple Client IDs field, followed by native App IDs as
+needed. Apple OAuth signing secrets require regular rotation; follow the current Apple
+and Supabase guidance when provisioning them.
+
+All hostnames, project references, origins, callback URLs, IDs, and secrets above are
+illustrative placeholders. Replace them only after the staging or production Supabase
+project and actual app domains are known, and the applicable provider account, verified
+app IDs, and credentials have been confirmed. Do not enable a hosted provider before
+those prerequisites are met.
+See Supabase's [Google sign-in guide](https://supabase.com/docs/guides/auth/social-login/auth-google)
+and [Apple sign-in guide](https://supabase.com/docs/guides/auth/social-sign-in/auth-apple)
+for provider-specific setup.
+
 Supabase documents injected Edge Function variables and custom secrets in its
 [Edge Function environment variables guide](https://supabase.com/docs/guides/functions/secrets).
 Do not run `supabase secrets set` until the target hosted project exists and its

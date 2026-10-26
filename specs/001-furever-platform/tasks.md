@@ -599,7 +599,7 @@ environments only, not local dev.
   every later sign-in returns `null` for it (confirmed from Supabase's own Apple guide). A hidden
   (private-relay) email from Apple is accepted and stored as the account's email, same as any other
   address (research.md §14). Depends on T184. [AUTH-03]
-- [ ] T149 [D02] Supabase Google/Apple provider configuration: `backend/supabase/config.toml`'s
+- [x] T149 [D02] Supabase Google/Apple provider configuration: `backend/supabase/config.toml`'s
   `[auth.external.google]` and `[auth.external.apple]` blocks (client ID + secret env-var references) for
   local dev, plus a `docs/environments.md` note on enabling and configuring the same two providers in the
   staging/production project dashboards (Authentication → Providers). [AUTH-02][AUTH-03]

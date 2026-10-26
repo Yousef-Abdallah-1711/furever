@@ -1986,3 +1986,35 @@ app feature code or D03 file was changed.
 
 **Files**: `mobile/.maestro/config.yaml`, `mobile/package.json`, and this log. The T189 checkbox remains
 open in `tasks.md`.
+# D02 - T149: Supabase Google/Apple provider setup (2026-10-26)
+
+Added disabled `[auth.external.google]` and `[auth.external.apple]` blocks to
+`backend/supabase/config.toml`, with environment references for client IDs and secrets.
+Retained the existing Apple secret variable name, `SUPABASE_AUTH_EXTERNAL_APPLE_SECRET`.
+Added placeholder-only local variables to `backend/.env.example`; no `.env` file,
+credentials, provider enablement, app config, or dependencies were changed.
+
+Documented local environment variable setup and provider-specific client ID ordering in
+`docs/environments.md`: Google web, Android, then iOS; Apple Services ID first, followed
+by native App IDs as needed. The document covers the hosted Dashboard path
+Authentication > Providers, URL Configuration, callback/domain prerequisites, and the
+unconfirmed provider readiness prerequisites. It records the official
+[Supabase Google guide](https://supabase.com/docs/guides/auth/social-login/auth-google)
+and [Supabase Apple guide](https://supabase.com/docs/guides/auth/social-sign-in/auth-apple)
+checked on 2026-10-26. Their current guidance confirms Google's web-first client ID list
+and Apple's Services ID first when native sign-in is also used.
+
+**Checks**: Python `tomllib` parse and assertions for both disabled provider blocks and
+all four env references PASS; `git diff --check` PASS; focused documentation/config
+review PASS. `pnpm lint` could not start because Turbo reports missing
+`devEngines.packageManager` or `packageManager` in the root `package.json`. The Supabase
+CLI config check was unavailable: the installed CLI attempts to write telemetry under
+`C:\Users\yosea\.supabase`, outside the workspace, and is denied by the filesystem
+sandbox. No live provider, dashboard, or credential verification was performed.
+
+T149 is complete. The local provider blocks are disabled and no credentials were added
+to the repository. Hosted provider settings and external account/credential readiness
+remain unverified. T150 and all other tasks are unchanged.
+
+**Files**: `backend/supabase/config.toml`, `backend/.env.example`, `docs/environments.md`,
+`specs/001-furever-platform/tasks.md`, and this log.
