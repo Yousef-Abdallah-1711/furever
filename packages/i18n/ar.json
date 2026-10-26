@@ -473,7 +473,8 @@
       "stayOnTopOfCare": "خليك مطمّن على حيوانك",
       "notificationsRemindYouAboutVaccinesAndBookingsLocationFindsClinicsNearYouTheAppWorksWithoutBoth": "الإشعارات بتفكرك بالتطعيمات والحجوزات، والموقع بيلاقيلك عيادات قريبة. التطبيق بيشتغل من غيرهم.",
       "allow": "سماح",
-      "notNow": "مش دلوقتي"
+      "notNow": "مش دلوقتي",
+      "title": "الأذونات"
     },
     "passportShare": {
       "passport": "جواز الصحة",
@@ -693,6 +694,14 @@
       "orContinueWith": "أو الاستمرار باستخدام",
       "weLlEmailYouA6DigitCode": "سنرسل لك رمزًا مكونًا من 6 أرقام بالبريد الإلكتروني",
       "enterAValidEmailAddress": "أدخل بريدًا إلكترونيًا صالحًا"
+    }
+  },
+  "nav": {
+    "tabs": {
+      "home": "الرئيسية",
+      "pets": "حيواناتي",
+      "bookings": "الحجوزات",
+      "profile": "الملف الشخصي"
     }
   }
 }

@@ -695,12 +695,20 @@ environments only, not local dev.
   (Language→Onboarding→Welcome→**Email**→Verify→Profile→pet steps→Permissions→Summary→Home, 2026-10-18 —
   was Phone) and the returning-user path (Welcome→Sign-in **by email or Google**→Verify (email path
   only)→Home). [AUTH-01]
-- [ ] T176 [D02] Build the Home tab shell `mobile/app/(tabs)/index.tsx` (empty shell — D04 adds the
+- [x] T176 [D02] Build the Home tab shell `mobile/app/(tabs)/index.tsx` (empty shell — D04 adds the
   vaccines-due banner). Infrastructure; Home's Screen Coverage credit stays with D04.
-- [ ] T177 [D02] Build `mobile/app/(tabs)/_layout.tsx` (tab bar: Home, Pets, Bookings, Profile). Depends on
-  T176.
-- [ ] T178 [D02] Build the Permissions primer shell `mobile/app/permissions.tsx` (empty shell — D04 adds
+- [x] T177 [D02] Build `mobile/app/(tabs)/_layout.tsx` (tab bar: Home, Pets, Bookings, Profile). Depends on
+  T176. **Note**: Expo Router's `Tabs` requires a matching route file per tab, so bare placeholder shells
+  for `pets.tsx`/`bookings.tsx`/`profile.tsx` were added alongside (not full screens — those are T198/
+  T232/T330, separately scoped, later tasks).
+- [x] T178 [D02] Build the Permissions primer shell `mobile/app/permissions.tsx` (empty shell — D04 adds
   the real permission-request logic). Infrastructure; credit stays with D04.
+
+**Batch 10 verification (2026-10-26)**: Orchestrator independently verified TypeScript (PASS), canonical
+mobile tests (PASS, 6 suites/10 tests), Expo lint (PASS, 3 existing warnings in unrelated i18n files),
+i18n parity (PASS, 603 keys), `git diff --check` (PASS), and design-token lint (PASS, 0 violations
+across the six Batch 10 files). Full commands and lint output are recorded in `implementation-log.md`.
+Batch 10 is ready for commit; no commit SHA has been assigned yet.
 
 ## Account linking (new, remediation pass — AUTH-06/FR-006)
 

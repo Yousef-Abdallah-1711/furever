@@ -1696,3 +1696,50 @@ code defect.
 **Worker**: Codex (`gpt-6-luna`, `high`), two passes; both the original and the post-fix clean-reset
 verification were performed directly by the orchestrator. **Result**: PASS, 29/29 pgTAP assertions.
 **Commit**: (pending — this pass's files not yet committed).
+
+## D02 Batch 10 — T176, T177, T178: mobile tab shells (2026-10-26)
+
+**Scope**: the Home tab shell, the `(tabs)` tab-bar layout, and the Permissions primer shell — all
+deliberately bare infrastructure (per the task section's own heading: "not counted as Screen Coverage
+rows"). Dispatched to Codex (`gpt-6-luna`, `high`), running concurrently with the Batch 7 pgTAP
+fix-cycle (disjoint files, confirmed via `touchedFiles`).
+
+**Scope addition beyond the brief's literal three files, correctly judged and reported**: Expo Router's
+`Tabs` requires a matching route file per `<Tabs.Screen name="x">` to resolve the tab at all, so bare
+placeholder shells for `pets.tsx`/`bookings.tsx`/`profile.tsx` were added too — not full screens (T198/
+T232/T330 own those, later, separately scoped tasks); each is a one-line translated placeholder
+identical in shape to the Home shell.
+
+**New i18n keys added** (additive only, both dictionaries, parity-checked): `nav.tabs.{home,pets,
+bookings,profile}` (a new top-level `nav` section — there was previously no tab-bar-label section,
+only in-screen content keys like `screens.home`/`screens.pets`) and `screens.permissions.title`,
+alongside that screen's existing strings.
+
+**One claim verified rather than trusted**: the four Lucide icon names used (`house`, `paw-print`,
+`calendar-days`, `user-round`) were independently confirmed to exist as real files in the installed
+`lucide-react-native@1.61.0` package (`dist/esm/icons/{house,paw-print,calendar-days,user-round}.mjs`)
+— worth checking specifically because `Icon.tsx`'s `name` prop is typed as a plain `string`, not a
+union of valid icon names, so a wrong name would pass `tsc` cleanly and only fail at runtime.
+
+**Infrastructure note**: the Codex sandbox hit transient `apply_patch`/file-write failures against the
+literal `(tabs)` parenthesized directory name (`Failed to create parent directories for .../(tabs)/
+index.tsx`) and one unrelated `codex-windows-sandbox-setup.exe` launch-helper access-denied error
+mid-run; all were self-retried successfully within the same run (confirmed: the final files are
+complete and uncorrupted). Not a code defect — a Windows-sandbox quirk with parenthesized paths.
+
+**Orchestrator's independent verification, from scratch, after rereading all six files**:
+`node mobile/node_modules/typescript/bin/tsc --noEmit -p mobile/tsconfig.json` PASS;
+`pnpm.cmd --filter mobile test` PASS (6 suites/10 tests);
+`node mobile/node_modules/expo/bin/cli lint` PASS (3 existing warnings in unrelated i18n files);
+direct `tsx` i18n parity check PASS (603 keys); `git diff --check` PASS. The design-token guard also
+passed when run directly via installed tsx:
+`node node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/cli.mjs scripts/lint-design-tokens.ts "mobile/app/(tabs)/index.tsx" "mobile/app/(tabs)/_layout.tsx" "mobile/app/(tabs)/pets.tsx" "mobile/app/(tabs)/bookings.tsx" "mobile/app/(tabs)/profile.tsx" "mobile/app/permissions.tsx"`
+Output: `0 design-token violations across mobile/app/(tabs)/index.tsx, mobile/app/(tabs)/_layout.tsx, mobile/app/(tabs)/pets.tsx, mobile/app/(tabs)/bookings.tsx, mobile/app/(tabs)/profile.tsx, mobile/app/permissions.tsx` (exit 0).
+
+**Files this pass**: `mobile/app/(tabs)/index.tsx` (new), `mobile/app/(tabs)/_layout.tsx` (new),
+`mobile/app/(tabs)/pets.tsx` (new), `mobile/app/(tabs)/bookings.tsx` (new),
+`mobile/app/(tabs)/profile.tsx` (new), `mobile/app/permissions.tsx` (new), `packages/i18n/en.json`,
+`packages/i18n/ar.json`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS.
+**Commit**: pending; no commit SHA yet. Batch 10 is ready for commit.

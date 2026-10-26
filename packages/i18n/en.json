@@ -473,7 +473,8 @@
       "stayOnTopOfCare": "Stay on top of care",
       "notificationsRemindYouAboutVaccinesAndBookingsLocationFindsClinicsNearYouTheAppWorksWithoutBoth": "Notifications remind you about vaccines and bookings. Location finds clinics near you. The app works without both.",
       "allow": "Allow",
-      "notNow": "Not now"
+      "notNow": "Not now",
+      "title": "Permissions"
     },
     "passportShare": {
       "passport": "Passport",
@@ -693,6 +694,14 @@
       "orContinueWith": "Or continue with",
       "weLlEmailYouA6DigitCode": "We'll email you a 6-digit code",
       "enterAValidEmailAddress": "Enter a valid email address"
+    }
+  },
+  "nav": {
+    "tabs": {
+      "home": "Home",
+      "pets": "Pets",
+      "bookings": "Bookings",
+      "profile": "Profile"
     }
   }
 }
