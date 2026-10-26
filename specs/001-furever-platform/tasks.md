@@ -649,11 +649,13 @@ environments only, not local dev.
   path from any legacy plaintext value — research.md §6).
 - [x] T165 [D02] Mobile: `AppState` foreground session refresh + `detectSessionInUrl: false` in
   `mobile/src/lib/supabase.ts`. Depends on T164.
-- [ ] T166 [D02] Web `@supabase/ssr` browser + server clients in `web/src/lib/supabase/{browser,server}.ts`.
-- [ ] T167 [D02] Web middleware session refresh + role-based redirect in `web/middleware.ts` (extends
-  D00e's T050 locale persistence). Depends on T166.
-- [ ] T168 [D02] Web: enforce `aal2` for every `/admin` route in `web/middleware.ts` — redirect to MFA
-  enroll/verify otherwise. Depends on T167. [AD-01]
+- [x] T166 [D02] Web `@supabase/ssr` browser + server clients in `web/src/lib/supabase/{browser,server}.ts`.
+- [x] T167 [D02] Web middleware session refresh + role-based redirect in `web/src/middleware.ts`
+  (corrected from the task's literal `web/middleware.ts` — this project's real Next.js middleware
+  convention file already lived at `web/src/middleware.ts` since D00e's T050; extends its existing
+  `next-intl` locale-persistence behavior rather than replacing it). Depends on T166.
+- [x] T168 [D02] Web: enforce `aal2` for every `/admin` route in `web/src/middleware.ts` (same path
+  correction as T167) — redirect to MFA enroll/verify otherwise. Depends on T167. [AD-01]
 - [x] T169 [P] [D02] React Query providers in `mobile/app/_providers.tsx` (corrected from the task's
   original `mobile/src/app/_providers.tsx` — mobile's Expo Router routes live directly under
   `mobile/app/`, not `mobile/src/app/`; confirmed by `mobile/app/_layout.tsx`/`mobile/app/_dev/` already

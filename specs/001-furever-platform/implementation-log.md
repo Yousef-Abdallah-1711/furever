@@ -1490,4 +1490,69 @@ orchestrator's own direct `psql`/`docker exec` query, not Codex's self-report:
 **Worker**: Codex (`gpt-6-luna`, `high`); all verification above performed directly by the orchestrator
 against a genuine clean reset, not accepted from Codex's own (admittedly non-clean) test run. **Result**:
 PASS.
-**Commit**: (pending — this pass's file not yet committed).
+**Commit**: `8b44dfa`.
+
+## D02 Batch 8 — T166, T167, T168: web Supabase clients and middleware guards (2026-10-26)
+
+**Scope**: `web/src/lib/supabase/{browser,server}.ts` (new `@supabase/ssr` clients) and an extension of
+the existing `web/src/middleware.ts` to add Supabase session refresh, a role-based dashboard gate, and
+an `aal2` gate for `/admin` routes. Dispatched to Codex (`gpt-6-luna`, `high`), one batch, running
+concurrently with Batch 7 (disjoint files — `backend/supabase/tests/` vs. `web/src/`, no overlap,
+confirmed via `touchedFiles`).
+
+**Dependencies pre-installed directly by the orchestrator** before dispatch: `@supabase/ssr@0.12.7`,
+`@supabase/supabase-js@2.118.0` in `web/package.json` — typecheck confirmed clean before dispatch;
+committed separately as `ee613f4` "chore(D02): add @supabase/ssr and @supabase/supabase-js for T166".
+
+**Path correction found (same class as T116/T169's prior fixes)**: T167/T168's task text names
+`web/middleware.ts`, but this project's real Next.js middleware entrypoint has lived at
+`web/src/middleware.ts` since D00e's T050 (confirmed: that file already existed, running `next-intl`'s
+locale-persistence middleware). Codex extended the existing file in place rather than creating a second,
+inert root-level file; `tasks.md` updated to record the correction.
+
+**Design**: `web/src/lib/supabase/browser.ts` / `server.ts` follow Supabase's documented
+`@supabase/ssr` Next.js App Router pattern (`createBrowserClient`/`createServerClient` with a
+`getAll()`/`setAll()` cookie adapter, `server.ts`'s `setAll` wrapped in try/catch since Server Components
+can't write cookies — middleware is what actually persists the refreshed session). `web/src/middleware.ts`
+now wraps the existing `next-intl` middleware: builds a request/response-scoped Supabase server client,
+calls `getUser()` to validate the session (not the unverified local `getSession()`), and — only for a
+non-public route — calls `getClaims()` to read the JWT's custom `user_role` claim (the one
+`custom_access_token_hook`, Batch 5, injects). No `user` → redirect to the localized `/login`; a `user`
+whose role isn't in `{clinic_staff, admin, super_admin}` (i.e. `owner`, mobile-only per the PRD) →
+redirect to `/no-access`; a request under the `admin` route segment additionally requires
+`mfa.getAuthenticatorAssuranceLevel().currentLevel === 'aal2'`, else redirects to `/mfa`. `/login`,
+`/forgot-password`, `/accept-invite`, `/no-access`, and `/mfa` are an explicit public-route allowlist
+bypassing all of the above. Both `/no-access` and `/mfa` are redirect targets for screens tasks.md
+tracks separately (T212, T207) and don't exist yet — by design, not an oversight; they'll 404 until
+those land, which is the expected, correct intermediate state.
+
+**One claim verified rather than trusted, since it's easy for an LLM to hallucinate a plausible-looking
+but nonexistent SDK method**: `supabase.auth.getClaims()` and `supabase.auth.mfa.getAuthenticatorAssuranceLevel()`
+were both independently confirmed to exist in the real installed `@supabase/auth-js@2.118.0` type
+declarations (`node_modules/.pnpm/@supabase+auth-js@2.118.0/.../GoTrueClient.d.ts`), with a returned
+`data.claims` shape matching the code's `claimsResult?.data?.claims?.user_role` access and the
+AAL method returning `{ currentLevel, nextLevel }` as used — not just accepted because `tsc` passed
+(a loosely-typed `any` could also pass `tsc` while calling a nonexistent runtime method).
+
+**Full independent verification, from a genuine live dev server, not just static checks**: re-ran
+`pnpm --filter web exec tsc --noEmit` (clean), `pnpm --filter web lint` (0 errors, 1 pre-existing
+warning in `Avatar.tsx`), `pnpm --filter web test` (2 files/3 tests pass) — all independent of Codex's
+self-report. Then, since Codex's sandbox had no way to boot a dev server, started `pnpm --filter web dev`
+directly (bound to port 3001, 3000 already in use by an unrelated project) and curled it live:
+unauthenticated `GET /en/admin` and bare `GET /` both `307`-redirect to `/en/login` (not into a redirect
+loop); `GET /en/login` itself serves `200` with no redirect; `GET /ar/mfa` and `GET /en/no-access` both
+correctly bypass the auth gate (no redirect to login) and 404 only because those screens don't exist yet,
+exactly as designed; `GET /clinic` (unprefixed, default-locale protected route) redirects to
+`/en/login`. Authenticated-session paths (the role gate and the `aal2` gate actually firing for a
+logged-in user) were **not** exercised live here — that needs a real Supabase sign-in and
+`@supabase/ssr`'s specific cookie-chunking format, which is better covered by T213-T216's real
+Maestro/Playwright E2E logins later in D02 than reconstructed by hand now; flagged here rather than
+silently claimed as fully covered. Dev server process force-killed after verification (Windows `taskkill`,
+since the backgrounded `next dev` process didn't respond to a plain `kill`).
+
+**Files this pass**: `web/src/lib/supabase/browser.ts` (new), `web/src/lib/supabase/server.ts` (new),
+`web/src/middleware.ts`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS, with the authenticated-path caveat above
+noted rather than hidden.
+**Commit**: (pending — this pass's files not yet committed).
