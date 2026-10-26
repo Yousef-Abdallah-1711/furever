@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `c54c040` (`feat(D02): add admin team and settings pages`), recorded in `b351f87`.
+**Latest implementation commit:** `dddd429` (`feat(D02): add mobile entry screens`), recorded in the checkpoint update.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 

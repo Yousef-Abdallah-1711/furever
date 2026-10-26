@@ -2382,4 +2382,4 @@ and `/home`); mobile Playwright PASS (6 tests across entry and system-screen spe
 **Files**: `mobile/app/{index,language,onboarding,welcome}.tsx`, `mobile/app/(tabs)/home.tsx` (moved from
 `index.tsx`), `mobile/app/(tabs)/_layout.tsx`, `mobile/src/features/onboarding/router.ts`,
 `mobile/tests/{d02-entry-screens.spec.ts,serve-static.cjs}`, both locale dictionaries, `tasks.md`, this log,
-and the D02 checkpoint. **Commit**: pending.
+and the D02 checkpoint. **Commit**: `dddd429`.
