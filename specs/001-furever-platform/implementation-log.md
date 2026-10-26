@@ -1262,4 +1262,37 @@ above.
 **Worker**: Codex (`gpt-6-luna`, `high`); the clean-reset verification was done directly by the
 orchestrator after the sandboxed run hit its Docker-access limitation. **Result**: PASS (T124, T125,
 T133 complete; T123's structure done, seed pending Decision D).
+**Commit**: `0041884`.
+
+## D02 database foundation, Batch 2 — T126, T127, T128 (2026-10-26)
+
+**Scope**: `clinic_staff`, `push_tokens`, `consents` — depend on `profiles`/`clinics` from Batch 1.
+Dispatched to Codex (`gpt-6-luna`, `high`), one sequential batch (same reasoning as Batch 1: a
+dependency-chained set of migrations, not independent files to parallelize).
+
+**Same Codex-sandbox Docker-access limitation as Batch 1**, correctly self-reported this time rather
+than silently working around it: `supabase db reset` failed with the same `npipe` permission error;
+Codex fell back to applying the three migrations individually via `supabase db query --local` and
+verified with direct catalog queries. Orchestrator ran a genuine `supabase db reset` afterward — all 10
+migrations (the 3 D00 ones + Batch 1's 4 + these 3) applied cleanly from a fully recreated database.
+
+**Full review of the actual SQL** (all 3 files read in full): correct composite PK on `clinic_staff`
+(`clinic_id`, `user_id`) with the separate `user_id` index for reverse lookups; `push_tokens`'s
+`platform` check constraint and `token` uniqueness match spec; `consents`'s append-only design correctly
+has no update/delete policy and an explicit `REVOKE UPDATE, DELETE ... FROM PUBLIC, anon, authenticated`
+— independently confirmed via `information_schema.table_privileges` after the clean reset: neither
+`anon` nor `authenticated` holds `UPDATE`/`DELETE` on `consents`. Both `clinics`/`profiles`'s
+clinic-staff-dependent RLS clauses remain correctly deferred (code comment left in `clinic_staff`'s own
+migration noting the dependency chain) — not silently added despite the dependency now existing, since
+`profiles`'s clause additionally needs `appointments` (D06), which still doesn't exist.
+
+**Verification performed** (orchestrator's own re-run): `pnpm --filter backend exec supabase db reset`
+clean, all 10 migrations applied in order; direct `psql` queries confirmed RLS enabled on all three new
+tables and the exact `consents` grant state described above.
+
+**Files this pass**: `backend/supabase/migrations/20261026120000_create_clinic_staff.sql`,
+`.../20261026120001_create_push_tokens.sql`, `.../20261026120002_create_consents.sql`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`); the clean-reset verification was done directly by the
+orchestrator after the sandboxed run hit the same Docker-access limitation as Batch 1. **Result**: PASS.
 **Commit**: (pending — this pass's files not yet committed).

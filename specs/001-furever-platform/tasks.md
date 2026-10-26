@@ -517,9 +517,9 @@ environments only, not local dev.
   `status`) + RLS. Moved here from D05 because `clinic_staff`/`vaccinations`/`health_records`/
   `appointments`/`queue_tickets`/`reviews` all FK into it. D05 **extends** this table later (location,
   hours, media, rating, search indexes); D05 does not re-create it.
-- [ ] T126 [D02] Migration: `clinic_staff` table + RLS. Depends on T124, T125 (FKs to both).
-- [ ] T127 [P] [D02] Migration: `push_tokens` table + RLS. Depends on T124.
-- [ ] T128 [P] [D02] Migration: `consents` table + RLS. Depends on T124.
+- [x] T126 [D02] Migration: `clinic_staff` table + RLS. Depends on T124, T125 (FKs to both).
+- [x] T127 [P] [D02] Migration: `push_tokens` table + RLS. Depends on T124.
+- [x] T128 [P] [D02] Migration: `consents` table + RLS. Depends on T124.
 - [ ] T129 [D02] Migration: `audit_logs` table + RLS (append-only: no `UPDATE`/`DELETE` grant to any
   role). Moved here from D07 because the generic audit mechanism (next task) needs it to exist first.
   **Created before `feature_flags`/`app_config` (this fix pass)** — both tables' audit triggers call
