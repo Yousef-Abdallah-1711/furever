@@ -1175,9 +1175,12 @@ falls back to `isConnected` when `isInternetReachable` is `null`. T171 adds mobi
 a web-native, SSR-safe browser-event hook without importing mobile code. Added the generic bilingual
 `common.offlineActionRequiresConnection` message; both locale files were verified as UTF-8.
 
-T172's reusable `useOfflineGuardedAction` hook and test are present. Representative-screen wiring is
-deferred because `/pets/new` does not yet exist and cannot be wired without starting D03. No D03
-route or screen was created, and T172 remains open.
+T172's D02 portion is implemented in `mobile/src/hooks/useOfflineGuardedAction.ts`: it preserves
+handler argument types, exposes the real `disabled` state, blocks calls while offline (including a
+previously captured callback), and supplies the localized `disabledReason` sub-label only while
+offline. Its focused test covers offline blocking/reason, online invocation/enabled state, and
+reconnection updates. `/pets/new` submit wiring remains for the later D03 screen task; no D03 route or
+screen was created, and T172 remains unchecked until that wiring is complete.
 
 Independent orchestrator gates: mobile Jest: 5 suites / 5 tests pass; mobile typecheck passes; mobile
 lint: 0 errors / 4 existing warnings. Web Vitest: 2 files / 3 tests pass; web typecheck passes; web

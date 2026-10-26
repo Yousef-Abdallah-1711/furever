@@ -5,7 +5,7 @@ import { useNetworkStatus } from './useNetworkStatus';
 type OfflineGuardedAction<Args extends unknown[]> = {
   disabled: boolean;
   onPress: (...args: Args) => void;
-  disabledReason: string | null;
+  disabledReason?: string;
 };
 
 export function useOfflineGuardedAction<Args extends unknown[]>(
@@ -30,8 +30,8 @@ export function useOfflineGuardedAction<Args extends unknown[]>(
   return {
     disabled: !isOnline,
     onPress,
-    disabledReason: isOnline
-      ? null
-      : t('common.offlineActionRequiresConnection'),
+    ...(isOnline
+      ? {}
+      : { disabledReason: t('common.offlineActionRequiresConnection') }),
   };
 }

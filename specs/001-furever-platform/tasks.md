@@ -683,7 +683,8 @@ environments only, not local dev.
   `useOfflineGuardedAction` hook wrapping a handler so the bound `Button`/`IconButton` renders `disabled`
   with a reason sub-label when offline (`useNetworkStatus`, T170) — and wire it into one representative
   action (`/pets/new` Add pet's submit button is the first screen to use it; the real wiring task is D03's
-  My pets/Add pet screens below). Depends on T170. [PLT-03]
+  My pets/Add pet screens below). D02 hook/tests are implemented; keep T172 open until D03 wires the
+  representative action. Depends on T170. [PLT-03]
 
 ## Route guards, onboarding orchestration, shells (infrastructure — not counted as Screen Coverage rows)
 

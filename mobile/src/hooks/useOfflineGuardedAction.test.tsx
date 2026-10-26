@@ -13,7 +13,7 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: mockTranslate }),
 }));
 
-test('blocks offline presses and exposes then clears the localized disabled reason', () => {
+test('guards offline presses, enables online, and updates after reconnection changes', () => {
   mockIsOnline = false;
   mockTranslate.mockReturnValue("You're offline. Connect to continue.");
   const handler = jest.fn<(value: string) => void>();
@@ -31,7 +31,7 @@ test('blocks offline presses and exposes then clears the localized disabled reas
   rerender(undefined);
 
   expect(result.current.disabled).toBe(false);
-  expect(result.current.disabledReason).toBeNull();
+  expect(result.current.disabledReason).toBeUndefined();
   act(() => result.current.onPress('online'));
   expect(handler).toHaveBeenCalledWith('online');
 
