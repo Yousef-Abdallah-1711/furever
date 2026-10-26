@@ -1919,3 +1919,23 @@ do not describe a phone format, and no city values or legal text were added.
 `git diff --check` PASS.
 
 **Files**: `packages/i18n/en.json`, `packages/i18n/ar.json`, this log, and the T188 checkbox in `tasks.md`.
+
+## D02 - T146: Edge Function environment documentation (partial, 2026-10-26)
+
+Updated `docs/environments.md` from the current `app-config` and `admin-set-user-status`
+implementations and `_shared/sentry.ts`. Documented Supabase-provided project URL and key
+variables, server-only service-role handling, exact-match comma-separated `DASHBOARD_ORIGINS`
+with local defaults from `app-config`, optional Sentry gating, and SMTP as Supabase Auth
+configuration rather than an Edge Function secret. The SMTP provider remains undecided under
+T145. Supabase's official [Edge Function environment variables guide](https://supabase.com/docs/guides/functions/secrets)
+was checked for injected variables and custom-secret conventions.
+
+T146 remains unchecked and incomplete. Staging and production Supabase projects and verified
+dashboard origins are not provisioned; SMTP provider credentials are unavailable; and T139,
+T140, T142, and T143 have not been built. No hosted secrets were set and no credentials were
+added. No `.env` file or `config.toml` was changed.
+
+**Checks**: `git diff --check` PASS. Markdown source review confirmed the new fenced example is
+balanced and the local/hosted distinctions are present. No runtime or deployment check was run.
+
+**Files**: `docs/environments.md`, `specs/001-furever-platform/tasks.md`, and this log.

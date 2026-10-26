@@ -569,11 +569,14 @@ environments only, not local dev.
 - [ ] T145 [D02] **Replaces the Twilio provider task (2026-10-18)**: configure custom SMTP and the
   login-code email template (`{{ .Token }}`, not `{{ .ConfirmationURL }}` — research.md §12) in
   `config.toml` and in the staging and production projects. [AUTH-01]
-- [ ] T146 [D02] Document and wire required Supabase secrets for every Edge Function above
-  (`supabase secrets set` — SMTP credentials, Sentry DSN) in `docs/environments.md`. Document and
-  configure the Edge Function `DASHBOARD_ORIGINS` environment variable; local defaults are
-  `http://localhost:3100` and `http://127.0.0.1:3100`, while hosted dashboard origins must be supplied
-  explicitly.
+- [ ] T146 [D02] Document and wire required Supabase secrets for every Edge Function above in
+  `docs/environments.md`. **Partial documentation progress (2026-10-26):** current Supabase-provided
+  API variables, service-role handling, exact-origin `DASHBOARD_ORIGINS` behavior and local defaults,
+  optional Sentry, and the separate Supabase Auth SMTP configuration are documented. Hosted secret
+  wiring and exact hosted origins remain pending: staging/production projects and verified dashboard
+  domains are not provisioned, SMTP provider choice/credentials remain pending T145, and T139/T140/
+  T142/T143 are not built yet. Do not mark complete or run `supabase secrets set` until the projects
+  and values are available. No credentials are included.
 
 ## Google and Apple sign-in (new, this fix pass — AUTH-02/AUTH-03 had no implementation task before)
 
