@@ -2170,12 +2170,35 @@ readiness. No auth flow, screen, D03 work, CI, or other task status was changed.
 and `mobile/package.json` are restored/unchanged; `mobile/app.config.ts` was removed; the
 lockfile is unchanged.
 
-## T140 clinic-manager invite-level decision remains unresolved (2026-10-26)
+## T140 clinic-manager invite-level decision (approved 2026-10-27)
 
 Clarified the T140 note: `contracts/edge-functions.md` permits admins and clinic managers to call
 `admin-create-staff`, and `clinic_staff.staff_level` includes manager/vet/receptionist, but the
-contract does not define whether clinic managers can invite/grant manager level. The owner choices
-are A) managers may invite any level within their clinic; B) managers may invite vet/receptionist
-within their clinic and only platform admins may grant manager level (recommended least-privilege,
-not approved); or C) defer invites until the role boundary is specified. T140 remains unchecked
-pending the owner's choice and SMTP/T145 delivery readiness. No implementation has started.
+contract did not define whether clinic managers could invite/grant manager level. The owner approved
+Option B on 2026-10-27: clinic managers may invite vets/receptionists only within their clinic; only
+platform admins may grant manager level. This supersedes the earlier unresolved-choice note. Backend
+enforcement remains to be implemented; SMTP/T145 is still an external delivery prerequisite.
+
+## D02 — T143: current-schema data export (partial, 2026-10-27)
+
+Added `backend/supabase/functions/export-my-data/` as an authenticated, read-only JSON export. The
+handler validates the caller's bearer token through Supabase Auth, requires an owner profile, then reads
+that user's profile, consents, and push-device metadata with the same caller token and public API key so
+the existing RLS policies remain in force. It never uses a service-role key, accepts no user ID from the
+request, marks the response `private, no-store`, and omits raw push-token credentials. The response names
+the pets, vaccinations, health records/attachments, and appointments sections unavailable because those
+tables belong to later phases and do not exist in the current migrations.
+
+T143 remains open: this is a current-schema partial export, not a complete archive. No live Supabase
+function invocation or authenticated-session integration was run; verification uses injected HTTP
+responses. No hosted function was deployed.
+
+**Verification**: `npx.cmd --yes --offline deno test --no-lock
+backend/supabase/functions/export-my-data/index.test.ts` PASS (7 tests); `npx.cmd --yes --offline deno
+check --no-lock backend/supabase/functions/export-my-data/index.ts` PASS; `git diff --check` PASS.
+Tests cover CORS preflight/method handling, missing and invalid auth, owner-only export, caller-token and
+user-ID scoping on every RLS read, non-cacheable response, unavailable later-phase sections, non-owner
+rejection before further reads, and generic database errors.
+
+**Files**: `backend/supabase/functions/export-my-data/index.ts`, its `index.test.ts`, `tasks.md`, this log,
+and `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`.

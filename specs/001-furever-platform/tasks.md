@@ -575,7 +575,11 @@ environments only, not local dev.
   expired sessions, stale/missing/future events, subject mismatch, and cross-account targets; focused
   tests cover forged client timestamps. The delete endpoint remains open until transactional account-data,
   storage, and Auth-user cleanup is designed and verified.
-- [ ] T143 [P] [D02] Edge Function `export-my-data/`. [AUTH-09]
+- [ ] T143 [P] [D02] Edge Function `export-my-data/`. [AUTH-09] **Partial (2026-10-27):** authenticated
+  GET exports the caller's own profile, consent rows, and push-device metadata through the public key and
+  caller bearer token so RLS remains active; response is non-cacheable and does not expose raw push tokens.
+  Pets, vaccinations, health records/attachments, and appointments are explicitly reported unavailable
+  until their later-phase tables exist. Remains open for complete data coverage and runtime integration.
 - [x] T144 [P] [D02] Edge Function `app-config/`. [PLT-01][PLT-02]
 - [ ] T145 [D02] **Replaces the Twilio provider task (2026-10-18)**: configure custom SMTP and the
   login-code email template (`{{ .Token }}`, not `{{ .ConfirmationURL }}` — research.md §12) in
