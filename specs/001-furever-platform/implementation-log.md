@@ -1742,7 +1742,7 @@ Output: `0 design-token violations across mobile/app/(tabs)/index.tsx, mobile/ap
 `packages/i18n/ar.json`.
 
 **Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS.
-**Commit**: pending; no commit SHA yet. Batch 10 is ready for commit.
+**Commits**: Batch 10 was committed as `30eaa00`; the follow-up record correction was committed as `5d2c903`. Both commits were pushed to `origin/main`.
 
 ## D02 — T144: public app-config Edge Function (2026-10-26)
 
@@ -1762,3 +1762,29 @@ origins remain to be configured and documented in T146.
 
 **Files**: `backend/supabase/functions/app-config/index.ts`,
 `backend/supabase/functions/app-config/index.test.ts`.
+
+## D02 — T141: admin user status Edge Function (2026-10-26)
+
+Implemented `admin-set-user-status` for admin and super_admin callers. The function validates the bearer
+token with Supabase Auth, checks the role claim against the verified user's subject, rejects self-targets,
+and accepts only `suspend` or `restore`; suspension requires a non-empty reason. It changes the Auth ban
+through the service-role Auth Admin API and calls `admin_set_user_status` with the caller's bearer token.
+The new SECURITY DEFINER RPC independently checks `auth.uid()`, role, self-target, status, and reason;
+it updates `profiles.status` and calls `write_audit_log()` in one transaction. Auth changes are compensated
+when the RPC fails or returns no response, and failed compensation returns an explicit partial-failure code.
+Deleted profiles cannot be restored through this endpoint. No force-sign-out behavior was added.
+
+Added Deno HTTP tests for authentication and authorization rejection, malformed actions/targets, required
+reason, suspend/restore requests, caller-token RPC use, Auth rollback, and rollback failure. Added pgTAP
+coverage for RPC grants, authorization, self-target rejection, reason validation, profile transitions, and
+the audit diff. No OTP task or D03 file was changed.
+
+**Verification**: Biome PASS; `npx.cmd --yes --offline deno test backend/supabase/functions/admin-set-user-status/index.test.ts` PASS (7 tests); `npx.cmd --yes --offline deno check backend/supabase/functions/admin-set-user-status/index.ts` PASS. From `backend/`, with `$env:SUPABASE_CLI_TELEMETRY_DISABLED='true'`, ` .\node_modules\.bin\supabase.cmd migration up --local` applied only the new migration, then ` .\node_modules\.bin\supabase.cmd test db` PASS (5 files, 40 assertions). The migration was applied forward to the local database without reset. `git diff --check` PASS.
+
+**Unresolved owner follow-ups**:
+- The implementation rejects self-target status changes, but the task and contract do not specify whether an admin may change their own profile status. Recommendation: keep self-target changes prohibited.
+- AD-03 mentions “force sign-out,” while the T141 task and contract specify suspend/restore through an Auth ban. This implementation adds no separate force-sign-out action. Decide separately whether force-sign-out belongs in D02.
+
+**Files**: `backend/supabase/functions/admin-set-user-status/index.ts`, its `index.test.ts`,
+`backend/supabase/migrations/20261026130000_admin_set_user_status.sql`,
+`backend/supabase/tests/013_admin_set_user_status.test.sql`, and this log plus the T141 task checkbox.

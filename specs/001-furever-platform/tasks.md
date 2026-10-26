@@ -561,7 +561,7 @@ environments only, not local dev.
   T136, T137, T138. [AUTH-01]
 - [ ] T140 [P] [D02] Edge Function `admin-create-staff/` (sends the invite email — needs SMTP, T145).
   [CS-01][CS-10]
-- [ ] T141 [P] [D02] Edge Function `admin-set-user-status/`, calling `write_audit_log()` for every status
+- [x] T141 [P] [D02] Edge Function `admin-set-user-status/`, calling `write_audit_log()` for every status
   change. Depends on T130. [AUTH-10][AD-03]
 - [ ] T142 [P] [D02] Edge Function `delete-account/`. [AUTH-08]
 - [ ] T143 [P] [D02] Edge Function `export-my-data/`. [AUTH-09]
@@ -711,7 +711,8 @@ environments only, not local dev.
 mobile tests (PASS, 6 suites/10 tests), Expo lint (PASS, 3 existing warnings in unrelated i18n files),
 i18n parity (PASS, 603 keys), `git diff --check` (PASS), and design-token lint (PASS, 0 violations
 across the six Batch 10 files). Full commands and lint output are recorded in `implementation-log.md`.
-Batch 10 is ready for commit; no commit SHA has been assigned yet.
+Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction was committed as
+`5d2c903`. Both commits were pushed to `origin/main`.
 
 ## Account linking (new, remediation pass — AUTH-06/FR-006)
 
