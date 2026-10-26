@@ -25,42 +25,40 @@ SELECT throws_ok(
     VALUES ('45000000-0000-4000-8000-000000000002', '15000000-0000-4000-8000-000000000001', 'manager')$$,
   '42501', NULL, 'clinic_staff owner cannot insert assignments'
 );
-WITH changed AS (
-  UPDATE public.clinic_staff SET staff_level = 'manager'
-  WHERE clinic_id = '45000000-0000-4000-8000-000000000001'
-    AND user_id = '15000000-0000-4000-8000-000000000001'
-  RETURNING user_id
-)
-SELECT is((SELECT count(*) FROM changed), 0::bigint, 'clinic_staff owner cannot update assignments');
-WITH removed AS (
-  DELETE FROM public.clinic_staff
-  WHERE clinic_id = '45000000-0000-4000-8000-000000000001'
-    AND user_id = '15000000-0000-4000-8000-000000000001'
-  RETURNING user_id
-)
-SELECT is((SELECT count(*) FROM removed), 0::bigint, 'clinic_staff owner cannot delete assignments');
+SELECT throws_ok(
+  $$UPDATE public.clinic_staff SET staff_level = 'manager'
+    WHERE clinic_id = '45000000-0000-4000-8000-000000000001'
+      AND user_id = '15000000-0000-4000-8000-000000000001'$$,
+  '42501', 'permission denied for table clinic_staff', 'clinic_staff owner cannot update assignments'
+);
+SELECT throws_ok(
+  $$DELETE FROM public.clinic_staff
+    WHERE clinic_id = '45000000-0000-4000-8000-000000000001'
+      AND user_id = '15000000-0000-4000-8000-000000000001'$$,
+  '42501', 'permission denied for table clinic_staff', 'clinic_staff owner cannot delete assignments'
+);
 
 RESET ROLE;
 SELECT tests.authenticate_as('15000000-0000-4000-8000-000000000002', 'admin');
 SET LOCAL ROLE authenticated;
 SELECT is((SELECT count(*) FROM public.clinic_staff), 2::bigint, 'clinic_staff admin can read all assignments');
-INSERT INTO public.clinic_staff (clinic_id, user_id, staff_level)
-VALUES ('45000000-0000-4000-8000-000000000001', '15000000-0000-4000-8000-000000000003', 'vet');
-SELECT is((SELECT count(*) FROM public.clinic_staff WHERE user_id = '15000000-0000-4000-8000-000000000003'), 2::bigint, 'clinic_staff admin can insert assignments');
-WITH changed AS (
-  UPDATE public.clinic_staff SET staff_level = 'manager'
-  WHERE clinic_id = '45000000-0000-4000-8000-000000000001'
-    AND user_id = '15000000-0000-4000-8000-000000000003'
-  RETURNING staff_level
-)
-SELECT is((SELECT staff_level::text FROM changed), 'manager', 'clinic_staff admin can update assignments');
-WITH removed AS (
-  DELETE FROM public.clinic_staff
-  WHERE clinic_id = '45000000-0000-4000-8000-000000000001'
-    AND user_id = '15000000-0000-4000-8000-000000000003'
-  RETURNING user_id
-)
-SELECT is((SELECT count(*) FROM removed), 1::bigint, 'clinic_staff admin can delete assignments');
+SELECT throws_ok(
+  $$INSERT INTO public.clinic_staff (clinic_id, user_id, staff_level)
+    VALUES ('45000000-0000-4000-8000-000000000001', '15000000-0000-4000-8000-000000000003', 'vet')$$,
+  '42501', 'permission denied for table clinic_staff', 'clinic_staff admin cannot bypass audited assignment RPC'
+);
+SELECT throws_ok(
+  $$UPDATE public.clinic_staff SET staff_level = 'manager'
+    WHERE clinic_id = '45000000-0000-4000-8000-000000000001'
+      AND user_id = '15000000-0000-4000-8000-000000000003'$$,
+  '42501', 'permission denied for table clinic_staff', 'clinic_staff admin cannot change levels without audit'
+);
+SELECT throws_ok(
+  $$DELETE FROM public.clinic_staff
+    WHERE clinic_id = '45000000-0000-4000-8000-000000000002'
+      AND user_id = '15000000-0000-4000-8000-000000000003'$$,
+  '42501', 'permission denied for table clinic_staff', 'clinic_staff admin cannot remove staff without audit'
+);
 
 SELECT * FROM finish();
 ROLLBACK;

@@ -35,9 +35,10 @@ function corsHeaders(
   try {
     const configured = getEnv("DASHBOARD_ORIGINS");
     if (configured !== undefined) {
-      origins = configured.split(",").map((item) => item.trim()).filter(
-        Boolean,
-      );
+      origins = configured
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
     }
   } catch {
     return headers;
@@ -78,8 +79,9 @@ function parseUser(value: unknown): { id: string } | null {
   if (typeof value !== "object" || value === null) return null;
   const id = (value as JsonRecord).id;
   return typeof id === "string" &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-        .test(id)
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      id,
+    )
     ? { id }
     : null;
 }
@@ -148,10 +150,10 @@ export function createHandler(
     }
 
     try {
-      const baseUrl = dependencies.getEnv("SUPABASE_URL")?.trim().replace(
-        /\/+$/,
-        "",
-      );
+      const baseUrl = dependencies
+        .getEnv("SUPABASE_URL")
+        ?.trim()
+        .replace(/\/+$/, "");
       const key = publicKey(dependencies.getEnv);
       if (!baseUrl) throw new Error("Backend URL is not configured");
 

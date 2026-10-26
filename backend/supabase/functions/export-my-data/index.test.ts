@@ -6,27 +6,33 @@ const env = (values: Record<string, string>) => (name: string) => values[name];
 
 function ownerRows(table: string): unknown[] {
   if (table === "profiles") {
-    return [{
-      id: userId,
-      role: "owner",
-      email: "owner@example.test",
-      full_name: "Furever Owner",
-    }];
+    return [
+      {
+        id: userId,
+        role: "owner",
+        email: "owner@example.test",
+        full_name: "Furever Owner",
+      },
+    ];
   }
   if (table === "consents") {
-    return [{
-      id: "consent-1",
-      type: "terms",
-      version: "1",
-      accepted_at: "2026-10-01T00:00:00Z",
-    }];
+    return [
+      {
+        id: "consent-1",
+        type: "terms",
+        version: "1",
+        accepted_at: "2026-10-01T00:00:00Z",
+      },
+    ];
   }
-  return [{
-    id: "device-1",
-    platform: "ios",
-    locale: "en",
-    last_seen_at: "2026-10-26T00:00:00Z",
-  }];
+  return [
+    {
+      id: "device-1",
+      platform: "ios",
+      locale: "en",
+      last_seen_at: "2026-10-26T00:00:00Z",
+    },
+  ];
 }
 
 function authResponse(id = userId): Response {
@@ -51,7 +57,7 @@ Deno.test("export-my-data supports OPTIONS and applies configured exact-origin C
   }
   if (
     response.headers.get("access-control-allow-origin") !==
-      "https://dashboard.example"
+    "https://dashboard.example"
   ) {
     throw new Error("Expected configured dashboard origin");
   }
@@ -118,7 +124,8 @@ Deno.test("export-my-data validates the session and exports only the owner's vis
     throw new Error(`Expected 200, got ${response.status}`);
   }
   if (
-    body.schema_version !== 1 || body.exported_at !== "2026-10-27T12:00:00.000Z"
+    body.schema_version !== 1 ||
+    body.exported_at !== "2026-10-27T12:00:00.000Z"
   ) {
     throw new Error("Expected versioned export metadata");
   }
@@ -143,7 +150,7 @@ Deno.test("export-my-data validates the session and exports only the owner's vis
   }
   if (
     response.headers.get("content-disposition") !==
-      'attachment; filename="furever-data-export.json"'
+    'attachment; filename="furever-data-export.json"'
   ) {
     throw new Error("Expected a downloadable JSON archive");
   }
@@ -165,12 +172,12 @@ Deno.test("export-my-data validates the session and exports only the owner's vis
       );
     }
   }
-  for (
-    const request of requests.filter((item) => item.url.includes("/rest/v1/"))
-  ) {
+  for (const request of requests.filter((item) =>
+    item.url.includes("/rest/v1/"),
+  )) {
     const url = new URL(request.url);
-    const filter = url.searchParams.get("id") ??
-      url.searchParams.get("user_id");
+    const filter =
+      url.searchParams.get("id") ?? url.searchParams.get("user_id");
     if (filter !== `eq.${userId}`) {
       throw new Error(
         "Each data query must be restricted to the verified user ID",
@@ -256,7 +263,8 @@ Deno.test("export-my-data returns a generic error when a RLS query fails", async
   const body = await response.json();
 
   if (
-    response.status !== 503 || body.error?.code !== "EXPORT_UNAVAILABLE" ||
+    response.status !== 503 ||
+    body.error?.code !== "EXPORT_UNAVAILABLE" ||
     JSON.stringify(body).includes("database details")
   ) {
     throw new Error(

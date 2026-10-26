@@ -13,7 +13,7 @@
 - **Complete:** T187 shared Egyptian phone contract, optional empty value, E.164 normalization, auth
   profile schema, and database constraint/tests. Screens still need to use the shared schema.
 - **Complete:** T186 local standalone policy checker. `pnpm db:policy-coverage` checks the live local
-  database and fails nonzero for missing coverage; 31 policies currently have test references. No
+  database and fails nonzero for missing coverage; all 32 current policies have test references. No
   hosted CI gate exists; T074-T076 remain descoped.
 - **Partial:** T173 mobile guard validates the Supabase user, profile, required consent rows, app config,
   maintenance, and minimum app version before rendering tabs. Missing/expired/suspended/deleted routes
@@ -34,6 +34,11 @@
   download is marked `private, no-store`; raw push tokens are omitted. Pets, vaccinations, health records,
   attachments, and appointments are explicitly listed as unavailable until their later-phase tables land.
   Seven focused Deno tests pass; T143 remains open for complete coverage and runtime integration.
+- **Partial:** T140 now has a pending invitation ledger, clinic-scoped create/cancel/accept RPCs, the
+  `admin-create-staff` Edge Function, and audited staff-level change/removal RPCs. Managers can invite
+  vets/receptionists only in their own clinic; platform admins alone can grant manager level. Direct
+  `clinic_staff` writes are revoked. Nine pgTAP files / 84 assertions pass, plus seven Edge Function unit
+  tests. SMTP delivery and T210's acceptance UI/session refresh remain outstanding.
 
 The nine owner decisions are recorded in `research.md`, `spec.md`, `plan.md`, and task notes. Approval
 does not mean every decision's implementation is complete.
@@ -60,8 +65,9 @@ does not mean every decision's implementation is complete.
 
 ## Verification evidence
 
-- `pnpm.cmd --filter backend exec supabase test db`: PASS, 7 files / 53 assertions.
-- `SUPABASE_DB_CONTAINER=supabase_db_backend pnpm.cmd db:policy-coverage`: PASS, 31 policies.
+- `pnpm.cmd --filter backend exec supabase test db`: PASS, 9 files / 84 assertions after the T140 local
+  migrations were applied incrementally (no reset).
+- `SUPABASE_DB_CONTAINER=supabase_db_backend pnpm.cmd db:policy-coverage`: PASS, 32 policies.
 - `pnpm.cmd --filter @furever/shared test`: PASS, 4 files / 24 tests.
 - `pnpm.cmd --filter @furever/shared exec tsc --noEmit -p tsconfig.json`: PASS.
 - `pnpm.cmd --filter mobile test`: PASS, 12 suites / 34 tests.
@@ -73,6 +79,8 @@ does not mean every decision's implementation is complete.
 - `npx.cmd --yes --offline deno test --no-lock backend/supabase/functions/_shared/recent-auth.test.ts`:
   PASS, 6 tests.
 - `npx.cmd --yes --offline deno test --no-lock backend/supabase/functions/export-my-data/index.test.ts`:
+  PASS, 7 tests; `deno check --no-lock` for the handler passes.
+- `npx.cmd --yes --offline deno test --no-lock backend/supabase/functions/admin-create-staff/index.test.ts`:
   PASS, 7 tests; `deno check --no-lock` for the handler passes.
 - `pnpm.cmd exec expo install --check`: reports only the pre-existing Expo SDK drift in `@expo/ui`,
   `expo`, and `expo-router`; the two newly installed native auth libraries are compatible.
@@ -91,8 +99,8 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Continue T140's server-side clinic/role checks and negative tests; leave outbound invitation delivery
-   clearly gated by T145 SMTP readiness.
+1. Build T210's `/accept-invite` screen around `accept_staff_invitation()` and refresh the session so the
+   `user_role` claim reflects the accepted clinic assignment. Keep SMTP delivery gated by T145.
 2. Extend T143 as later-phase data tables land and investigate T142's supported step-up mechanism without
    trusting client time.
 3. Continue T173 redirect screens and mobile onboarding/auth screens only along the verified OTP/session

@@ -61,20 +61,21 @@ that creates it (constitution III, VII).
 ## Creation order by delivery phase
 
 Tables are created in this order so every foreign key points at a table that already exists (constitution
-III, IV); this mirrors `tasks.md`'s migration tasks exactly (T120-T132 for D02, T199-T200 for D03,
-T215-T220 for D04, T244-T250 for D05, T278 for D06, T314/T321 for D07).
+III, IV); the base D02 tables follow `tasks.md` T120-T132, with `staff_invitations` added later by T140
+for the approved invitation lifecycle. Later phases follow T199-T200 (D03), T215-T220 (D04), T244-T250
+(D05), T278 (D06), and T314/T321 (D07).
 
 | Phase | Tables created, in order | Count |
 | --- | --- | --- |
-| D02 | `cities` → `profiles` → `clinics` (**slim**: `name_en`, `name_ar`, `city_id`, `status` only) → `clinic_staff` → `push_tokens`, `consents` → `feature_flags`, `app_config` → `audit_logs` → `otp_attempts` | 10 |
+| D02 | `cities` -> `profiles` -> `clinics` (slim: `name_en`, `name_ar`, `city_id`, `status`) -> `clinic_staff`, `staff_invitations` -> `push_tokens`, `consents` -> `feature_flags`, `app_config` -> `audit_logs` -> `otp_attempts` | 11 |
 | D03 | `breeds` → `pets` | 2 |
 | D04 | `vaccine_types` → `vaccinations` → `health_records` → `record_attachments` → `notifications`, `notification_outbox` | 6 |
 | D05 | `specialties` → **extends** `clinics` (adds `description_*`, `phone`, `whatsapp`, `address_*`, `location geography(Point)`, `logo_path`, `cover_path`, `opening_hours jsonb`, `is_24h`, `supports_emergency`, `rating_avg`, `rating_count` + the GiST/trigram search indexes — no new table) → `doctors` → `services` → `doctor_services` → `doctor_schedules` → `schedule_exceptions` | 6 |
 | D06 | `appointments` | 1 |
 | D07 | `queue_tickets` → `reviews` | 2 |
-| **Total** | | **27** |
+| **Total** | | **28** |
 
-**27 tables, not 26** — a prior count (outside this file) missed `otp_attempts`.
+**28 tables, not 27** -- the D02 staff-invitation ledger was added for the approved T140 invitation flow.
 
 ## Reference and configuration
 
@@ -95,6 +96,7 @@ T215-T220 for D04, T244-T250 for D05, T278 for D06, T314/T321 for D07).
 booleans: `vaccination_reminders`/`booking_updates`/`offers`, default `true`; previously present in the
 model but read by nothing, `/speckit-analyze` finding H1)*, `deleted_at` |
 | `clinic_staff` | Who works where | `clinic_id`, `user_id`, `staff_level` (pk on both ids) |
+| `staff_invitations` | Pending/accepted/revoked staff invitations and the server-bound clinic/level | `email`, `clinic_id`, `staff_level`, `invited_by`, `accepted_at`, `accepted_user_id`, `revoked_at` |
 | `push_tokens` | Device tokens | `user_id`, `token` (unique), `platform`, `locale`, `last_seen_at` |
 | `consents` | Legal acceptance log | `user_id`, `type`, `version`, `accepted_at` |
 | `otp_attempts` *(new; column renamed 2026-10-18)* | Backs the verification-lockout rule | `identifier` (unique, normalized lowercase email — **was `phone_number`**), `wrong_count` (resets per code), `cancelled_count` (window-scoped), `window_started_at`, `locked_until`, `updated_at` |

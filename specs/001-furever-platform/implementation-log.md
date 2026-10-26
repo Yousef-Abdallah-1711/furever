@@ -2176,8 +2176,9 @@ Clarified the T140 note: `contracts/edge-functions.md` permits admins and clinic
 `admin-create-staff`, and `clinic_staff.staff_level` includes manager/vet/receptionist, but the
 contract did not define whether clinic managers could invite/grant manager level. The owner approved
 Option B on 2026-10-27: clinic managers may invite vets/receptionists only within their clinic; only
-platform admins may grant manager level. This supersedes the earlier unresolved-choice note. Backend
-enforcement remains to be implemented; SMTP/T145 is still an external delivery prerequisite.
+platform admins may grant manager level. This supersedes the earlier unresolved-choice note. Server-side
+enforcement is now partially implemented in the T140 entry below; SMTP/T145 remains an external delivery
+prerequisite.
 
 ## D02 — T143: current-schema data export (partial, 2026-10-27)
 
@@ -2202,3 +2203,38 @@ rejection before further reads, and generic database errors.
 
 **Files**: `backend/supabase/functions/export-my-data/index.ts`, its `index.test.ts`, `tasks.md`, this log,
 and `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`.
+
+## D02 — T140: staff invitation authorization (partial, 2026-10-27)
+
+Applied the approved Option B server-side. Added a private `staff_invitations` ledger and RPCs to create,
+cancel, and accept invitations. The inviter's signed role is compared with the current profile role/status;
+clinic managers must hold the manager assignment for the requested clinic and cannot invite self or grant
+manager level. Platform admins alone can grant manager level. Acceptance requires the invited email to be
+verified and an unprovisioned profile, then creates `profiles.role = clinic_staff` and the exact stored
+clinic/level in one transaction without accepting role or clinic values from the invitee. Retries are
+idempotent. Invitation, acceptance, role-change, and removal actions call `write_audit_log()`.
+
+The `admin-create-staff` Edge Function verifies the caller through Auth, creates the policy-checked
+invitation with the caller token, and only then invokes Auth Admin invite using the backend service key.
+Definite mail failures cancel the pending invitation; an ambiguous network result leaves it usable so a
+possibly delivered email is not invalidated. Added audited `set_clinic_staff_level` and
+`remove_clinic_staff` RPCs. Revoked direct client DML on `clinic_staff` so admin changes cannot bypass
+audit logging. `staff_invitations` was added to the data model and the RPC/Edge Function contracts.
+
+T140 remains partial: SMTP/provider readiness is external (T145), Auth invite email delivery was not
+runtime-tested, and the `/accept-invite` UI/session refresh is tracked in T210. No hosted project or
+credentials were used.
+
+**Verification**: applied the three new migrations incrementally to the verified unlinked local Supabase
+database (`20261027130000_staff_invitations.sql`, `20261027131500_audited_staff_assignments.sql`,
+`20261027132000_require_active_staff_actor.sql`; no database reset). `pnpm.cmd --filter backend exec
+supabase test db` PASS (9 files, 84 assertions). The suite covers manager same-clinic scope, manager-level
+denial, self-invite denial, suspended-manager denial, invitation acceptance using stored level, retry,
+direct-write revocation, audited changes/removal, and platform-admin manager grants. Deno tests for
+`admin-create-staff` PASS (7 tests); `deno check` passes for the handler. SMTP delivery and live Edge
+Function invocation were not run.
+
+**Files**: the new `admin-create-staff` Edge Function and tests; the three migrations above;
+`backend/supabase/tests/015_clinic_staff_access.test.sql` and `016_staff_invitations.test.sql` plus new
+`017_audited_staff_assignments.test.sql`; `tasks.md`, the data model and RPC/Edge Function contracts, this
+log, and the D02 checkpoint.

@@ -565,7 +565,11 @@ environments only, not local dev.
   [CS-01][CS-10] **Owner decision 2026-10-27: Option B approved.** Clinic managers may invite vets and
   receptionists only within their own clinic; only platform admins may grant manager level. Enforce this
   in the Edge Function, including anti-self-escalation and role-bounded acceptance, and audit grants.
-  SMTP remains an external delivery prerequisite.
+  **Partial 2026-10-27:** creation/cancellation/acceptance RPCs enforce clinic scope and stored role level;
+  acceptance derives access only from the pending invitation, and role changes are audited and protected.
+  The Edge Function verifies the caller, creates the policy-checked invite before sending through Supabase
+  Auth, and cancels it after a definite delivery failure. Local SMTP/auth delivery and acceptance UI are
+  not runtime-verified; hosted SMTP remains T145's prerequisite. T140 remains open.
 - [x] T141 [P] [D02] Edge Function `admin-set-user-status/`, calling `write_audit_log()` for every status
   change. Depends on T130. [AUTH-10][AD-03]
 - [ ] T142 [P] [D02] Edge Function `delete-account/`. [AUTH-08] **Owner decision (2026-10-27):** require
@@ -590,8 +594,8 @@ environments only, not local dev.
   optional Sentry, and the separate Supabase Auth SMTP configuration are documented. Hosted secret
   wiring and exact hosted origins remain pending: staging/production projects and verified dashboard
   domains are not provisioned, SMTP provider choice/credentials remain pending T145, T139/T140/T142 are
-  incomplete, and T143 currently exports only schema sections available in D02. Do not mark complete or run `supabase secrets set` until the projects
-  and values are available. No credentials are included.
+  incomplete, and T143 currently exports only schema sections available in D02. Do not mark complete or
+  run `supabase secrets set` until the projects and values are available. No credentials are included.
 
 ## Google and Apple sign-in (new, this fix pass — AUTH-02/AUTH-03 had no implementation task before)
 
@@ -801,7 +805,7 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   command; GitHub Actions and broader CI/CD remain out of scope and T074-T076 stay descoped. The checker
   must return nonzero on missing references and the local invocation must be documented. No hosted CI gate
   is claimed. **Completed 2026-10-27:** local checker supports host `psql` or `SUPABASE_DB_CONTAINER`,
-  the command is documented in README, all 31 local public policies have test references, and missing
+  the command is documented in README, all 32 current local public policies have test references, and missing
   clinic_staff coverage was added before the successful run.
 
 ## Shared schemas, i18n, test tooling
