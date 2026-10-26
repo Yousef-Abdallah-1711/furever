@@ -147,7 +147,7 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: t("nav.tabs.home"),
           tabBarIcon: ({ size }) => <Icon name="house" size={size} />,

@@ -2358,3 +2358,28 @@ T209 remain unchecked because the listed management/security actions are incompl
 `web/src/components/admin/{AdminTeamScreen,PersonalSettingsScreen}.tsx`,
 `web/src/lib/admin-team-access.ts` and test, `web/src/components/ShellControls.tsx`, both locale dictionaries,
 `tasks.md`, this log, and the D02 checkpoint. **Commit**: `c54c040`.
+
+## D02 - T190-T193: mobile entry and onboarding screens (complete, 2026-10-27)
+
+Replaced the starter token-smoke screen at `/` with Splash, added `/language` with persisted English/Arabic
+selection, built the three-slide onboarding flow, and added `/welcome` with email, Google, and iOS-only Apple
+options. Google and Apple buttons call the existing provider modules and navigate to the Home tab only after
+successful Auth sign-in; cancellation stays on the screen without an error message. Provider credentials and
+native sign-in remain unverified under T147-T150.
+
+The first browser check found that `/` was Not Found because both root `index.tsx` and `(tabs)/index.tsx` mapped
+to the same public route. Kept `/` for Splash (T190) and moved the Home tab shell to
+`mobile/app/(tabs)/home.tsx` (`/home`), changing the Tabs screen name and onboarding router target accordingly.
+Updated T176 and the future T260 path reference. The static test server also failed to map `/` to `index.html`
+on Windows because `path.normalize('/')` produces a backslash; normalized the leading URL separators and used
+the URL's trailing slash to select the index file.
+
+**Verification**: Expo static web export PASS (21 routes, including `/`, `/language`, `/onboarding`, `/welcome`,
+and `/home`); mobile Playwright PASS (6 tests across entry and system-screen specs); mobile Jest PASS (14 suites,
+37 tests); mobile typecheck PASS; mobile lint PASS (3 pre-existing unrelated warnings); design-token check PASS
+(0 violations); `pnpm.cmd i18n:check` PASS (765 matching keys). Native provider/device runtime was not exercised.
+
+**Files**: `mobile/app/{index,language,onboarding,welcome}.tsx`, `mobile/app/(tabs)/home.tsx` (moved from
+`index.tsx`), `mobile/app/(tabs)/_layout.tsx`, `mobile/src/features/onboarding/router.ts`,
+`mobile/tests/{d02-entry-screens.spec.ts,serve-static.cjs}`, both locale dictionaries, `tasks.md`, this log,
+and the D02 checkpoint. **Commit**: pending.

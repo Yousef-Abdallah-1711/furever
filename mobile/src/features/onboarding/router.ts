@@ -3,8 +3,8 @@
  *
  * Expo Router route groups such as `(auth)` and `(tabs)` are included in the
  * href used to target a group, but are omitted from the browser/deep-link URL.
- * For example, `/(auth)/sign-in` resolves to `/sign-in` and `/(tabs)` resolves
- * to the tabs group's index route (`/`).
+ * For example, `/(auth)/sign-in` resolves to `/sign-in` and
+ * `/(tabs)/home` resolves to `/home`. Root `/` remains the Splash route.
  */
 export const onboardingRoutes = {
   language: '/language',
@@ -16,7 +16,7 @@ export const onboardingRoutes = {
   newPet: '/pets/new',
   permissions: '/permissions',
   summary: '/onboarding/summary',
-  home: '/(tabs)',
+  home: '/(tabs)/home',
 } as const;
 
 export type OnboardingRoute = (typeof onboardingRoutes)[keyof typeof onboardingRoutes];

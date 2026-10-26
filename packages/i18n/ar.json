@@ -21,7 +21,8 @@
         "invalidEmail": "أدخل بريدًا إلكترونيًا صالحًا",
         "continueWith": "أو الاستمرار باستخدام",
         "continueWithGoogle": "المتابعة بحساب Google",
-        "continueWithApple": "المتابعة بحساب Apple"
+        "continueWithApple": "المتابعة بحساب Apple",
+        "providerError": "تعذر إكمال تسجيل الدخول. حاول مرة أخرى أو اختر طريقة أخرى."
       },
       "verification": {
         "title": "تحقق من بريدك الإلكتروني",
@@ -831,6 +832,7 @@
       "welcomeToFurEver": "أهلاً بيك في فيرايفر!",
       "getStarted": "يلا نبدأ",
       "iHaveAnAccount": "عندي حساب",
+      "continueWithEmail": "المتابعة بالبريد الإلكتروني",
       "signInWithEmailGoogleOrApple": "سجّل الدخول بالبريد الإلكتروني أو Google أو Apple",
       "theBestCareForYourFurFamily": "أحسن رعاية لعيلتك الصغيرة."
     },

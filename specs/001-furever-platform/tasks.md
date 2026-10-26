@@ -740,8 +740,8 @@ environments only, not local dev.
   (Language→Onboarding→Welcome→**Email**→Verify→Profile→pet steps→Permissions→Summary→Home, 2026-10-18 —
   was Phone) and the returning-user path (Welcome→Sign-in **by email or Google**→Verify (email path
   only)→Home). [AUTH-01] **Implemented and checked 2026-10-26**: see implementation-log D02 Batch 10.
-- [x] T176 [D02] Build the Home tab shell `mobile/app/(tabs)/index.tsx` (empty shell — D04 adds the
-  vaccines-due banner). Infrastructure; Home's Screen Coverage credit stays with D04.
+- [x] T176 [D02] Build the Home tab shell `mobile/app/(tabs)/home.tsx` (empty shell — D04 adds the
+  vaccines-due banner). The tab route is /home: T190 owns / Splash, so two index files would collide. Infrastructure; Home's Screen Coverage credit stays with D04.
 - [x] T177 [D02] Build `mobile/app/(tabs)/_layout.tsx` (tab bar: Home, Pets, Bookings, Profile). Depends on
   T176. **Note**: Expo Router's `Tabs` requires a matching route file per tab, so bare placeholder shells
   for `pets.tsx`/`bookings.tsx`/`profile.tsx` were added alongside (not full screens — those are T198/
@@ -821,15 +821,16 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 
 ## Screens (23 counted + 3 infrastructure, listed above)
 
-- [ ] T190 [P] [D02] Build `/` Splash — `mobile/app/index.tsx` (Built). [PLT-01][PLT-02]
-- [ ] T191 [P] [D02] Build `/language` Language — `mobile/app/language.tsx` (Built). [AUTH-05]
-- [ ] T192 [P] [D02] Build `/onboarding` Onboarding (3 slides) — `mobile/app/onboarding.tsx` (Built).
+- [x] T190 [P] [D02] Build `/` Splash — `mobile/app/index.tsx` (Built). [PLT-01][PLT-02]
+- [x] T191 [P] [D02] Build `/language` Language — `mobile/app/language.tsx` (Built). [AUTH-05]
+- [x] T192 [P] [D02] Build `/onboarding` Onboarding (3 slides) — `mobile/app/onboarding.tsx` (Built).
   [AUTH-01]
-- [ ] T193 [P] [D02] Build `/welcome` Welcome — `mobile/app/welcome.tsx` (Built, design change needed:
+- [x] T193 [P] [D02] Build `/welcome` Welcome — `mobile/app/welcome.tsx` (Built, design change needed:
   email instead of phone — `design/overrides.md`). **Clarified, this fix pass**: this task renders the
   Google/Apple buttons and wires their `onPress` to T147/T148 — it does not reimplement the native
   sign-in flow inline; the Apple button is hidden entirely on Android (`Platform.OS === 'ios'`), not just
   disabled. [AUTH-01][AUTH-02][AUTH-03]
+  Verified 2026-10-27: static web export and Playwright cover the Splash → Language → three-slide Onboarding → Welcome path. Google and Apple buttons call the existing provider modules; Apple renders only on iOS. Native provider runtime is unverified and T147–T150 remain open.
 - [ ] T194 [P] [D02] Build `/sign-in` Sign in — `mobile/app/(auth)/sign-in.tsx` (Built, design change
   needed: email field instead of phone — `design/overrides.md`). **Clarified, this fix pass**: same
   delegation as T193 — calls T147 (Google)/T148 (Apple), does not duplicate their logic; a cancelled
@@ -1052,7 +1053,7 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 
 - [ ] T259 [P] [D04] Extend `mobile/app/permissions.tsx` (D02 shell, T178) with the real
   notification/location permission-request flow. [NTF-03]
-- [ ] T260 [P] [D04] Extend `mobile/app/(tabs)/index.tsx` (D02 shell, T176) with the vaccines-due banner.
+- [ ] T260 [P] [D04] Extend `mobile/app/(tabs)/home.tsx` (D02 shell, T176) with the vaccines-due banner.
   [PET-07]
 - [ ] T261 [P] [D04] Build `/pets/[id]` Pet passport Vaccinations/Timeline tabs — `mobile/app/pets/[id].tsx`
   (Built partial). [PET-06][PET-09]

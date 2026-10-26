@@ -21,7 +21,8 @@
         "invalidEmail": "Enter a valid email address",
         "continueWith": "Or continue with",
         "continueWithGoogle": "Continue with Google",
-        "continueWithApple": "Continue with Apple"
+        "continueWithApple": "Continue with Apple",
+        "providerError": "Sign-in could not be completed. Try again or choose another option."
       },
       "verification": {
         "title": "Verify your email",
@@ -831,6 +832,7 @@
       "welcomeToFurEver": "Welcome to FurEver!",
       "getStarted": "Get Started",
       "iHaveAnAccount": "I Have an Account",
+      "continueWithEmail": "Continue with email",
       "signInWithEmailGoogleOrApple": "Sign in with email, Google, or Apple",
       "theBestCareForYourFurFamily": "The best care for your fur family."
     },

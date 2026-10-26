@@ -26,9 +26,10 @@ function send(res, status, data, contentType) {
 
 const server = http.createServer((req, res) => {
   const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
-  const safePath = path.normalize(urlPath).replace(/^(\.\.[/\\])+/, '');
+  const requestedPath = urlPath.replace(/^[/\\]+/, '');
+  const safePath = path.normalize(requestedPath).replace(/^(\.\.[/\\])+/, '');
   const candidates = [path.join(root, safePath)];
-  if (safePath.endsWith('/')) candidates.push(path.join(root, safePath, 'index.html'));
+  if (urlPath.endsWith('/')) candidates.push(path.join(root, safePath, 'index.html'));
   candidates.push(path.join(root, `${safePath}.html`));
 
   const hit = candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile());

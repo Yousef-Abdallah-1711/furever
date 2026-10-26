@@ -55,6 +55,9 @@
   `min_mobile_version.version` and `maintenance.message_en/message_ar` config contracts. Expo web static
   export and browser route checks pass, including the bilingual maintenance fallback. Native build/device
   behavior remains unverified.
+- **Complete:** T190-T193 provide the mobile Splash, language selection, three-slide onboarding, and welcome
+  screens. The entry path was browser-verified. T193 calls the provider modules; Google/Apple native runtime
+  remains unverified while T147-T150 are open. T176 Home now uses `/home` to keep `/` available for Splash.
 
 The nine owner decisions are recorded in `research.md`, `spec.md`, `plan.md`, and task notes. Approval
 does not mean every decision's implementation is complete.
@@ -117,6 +120,9 @@ does not mean every decision's implementation is complete.
   and `/[locale]/admin/settings`, within the MFA-guarded URL segment. Web tests PASS (6 files / 21 tests),
   focused ESLint PASS, locale parity PASS (763). No authenticated admin session was available for a live
   data query; role-check helper tests cover missing user, non-super-admin, and stale-profile-role cases.
+- T190-T193 continuation: Expo web export PASS (21 routes); Playwright PASS (6 entry/system tests); mobile Jest
+  PASS (14 suites / 37 tests), typecheck PASS, lint PASS (3 pre-existing warnings), token lint PASS, and i18n
+  parity PASS (765 keys). Root Splash and tab Home route coexist as `/` and `/home` respectively.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 
