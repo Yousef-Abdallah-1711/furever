@@ -749,10 +749,10 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   it launches past Splash on a device/emulator. Depends on D00e's T043 and the manual-prerequisites EAS
   account.
 - [ ] T185 [D02] PostHog instrumentation for `sign_up_completed`, `language_changed`, `theme_changed`
-  (PRD section 14). **Partial implementation recorded 2026-10-26**: mobile locale/theme preference
-  events and a small allowlisted tracking API are wired; `sign_up_completed` remains unwired until the
-  auth flow has a successful verification handler. Keep this task unchecked until all three events are
-  implemented.
+  (PRD section 14). **Partial implementation recorded 2026-10-26**: mobile and web locale/theme
+  preference events and small allowlisted tracking APIs are wired; `sign_up_completed` remains
+  unwired until the auth flow has a successful verification handler. Keep this task unchecked until all
+  three events are implemented.
 - [ ] T186 [D02] Write `backend/supabase/scripts/check-policy-coverage.ts`: lists every policy from
   `pg_policies` and fails if a policy has no matching pgTAP test reference (grep the test suite for the
   policy/table name). **Partial implementation recorded 2026-10-26**: standalone checker and focused

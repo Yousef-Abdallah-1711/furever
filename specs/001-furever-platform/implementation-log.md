@@ -1820,7 +1820,7 @@ backend/supabase/scripts/check-policy-coverage.test.ts`.
 `backend/supabase/scripts/check-policy-coverage.test.ts`, this log, and the T186 status note in
 `tasks.md`.
 
-## D02 — T185: mobile preference analytics (2026-10-26, partial)
+## D02 — T185: mobile and web preference analytics (2026-10-26, partial)
 
 Added PostHog `language_changed` and `theme_changed` events to the existing mobile locale and theme
 setters. Hydration and unchanged values do not emit events. The observability module now retains the
@@ -1830,7 +1830,11 @@ only the new locale or theme value; the signup event accepts no properties, so c
 email, profile, or other identifiers through this API.
 
 T185 remains unchecked and partial because there is not yet a successful auth verification handler to
-wire `sign_up_completed` to. No auth flow or D00/D03 work was added.
+wire `sign_up_completed` to. This entry now also covers the web preference events. Web PostHog
+tracking remains behind its existing opt-in flag and key check. The web allowlist accepts only
+`language_changed` with `{ locale: 'ar' | 'en' }` and `theme_changed` with `{ theme: 'dark' | 'light' }`;
+the login controls emit these only from user clicks, not initial render or hydration. No email, user
+identifier, URL, or additional property is sent. No auth flow or D00/D03 work was added.
 
 **Verification**: `pnpm.cmd exec jest --runInBand src/lib/observability.test.ts
 src/hooks/useLocale.test.tsx src/hooks/useTheme.test.tsx` from `mobile/` PASS (3 suites, 4 tests);
@@ -1839,9 +1843,17 @@ files with `--no-cache` PASS (0 errors, 0 warnings); `git diff --check` PASS. Th
 `pnpm.cmd lint` could not write Expo's ESLint cache under `mobile/.expo/cache/eslint` (EPERM), so the
 same ESLint binary was run directly on the changed files with caching disabled.
 
+Web verification for this continuation: `pnpm.cmd exec vitest run src/lib/observability.test.ts`
+from `web/` PASS (1 file, 4 tests); `pnpm.cmd exec eslint src/lib/observability.ts
+src/lib/observability.test.ts src/components/ShellControls.tsx` PASS; `pnpm.cmd exec tsc --noEmit
+--incremental false` PASS. `pnpm.cmd typecheck` could not start type generation because the checkout
+is missing the SWC native binding and its cache fallback is not writable in this environment.
+
 **Files**: `mobile/src/lib/observability.ts`, `mobile/src/lib/observability.test.ts`,
 `mobile/src/hooks/useLocale.ts`, `mobile/src/hooks/useLocale.test.tsx`, `mobile/src/hooks/useTheme.ts`,
-`mobile/src/hooks/useTheme.test.tsx`, this log, and the T185 partial status note in `tasks.md`.
+`mobile/src/hooks/useTheme.test.tsx`, `web/src/lib/observability.ts`,
+`web/src/lib/observability.test.ts`, `web/src/components/ShellControls.tsx`, this log, and the T185
+partial status note in `tasks.md`.
 
 ## D02 — T154: local Mailpit inbox helper (2026-10-26)
 
