@@ -2301,7 +2301,7 @@ and Arabic copy without exposing account, role, or suspension details.
 
 **Files**: `web/src/app/[locale]/(auth)/no-access/page.tsx`,
 `web/src/components/auth/NoAccessScreen.tsx`, `web/src/lib/sign-out.ts` and test, both locale dictionaries,
-`tasks.md`, this log, and the D02 checkpoint. **Commit**: recorded in the checkpoint update.
+`tasks.md`, this log, and the D02 checkpoint. **Commit**: `29cd6f9`.
 
 ## D02 - T205/T206: mobile system screens (complete, 2026-10-27)
 
@@ -2331,5 +2331,4 @@ export PASS (17 routes) using non-secret placeholder Supabase build values. No A
 
 **Files**: `mobile/app/force-update.tsx`, `mobile/app/maintenance.tsx`, `mobile/src/lib/system-messages.ts` and
 test, `mobile/src/lib/memory-auth-storage.ts` and test, `mobile/src/lib/supabase.ts`, `mobile/package.json`,
-`pnpm-lock.yaml`, both locale dictionaries, `tasks.md`, this log, and the D02 checkpoint. **Commit**: recorded in
-the checkpoint update.
+`pnpm-lock.yaml`, both locale dictionaries, `tasks.md`, this log, and the D02 checkpoint. **Commit**: `29cd6f9`.

@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `48ebb9b` (`feat(D02): add staff invitation acceptance flow`); T205/T206/T212 batch pending commit.
+**Latest implementation commit:** `29cd6f9` (`feat(D02): add access and system screens`).
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -104,7 +104,8 @@ does not mean every decision's implementation is complete.
 - T212 continuation: web tests PASS (5 files / 17 tests); direct web TypeScript check and focused ESLint
   PASS; `pnpm.cmd i18n:check` PASS (733 keys); `/en/no-access` and `/ar/no-access` returned 200 with the
   sign-out control rendered and Arabic RTL direction confirmed.
-- T205/T206 continuation: `pnpm.cmd --filter mobile test` PASS (14 suites / 37 tests), typecheck PASS,
+- T205/T206/T212 batch (`29cd6f9`): web tests PASS (5 files / 17 tests), direct web TypeScript and focused
+  ESLint PASS; mobile tests PASS (14 suites / 37 tests), typecheck PASS,
   lint PASS (3 pre-existing warnings); token check 0 violations; locale parity PASS (736 keys); Expo web
   static export PASS (17 routes); focused Playwright route checks PASS (3 tests). No native build/device
   runtime was available.
@@ -122,8 +123,7 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Commit and push the current mobile system-screen batch and T212 verification record.
-2. Continue independent dashboard work such as T208/T209. Keep T207/T211 on the verified authentication
+1. Continue independent dashboard work such as T208/T209. Keep T207/T211 on the verified authentication
    path; do not add a password-reset or login route that bypasses T138's unresolved authoritative OTP design.
 3. Extend T143 as later-phase data tables land and complete T142 only when trusted backend reauthentication
    and the coordinated deletion lifecycle are implemented.
