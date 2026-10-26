@@ -1900,3 +1900,19 @@ src/features/onboarding/router.test.ts` PASS (5 tests); `pnpm.cmd --filter mobil
 
 **Files**: `mobile/src/features/onboarding/router.ts`, `mobile/src/features/onboarding/router.test.ts`,
 this log, and T175 status in `tasks.md`.
+
+## D02 — T188: auth and onboarding translations (2026-10-26)
+
+Added the bilingual `screens.auth` namespace to `packages/i18n/en.json` and `packages/i18n/ar.json`.
+Key groups cover email sign-in and code verification (including wrong/expired/cancelled code states,
+the resend timer, spam-folder hint, change-email action, and the specified email lock message); profile
+completion fields and validation; onboarding progress, permissions, and setup summary; account linking,
+logout, deletion, and data export labels/status; suspended-account support; and force-update/maintenance
+states. Copy follows the PRD/spec, `design/overrides.md`, and the D02 screen kit. The optional phone labels
+do not describe a phone format, and no city values or legal text were added.
+
+**Verification**: `pnpm.cmd --filter @furever/i18n test` PASS (1 test); `pnpm.cmd i18n:check` PASS
+(713 matching keys); independent Node key-set comparison PASS (713 keys in each locale, no differences);
+`git diff --check` PASS.
+
+**Files**: `packages/i18n/en.json`, `packages/i18n/ar.json`, this log, and the T188 checkbox in `tasks.md`.

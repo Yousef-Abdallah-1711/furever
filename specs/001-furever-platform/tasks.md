@@ -760,7 +760,7 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 
 - [ ] T187 [D02] Add auth/profile Zod schemas to `packages/shared/src/schemas/auth.ts` (email required;
   phone optional, Egyptian-format check applied only when present). [AUTH-01..05]
-- [ ] T188 [D02] Add auth/onboarding keys to `packages/i18n`. [AUTH-01..10]
+- [x] T188 [D02] Add auth/onboarding keys to `packages/i18n`. [AUTH-01..10]
 - [ ] T189 [D02] Install and configure Maestro (`mobile/.maestro/`) and Playwright
   (`web/playwright.config.ts`).
 
