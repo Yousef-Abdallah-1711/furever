@@ -647,15 +647,17 @@ environments only, not local dev.
 - [x] T164 [D02] Mobile Supabase client + encrypted session storage adapter in
   `mobile/src/lib/supabase.ts` (AES key in `expo-secure-store`, ciphertext in `AsyncStorage`, a migration
   path from any legacy plaintext value — research.md §6).
-- [ ] T165 [D02] Mobile: `AppState` foreground session refresh + `detectSessionInUrl: false` in
+- [x] T165 [D02] Mobile: `AppState` foreground session refresh + `detectSessionInUrl: false` in
   `mobile/src/lib/supabase.ts`. Depends on T164.
 - [ ] T166 [D02] Web `@supabase/ssr` browser + server clients in `web/src/lib/supabase/{browser,server}.ts`.
 - [ ] T167 [D02] Web middleware session refresh + role-based redirect in `web/middleware.ts` (extends
   D00e's T050 locale persistence). Depends on T166.
 - [ ] T168 [D02] Web: enforce `aal2` for every `/admin` route in `web/middleware.ts` — redirect to MFA
   enroll/verify otherwise. Depends on T167. [AD-01]
-- [ ] T169 [P] [D02] React Query providers in `mobile/src/app/_providers.tsx` and
-  `web/src/app/providers.tsx`. **Extended, remediation pass (PLT-03/FR-058)**: configure cache persistence
+- [x] T169 [P] [D02] React Query providers in `mobile/app/_providers.tsx` (corrected from the task's
+  original `mobile/src/app/_providers.tsx` — mobile's Expo Router routes live directly under
+  `mobile/app/`, not `mobile/src/app/`; confirmed by `mobile/app/_layout.tsx`/`mobile/app/_dev/` already
+  existing there) and `web/src/app/providers.tsx`. **Extended, remediation pass (PLT-03/FR-058)**: configure cache persistence
   on mobile via `@tanstack/react-query-persist-client` + `@tanstack/query-async-storage-persister`
   (`AsyncStorage`-backed — same React Query family already chosen, no new framework) so a cached list
   still renders when the app opens offline.

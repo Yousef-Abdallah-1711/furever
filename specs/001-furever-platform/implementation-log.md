@@ -1384,3 +1384,46 @@ pending Decision D (launch cities) — table/RLS/FK structure for all 10 tables 
 **Worker**: Codex (`gpt-6-luna`, `high`); the clean-reset verification and the `service_role` bypass-RLS
 proof were done directly by the orchestrator. **Result**: PASS.
 **Commit**: (pending — this pass's files not yet committed).
+
+## D02 Batch 6 — T165, T169 (2026-10-26)
+
+**Scope**: T165 (mobile `AppState` foreground session refresh) and T169 (React Query providers on both
+platforms, with offline cache persistence on mobile). Dispatched to Codex (`gpt-6-luna`, `high`), one
+batch.
+
+**Path correction found (same class as T116's D01 gallery-path fix)**: T169's task text names
+`mobile/src/app/_providers.tsx`, but mobile's Expo Router tree lives directly under `mobile/app/` (not
+`mobile/src/app/`) — confirmed by the already-existing `mobile/app/_layout.tsx` and `mobile/app/_dev/`.
+Codex placed the new file at the corrected `mobile/app/_providers.tsx`; `tasks.md` updated to record the
+correction.
+
+**T165**: added a module-scope `AppState` listener in `mobile/src/lib/supabase.ts`, after the shared
+client is created — `supabase.auth.startAutoRefresh()` on `active`, `stopAutoRefresh()` otherwise, per
+Supabase's React Native auth guide. `detectSessionInUrl: false` (already set by T164) is untouched.
+
+**T169**: `mobile/app/_providers.tsx` wraps children in `PersistQueryClientProvider` with
+`createAsyncStoragePersister({ storage: AsyncStorage })`, mounted outermost in `mobile/app/_layout.tsx`
+(wrapping `I18nProvider` and the themed Stack, in that order — no existing provider removed or
+reordered). `web/src/app/providers.tsx` wraps children in `QueryClientProvider` using a per-render
+`useState(() => new QueryClient())` (the documented Next.js App Router pattern, since there's no
+Suspense-query usage in the web app to worry about the known `useState`-under-Suspense caveat), mounted
+outermost around the existing `NuqsAdapter`/`ThemeProvider`/`ObservabilityInit` composition.
+
+**Dependencies pre-installed directly by the orchestrator** before dispatch (not by Codex): `@tanstack/react-query`
+(both apps), `@tanstack/react-query-persist-client` + `@tanstack/query-async-storage-persister` (mobile
+only) — typecheck confirmed clean on both before the batch was dispatched; committed separately as
+`e25b9e8` "chore(D02): add React Query for T169".
+
+**Verification performed** (orchestrator's own, independent of Codex's self-report): `pnpm --filter
+mobile typecheck` (clean), `pnpm --filter mobile lint` (0 errors, 3 pre-existing warnings, all in
+unrelated i18n files), `pnpm --filter mobile test` (6 suites/10 tests pass), `pnpm --filter web
+typecheck` (clean — Codex's sandbox again hit its recurring Next.js SWC-native-binding/cache denial on
+`next typegen`, confirmed sandbox-only by running the equivalent `tsc --noEmit` directly), `pnpm --filter
+web lint` (0 errors, 1 pre-existing warning in `Avatar.tsx`), `pnpm --filter web test` (2 files/3 tests
+pass). Read all four changed files in full; no scope creep, no provider reordering, no removed code.
+
+**Files this pass**: `mobile/app/_providers.tsx` (new), `mobile/app/_layout.tsx`,
+`mobile/src/lib/supabase.ts`, `web/src/app/providers.tsx`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS.
+**Commit**: (pending — this pass's files not yet committed).
