@@ -3,7 +3,7 @@
 import { useTheme } from 'next-themes';
 import { useLocale } from 'next-intl';
 import { useSyncExternalStore } from 'react';
-import { Link } from '@/i18n/navigation';
+import { Link, usePathname } from '@/i18n/navigation';
 import { trackWebEvent } from '@/lib/observability';
 
 const noopSubscribe = () => () => {};
@@ -14,6 +14,7 @@ function useMounted() {
 
 export function ShellControls() {
   const locale = useLocale();
+  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const mounted = useMounted();
   const otherLocale = locale === 'en' ? 'ar' : 'en';
@@ -23,7 +24,7 @@ export function ShellControls() {
   const isDark = mounted && theme === 'dark';
   return (
     <div className="flex gap-3">
-      <Link href="/login" locale={otherLocale} className="rounded-md border px-3 py-2" data-testid="locale-switch"
+      <Link href={pathname} locale={otherLocale} className="rounded-md border px-3 py-2" data-testid="locale-switch"
         onClick={() => trackWebEvent('language_changed', otherLocale)}>
         {locale === 'en' ? 'العربية' : 'English'}
       </Link>

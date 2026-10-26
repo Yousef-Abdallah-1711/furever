@@ -47,6 +47,10 @@
 - **Complete:** T212 `/no-access` provides bilingual denial/support copy and signs the session out before
   routing to sign-in. Unit tests cover sign-out success and error behavior; both locale routes render and
   Arabic RTL was confirmed.
+- **Partial:** T208 provides a server-queried platform admin directory restricted to `super_admin`. The
+  platform-admin invite/role/MFA-reset/removal actions have no matching backend contract and remain open.
+- **Partial:** T209 shows the signed-in account identity and supports existing language/theme preferences.
+  Profile editing, password changes, and MFA device management remain open.
 - **Complete:** T205/T206 provide mobile force-update and maintenance routes. They read the existing
   `min_mobile_version.version` and `maintenance.message_en/message_ar` config contracts. Expo web static
   export and browser route checks pass, including the bilingual maintenance fallback. Native build/device
@@ -109,6 +113,10 @@ does not mean every decision's implementation is complete.
   lint PASS (3 pre-existing warnings); token check 0 violations; locale parity PASS (736 keys); Expo web
   static export PASS (17 routes); focused Playwright route checks PASS (3 tests). No native build/device
   runtime was available.
+- T208/T209 continuation: `pnpm.cmd --filter web build` PASS; route manifest confirms `/[locale]/admin/team`
+  and `/[locale]/admin/settings`, within the MFA-guarded URL segment. Web tests PASS (6 files / 21 tests),
+  focused ESLint PASS, locale parity PASS (763). No authenticated admin session was available for a live
+  data query; role-check helper tests cover missing user, non-super-admin, and stale-profile-role cases.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 

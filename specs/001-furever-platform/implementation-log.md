@@ -2332,3 +2332,29 @@ export PASS (17 routes) using non-secret placeholder Supabase build values. No A
 **Files**: `mobile/app/force-update.tsx`, `mobile/app/maintenance.tsx`, `mobile/src/lib/system-messages.ts` and
 test, `mobile/src/lib/memory-auth-storage.ts` and test, `mobile/src/lib/supabase.ts`, `mobile/package.json`,
 `pnpm-lock.yaml`, both locale dictionaries, `tasks.md`, this log, and the D02 checkpoint. **Commit**: `29cd6f9`.
+
+## D02 - T208/T209: admin team and personal settings (partial, 2026-10-27)
+
+Added `/admin/team` as a read-only directory of platform administrators. Because `(admin)` is a transparent
+Next.js route group, the real route segment is nested under it as `web/src/app/[locale]/(admin)/admin/team/`
+to ensure the URL includes `/admin` and receives middleware's MFA gate. The server page checks the verified
+`user_role` claim and only queries administrator profiles for `super_admin`; other roles receive a restricted
+state. The database query remains under the caller's session and existing profile RLS. The page does not expose
+clinic-staff invitations as platform-admin invitations. The PRD lists invite, role-change, MFA-reset, and removal
+actions, but the available `admin-create-staff` contract creates clinic staff and no platform-admin lifecycle
+contract or RPC exists. Those mutations remain unimplemented rather than being routed through the wrong API.
+
+Added `/admin/settings` as a personal account summary with the signed-in user's email/name and the existing
+language/theme controls. Updated `ShellControls` locale switching to retain the current route. Profile editing,
+password updates, and MFA factor management remain open; their secure flows are not implemented by this screen.
+
+**Verification**: `pnpm.cmd --filter web build` PASS; the route manifest includes `/[locale]/admin/team` and
+`/[locale]/admin/settings` (not unguarded `/team` or `/settings`). Web tests PASS (6 files, 21 tests); focused ESLint
+PASS for both pages, both new components, `ShellControls`, and the role-check helper; `pnpm.cmd i18n:check` PASS
+(763 matching keys). No authenticated admin session was available for a live data query. D02 remains open and T208/
+T209 remain unchecked because the listed management/security actions are incomplete.
+
+**Files**: `web/src/app/[locale]/(admin)/admin/team/page.tsx`, `web/src/app/[locale]/(admin)/admin/settings/page.tsx`,
+`web/src/components/admin/{AdminTeamScreen,PersonalSettingsScreen}.tsx`,
+`web/src/lib/admin-team-access.ts` and test, `web/src/components/ShellControls.tsx`, both locale dictionaries,
+`tasks.md`, this log, and the D02 checkpoint. **Commit**: pending.

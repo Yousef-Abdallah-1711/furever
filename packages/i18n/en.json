@@ -167,6 +167,33 @@
         "backToSignIn": "Back to sign in"
       }
     },
+    "admin": {
+      "team": {
+        "title": "Admin team",
+        "description": "Platform administrator accounts with access to the dashboard.",
+        "restrictedTitle": "Super administrator access required",
+        "restrictedBody": "Only a super administrator can view the platform admin team.",
+        "loadError": "The team directory could not be loaded. Refresh and try again.",
+        "empty": "No platform administrators were found.",
+        "unnamed": "Name not provided",
+        "nameWithYou": "{name} (you)",
+        "mutationsUnavailable": "Inviting administrators, changing roles, resetting MFA, and removing accounts are not available here yet.",
+        "columns": { "name": "Name", "email": "Email", "role": "Role", "status": "Status" },
+        "roles": { "admin": "Administrator", "super_admin": "Super administrator" },
+        "statuses": { "active": "Active", "suspended": "Suspended", "deleted": "Deleted" }
+      },
+      "settings": {
+        "title": "My settings",
+        "description": "Your account details and dashboard preferences.",
+        "accountTitle": "Account",
+        "name": "Name",
+        "email": "Email address",
+        "notSet": "Not provided",
+        "preferencesTitle": "Preferences",
+        "preferencesDescription": "Change the dashboard language or color theme.",
+        "securityNote": "Password and multi-factor controls are not available on this page yet."
+      }
+    },
     "audit": {
       "auditLog": "Audit log",
       "when": "When",

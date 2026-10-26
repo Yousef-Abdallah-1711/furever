@@ -871,10 +871,16 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   tests cover config parsing. Native device/build was not run and is not claimed.
 - [ ] T207 [P] [D02] Build `/login`, `/mfa` — `web/src/app/[locale]/(auth)/{login,mfa}/page.tsx` (Built).
   [CS-01][AD-01]
-- [ ] T208 [P] [D02] Build Admin team — `web/src/app/[locale]/(admin)/team/page.tsx` (Spec; pattern:
-  Users). [AD-01]
-- [ ] T209 [P] [D02] Build admin Settings — `web/src/app/[locale]/(admin)/settings/page.tsx` (Spec;
-  pattern: Clinic profile).
+- [ ] T208 [P] [D02] Build Admin team — `/admin/team`, `web/src/app/[locale]/(admin)/admin/team/page.tsx` (Spec; pattern:
+  Users). [AD-01] **Partial 2026-10-27:** the real `admin` segment is nested inside the transparent `(admin)` route group
+  so the URL receives the required admin middleware/MFA guard. Server-side super-admin-only directory reads administrator profiles through
+  RLS; other dashboard roles receive a restricted state. Invite/change-role/reset-MFA/remove actions remain open:
+  the existing `admin-create-staff` contract provisions clinic staff only and does not define platform-admin lifecycle.
+- [ ] T209 [P] [D02] Build admin Settings — `/admin/settings`, `web/src/app/[locale]/(admin)/admin/settings/page.tsx` (Spec;
+  pattern: Clinic profile). **Partial 2026-10-27:** the real `admin` segment is nested inside the transparent `(admin)` route group
+  so the URL receives the required admin middleware/MFA guard. Displays the authenticated user's account identity and working
+  language/theme controls; locale switching preserves the current route. Profile editing, password change, and MFA
+  device management remain open pending their secure account flows.
 - [ ] T210 [P] [D02] Build `/accept-invite` - `web/src/app/[locale]/(auth)/accept-invite/page.tsx` (Spec;
   pattern: Sign in). [CS-01] **Partial 2026-10-27:** bilingual page verifies the invite session, sets the
   password, calls `accept_staff_invitation()`, refreshes the session, requires the refreshed
