@@ -1,7 +1,8 @@
 /**
  * Run with `pnpm exec tsx backend/supabase/scripts/check-policy-coverage.ts`.
  * Set DATABASE_URL, PGSERVICE, or standard libpq PGHOST/PGPORT/PGDATABASE/PGUSER/
- * PGPASSWORD variables. `PSQL_BIN` optionally selects the psql executable.
+ * PGPASSWORD variables. For local Supabase without host-installed psql, set
+ * SUPABASE_DB_CONTAINER (usually `supabase_db_backend`). `PSQL_BIN` selects psql.
  */
 import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
@@ -62,17 +63,30 @@ function loadPolicies(): Policy[] {
     "WHERE schemaname = 'public'",
     "ORDER BY schemaname, tablename, policyname;",
   ].join(" ");
+  const container = process.env.SUPABASE_DB_CONTAINER;
+  const psqlArguments = [
+    "--no-psqlrc",
+    "--tuples-only",
+    "--no-align",
+    "--field-separator",
+    "\t",
+    "--command",
+    sql,
+  ];
   const result = spawnSync(
-    process.env.PSQL_BIN || "psql",
-    [
-      "--no-psqlrc",
-      "--tuples-only",
-      "--no-align",
-      "--field-separator",
-      "\t",
-      "--command",
-      sql,
-    ],
+    container ? "docker" : process.env.PSQL_BIN || "psql",
+    container
+      ? [
+          "exec",
+          container,
+          "psql",
+          "-U",
+          "postgres",
+          "-d",
+          "postgres",
+          ...psqlArguments,
+        ]
+      : psqlArguments,
     {
       encoding: "utf8",
       shell: false,
@@ -122,7 +136,8 @@ function main(): void {
   if (
     !process.env.DATABASE_URL &&
     !process.env.PGHOST &&
-    !process.env.PGSERVICE
+    !process.env.PGSERVICE &&
+    !process.env.SUPABASE_DB_CONTAINER
   ) {
     throw new Error(
       "Set DATABASE_URL, PGSERVICE, or libpq connection variables (PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD) before running this checker.",

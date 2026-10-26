@@ -15,6 +15,7 @@
     "tokens:build": "tsx packages/design-tokens/scripts/build.ts",
     "types:gen": "tsx packages/shared/scripts/gen-types.ts",
     "db:test": "pnpm --filter backend exec supabase test db",
+    "db:policy-coverage": "tsx backend/supabase/scripts/check-policy-coverage.ts",
     "stack:up": "powershell -ExecutionPolicy Bypass -File scripts/stack-up.ps1",
     "stack:down": "powershell -ExecutionPolicy Bypass -File scripts/stack-down.ps1",
     "stack:reset": "powershell -ExecutionPolicy Bypass -File scripts/stack-reset.ps1",

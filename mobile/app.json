@@ -8,7 +8,8 @@
     "scheme": "furever",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -29,10 +30,7 @@
         "expo-localization",
         {
           "supportsRTL": true,
-          "supportedLocales": [
-            "en",
-            "ar"
-          ]
+          "supportedLocales": ["en", "ar"]
         }
       ],
       [
@@ -44,7 +42,8 @@
         }
       ],
       "@sentry/react-native",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -518,16 +518,10 @@ string client-side from the two columns.*
 - **One review per visit:** unique `reviews.appointment_id`, and an insert policy that requires `status = 'completed'` and ownership.
 - **One ticket per appointment:** unique `queue_tickets.appointment_id`; unique `(doctor_id, queue_date, ticket_number)`.
 - **Sane values:** checks for `rating between 1 and 5`, `weight_kg > 0`, `ends_at > starts_at`, `birth_date <= current_date`, `price_minor >= 0`.
-- **Phone format — unresolved contradiction, flagged here rather than silently picked:** `spec.md`'s
-  Assumptions section (and the 2026-10-18 sign-in method change generally) describes the
-  now-optional `profiles.phone` field as validated against the **Egyptian mobile format** (10
-  digits starting `10`/`11`/`12`/`15`, a leading 0 accepted, no country code). The already-built
-  `packages/shared/src/schemas/base.ts` `phoneSchema` instead implements the generic E.164 pattern
-  `^\+[1-9][0-9]{7,14}$` (requires a `+` country code, rejects a bare leading-0 local number) — this
-  predates the sign-in method change and was never updated to match it. These two descriptions
-  disagree on what a valid value looks like. Resolve before the Complete Profile screen's phone
-  field ships: either update `phoneSchema` to the Egyptian-local pattern, or confirm the PRD/spec's
-  stated format should itself change to E.164-with-`+20`.
+- **Phone format (owner decision, 2026-10-27):** accept Egyptian local mobile numbers beginning
+  `010`, `011`, `012`, or `015`, or the equivalent `+20` international form. The shared validator
+  normalizes either accepted input to E.164 (`+201...`) for canonical storage. Other country codes,
+  invalid lengths, and non-digit formatting are rejected; an optional empty value is treated as absent.
 - **Notification dedupe:** unique `notification_outbox.dedupe_key` (for example `vaccination:<id>:7d`) so cron can run twice safely.
 
 ### Indexes (day one)

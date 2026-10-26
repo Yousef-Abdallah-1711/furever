@@ -80,6 +80,9 @@ are specified here so later work is additive, not a redesign.
   profile (Complete profile and Edit profile), keeping the existing Egyptian-number validation for that
   field only. Clinic staff still see it only for owners with an appointment at their clinic (unchanged
   visibility rule). Whether a phone number should be required at booking time is a new Open Decision below.
+  **Format decision (owner, 2026-10-27):** accept Egyptian local mobile prefixes 010/011/012/015 or the
+  equivalent +20 form; normalize accepted values to E.164 for storage and reject other country codes,
+  invalid lengths, and non-digit formatting.
 - Q: How does account linking work now? → A: the same verified email across the email-code method and
   Google resolves to one account (Supabase Auth's automatic-linking behavior for a verified email shared
   across providers — confirm the exact mechanics in `research.md`). Apple's private-relay email is a
@@ -797,14 +800,11 @@ longer listed here. The remaining items have a working default already in use el
 11. **Bilingual email template wording** (login code, staff invite, password reset) is draft and needs
     review by a native Arabic speaker before launch, the same as the rest of the product's Arabic copy
     (item 4 above) — called out separately because these templates are a new surface this change created.
-12. **Which fix closes the email-code guard's bypassable gap (new, 2026-10-19, `/speckit-analyze` finding
-    C2)**: `research.md` section 17 researched four options (Supabase's native rate limits as-is; a Send
-    Email hook; CAPTCHA on the Auth endpoints; a longer OTP length) against official Supabase
-    documentation and found none of them fully close the gap except a custom-code design where the app's
-    own guard generates/hashes/verifies the code instead of using Supabase's OTP primitives for the
-    security-sensitive part. **This gates D02**: `tasks.md` T120/T138 must not be skipped, and AUTH-01/
-    FR-001's lockout guarantee (see the enforcement notes above) is not fully true until the owner picks
-    one and it's built.
+12. **Email-code guard bypass (owner decision, 2026-10-27):** Option C is approved: the guard generates,
+    hashes, and verifies its own code instead of using Supabase's OTP primitives for the security-sensitive
+    part. A safe, supported session-establishment path remains an engineering gate. Do not ship the custom
+    flow until it establishes a real session without reopening the public OTP bypass; if Supabase exposes no
+    supported path, request a narrow technical decision without weakening the policy.
 13. **Does disabling an NTF-02 notification category also hide the inbox item, or only the push? (new,
     2026-10-19, `/speckit-analyze` finding H1)**: NTF-02/FR-035 say "stops or resumes sending," which is
     ambiguous between the two. The default now implemented (`tasks.md` T226/T227/T288, T247) is

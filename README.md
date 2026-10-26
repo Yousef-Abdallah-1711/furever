@@ -113,10 +113,22 @@ All commands run from the repo root unless noted.
 | `docker compose --profile tools run --rm typecheck` | Same typecheck, in a clean container | Docker |
 | `docker compose --profile tools run --rm unit-test` | Same unit tests, in a clean container | Docker |
 | `pnpm db:test` | Run the backend's pgTAP suite against local Supabase | Host — the verified, reliable path |
+| `pnpm db:policy-coverage` | Check local public-schema policies against pgTAP test references | Host; set `SUPABASE_DB_CONTAINER=supabase_db_backend` when host `psql` is unavailable |
 | `docker compose --profile tools run --rm pgtap` | Same, from a container | Docker — has a known limitation, see below |
 | `pnpm tokens:build` | Regenerate `packages/design-tokens/dist/` from `design/system/tokens/*.css` | Host |
 | `pnpm i18n:check` | Fail if `packages/i18n/en.json` and `ar.json` key sets differ | Host |
 | `pnpm types:gen` | Generate TypeScript types from the running local Supabase schema | Host |
+
+For standalone policy coverage, point the checker at the local Supabase DB container when
+host `psql` is not installed, then run `pnpm db:policy-coverage`:
+
+```powershell
+$env:SUPABASE_DB_CONTAINER = 'supabase_db_backend'
+pnpm db:policy-coverage
+```
+
+The checker exits nonzero when a public policy has no pgTAP test reference. It is a local
+command; this repository does not have a hosted CI gate for it.
 
 ## What does **not** run in Docker, and why
 
@@ -156,18 +168,16 @@ than this checkout.
   `backend/supabase/tests/`. `pnpm db:test` (host-side) is the verified, reliable path;
   see `docker-compose.yml`'s `pgtap` service comment and
   `implementation-log.md`'s D00f entry for the full story.
-- **D02 (the first real feature phase) cannot start** until several manual, non-code
-  prerequisites exist: an Expo/EAS account, Google Cloud OAuth clients (Web/Android/iOS),
-  an Apple Developer account with Sign in with Apple configured, and — critically, since
-  owner sign-in itself is email-code-based — **a working SMTP provider with a verified
-  sending domain (SPF/DKIM/DMARC)**. The full list is in `tasks.md`'s "Manual (human)
-  prerequisites" section, right after D00g.
+- **Some D02 integrations remain gated on external prerequisites**: an Expo/EAS account,
+  Google Cloud OAuth clients (Web/Android/iOS), an Apple Developer account with Sign in
+  with Apple configured, and — for real email delivery — a working SMTP provider with a
+  verified sending domain (SPF/DKIM/DMARC). The current status is in `tasks.md`'s
+  "Manual (human) prerequisites" section.
 - **`docs/environments.md` references `backend/.env.example`, which doesn't exist** — see
   Environment configuration above.
-- **The amended PRD records one genuine open architectural decision**: whether the
-  email sign-in code's lockout can be bypassed by calling Supabase Auth's public
-  endpoints directly, and how to close that gap if so. See `docs/PRD.md` §6 and its
-  Risks/Open questions sections.
+- **The approved custom OTP design has an unresolved technical gate**: determine whether
+  Supabase provides a supported way to establish sessions after custom code verification
+  without leaving the public native OTP bypass available. See D02 T138 and `research.md` §17.
 
 ## Further reading
 

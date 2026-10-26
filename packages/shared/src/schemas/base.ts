@@ -1,18 +1,43 @@
 import * as z from "zod";
 
-export const phoneSchema = z.string().regex(/^\+[1-9][0-9]{7,14}$/);
+const egyptianMobileSchema = z
+  .string()
+  .regex(/^(?:01[0125][0-9]{8}|\+201[0125][0-9]{8})$/);
+
+/** Accept Egyptian local or +20 mobile format and return canonical E.164. */
+export const phoneSchema = egyptianMobileSchema.transform((value) =>
+  value.startsWith("0") ? `+20${value.slice(1)}` : value,
+);
+
+/** Optional form input: an empty string is treated as an omitted phone. */
+export const optionalPhoneSchema = z
+  .union([phoneSchema, z.literal("")])
+  .optional()
+  .transform((value) => (value === "" ? undefined : value));
 
 export const moneySchema = z.object({
   price_minor: z.number().int().nonnegative(),
   currency: z.literal("EGP"),
 });
 
-export const appRoleSchema = z.enum(["owner", "clinic_staff", "admin", "super_admin"]);
+export const appRoleSchema = z.enum([
+  "owner",
+  "clinic_staff",
+  "admin",
+  "super_admin",
+]);
 export const userStatusSchema = z.enum(["active", "suspended", "deleted"]);
 export const staffLevelSchema = z.enum(["manager", "vet", "receptionist"]);
 export const speciesSchema = z.enum(["cat", "dog", "bird", "rabbit", "other"]);
 export const petGenderSchema = z.enum(["male", "female", "unknown"]);
-export const recordTypeSchema = z.enum(["visit", "allergy", "medication", "surgery", "lab", "note"]);
+export const recordTypeSchema = z.enum([
+  "visit",
+  "allergy",
+  "medication",
+  "surgery",
+  "lab",
+  "note",
+]);
 export const recordSourceSchema = z.enum(["self", "clinic"]);
 export const clinicStatusSchema = z.enum(["pending", "active", "suspended"]);
 export const appointmentTypeSchema = z.enum(["in_clinic", "video"]);
@@ -25,8 +50,19 @@ export const appointmentStatusSchema = z.enum([
   "cancelled",
   "no_show",
 ]);
-export const paymentStatusSchema = z.enum(["unpaid", "pay_at_clinic", "paid", "refunded"]);
-export const ticketStatusSchema = z.enum(["waiting", "called", "in_progress", "done", "skipped"]);
+export const paymentStatusSchema = z.enum([
+  "unpaid",
+  "pay_at_clinic",
+  "paid",
+  "refunded",
+]);
+export const ticketStatusSchema = z.enum([
+  "waiting",
+  "called",
+  "in_progress",
+  "done",
+  "skipped",
+]);
 export const outboxStatusSchema = z.enum(["pending", "sent", "failed"]);
 export const cancelledByRoleSchema = z.enum(["owner", "clinic_staff"]);
 

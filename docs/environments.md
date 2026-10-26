@@ -88,6 +88,14 @@ IDs as needed. The local config resolves secrets from environment variables and 
 enable either provider by itself. Keep actual values in ignored local environment storage;
 `backend/.env.example` contains placeholder-only values and is not a credential source.
 
+The mobile app also reads the public Google web client ID and iOS client ID from
+`EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`. Set the reversed
+iOS client ID as `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` so Expo config can add the native
+Google Sign-In URL scheme. These client IDs and URL schemes are identifiers, not client
+secrets; keep them in ignored `mobile/.env.local` for local builds and set them in the EAS
+build environment for development builds. The Google config plugin is omitted when the iOS
+scheme is absent; no placeholder scheme is used to generate native configuration.
+
 Before enabling a provider locally, register the local callback with the provider:
 
 - Google OAuth web client: authorized JavaScript origin `http://localhost:<web-port>`

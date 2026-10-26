@@ -507,10 +507,9 @@ environments only, not local dev.
 
 ## Migrations (FK-safe creation order)
 
-- [ ] T123 [D02] Migration: `cities` table + RLS + seed. Needed before `profiles` (city picker).
-  **Table + RLS done** (`20261019113454_create_cities.sql`), **seed deliberately not done** — the launch-
-  city list is an open owner decision (see implementation-log.md's D02 Batch 1 entry); table is empty by
-  design, not an oversight. Re-check this box once seed rows land.
+- [x] T123 [D02] Migration: `cities` table + RLS + seed. Needed before `profiles` (city picker).
+  **Completed 2026-10-27**: idempotent seed uses stable IDs and bilingual names for Cairo, Giza, and
+  Alexandria only; deterministic UUID ordering is covered by pgTAP. Owner approved this launch-city set.
 - [x] T124 [D02] Migration: `profiles` table + RLS (`email` required; `phone` nullable/optional — 2026-10-18
   sign-in method change). Depends on T123.
 - [x] T125 [D02] Migration: `clinics` table (slim: identity + `status` only — `name_en/ar`, `city_id`,
@@ -554,23 +553,28 @@ environments only, not local dev.
   hook, a custom-code generate/hash/verify design, or Auth rate-limit/captcha configuration — whichever was
   chosen). Depends on T120. If the owner decision is still pending when D02 reaches this point, stop and
   escalate rather than building T139 on a guard that the direct path can bypass.
+  **Owner approved Option C on 2026-10-27.** Implementation is gated on confirming a supported,
+  non-bypassable Supabase session-establishment path. The public native OTP endpoints remain reachable;
+  no custom OTP/session code may ship until that incompatibility is resolved.
 - [ ] T139 [D02] Edge Function `verify-otp-guard/`, **rewritten for email (2026-10-18)**: exposes
   `send-code` and `verify-code` actions keyed by a normalized email identifier, with per-email and per-IP
   send throttling and an identical response for a known vs. unknown email (no account enumeration). Only
   enforceable once T138 closes or restricts the direct path (`contracts/edge-functions.md`). Depends on
   T136, T137, T138. [AUTH-01]
 - [ ] T140 [P] [D02] Edge Function `admin-create-staff/` (sends the invite email — needs SMTP, T145).
-  [CS-01][CS-10] Owner decision unresolved: `contracts/edge-functions.md` allows admins and clinic
-  managers to call this function, and `clinic_staff.staff_level` supports manager/vet/receptionist, but
-  the contract does not say whether clinic managers may invite/grant the `manager` level. Options:
-  **A.** Managers may invite any level (manager/vet/receptionist) within their own clinic;
-  **B.** Managers may invite vet/receptionist within their own clinic, while only platform admins may
-  grant manager level (**recommended least-privilege option; not approved**);
-  **C.** Defer invites until the role boundary is specified. T140 remains unchecked until the owner
-  chooses a rule and SMTP/T145 delivery readiness is established. No implementation has started.
+  [CS-01][CS-10] **Owner decision 2026-10-27: Option B approved.** Clinic managers may invite vets and
+  receptionists only within their own clinic; only platform admins may grant manager level. Enforce this
+  in the Edge Function, including anti-self-escalation and role-bounded acceptance, and audit grants.
+  SMTP remains an external delivery prerequisite.
 - [x] T141 [P] [D02] Edge Function `admin-set-user-status/`, calling `write_audit_log()` for every status
   change. Depends on T130. [AUTH-10][AD-03]
-- [ ] T142 [P] [D02] Edge Function `delete-account/`. [AUTH-08]
+- [ ] T142 [P] [D02] Edge Function `delete-account/`. [AUTH-08] **Owner decision (2026-10-27):** require
+  a trusted-backend-verifiable authentication event no older than five minutes; do not accept a
+  client-provided timestamp. Reject when the session cannot prove freshness. **Partial 2026-10-27:**
+  shared Edge Function helper validates signed-token `amr` freshness after Auth verification and rejects
+  expired sessions, stale/missing/future events, subject mismatch, and cross-account targets; focused
+  tests cover forged client timestamps. The delete endpoint remains open until transactional account-data,
+  storage, and Auth-user cleanup is designed and verified.
 - [ ] T143 [P] [D02] Edge Function `export-my-data/`. [AUTH-09]
 - [x] T144 [P] [D02] Edge Function `app-config/`. [PLT-01][PLT-02]
 - [ ] T145 [D02] **Replaces the Twilio provider task (2026-10-18)**: configure custom SMTP and the
@@ -595,6 +599,9 @@ environments only, not local dev.
   idToken })`. If the user cancels the account picker (`statusCodes.SIGN_IN_CANCELLED`), return to Sign in
   **with no error toast** (AUTH-02's Given/When/Then). Depends on T184 (EAS dev build — this module needs
   a development build, not Expo Go). [AUTH-02]
+  **Partial 2026-10-27:** isolated native adapter and testable sign-in core configure web/iOS client IDs,
+  exchange the ID token with Supabase, and treat picker cancellation quietly. Credentials and a development
+  build are still missing; do not claim native runtime verification.
 - [ ] T148 [D02] Build the Apple sign-in module `mobile/src/features/auth/apple-signin.ts` (**iOS only**;
   on Android, the caller must not even import this module — see T193/T194's platform check): generate a
   raw nonce (`supabase.auth.generateRawNonce()` or an equivalent secure random string), SHA-256-hash it,
@@ -606,6 +613,9 @@ environments only, not local dev.
   every later sign-in returns `null` for it (confirmed from Supabase's own Apple guide). A hidden
   (private-relay) email from Apple is accepted and stored as the account's email, same as any other
   address (research.md §14). Depends on T184. [AUTH-03]
+  **Partial 2026-10-27:** isolated iOS adapter generates a secure raw nonce, sends its SHA-256 digest to
+  Apple, exchanges the ID token with the raw nonce, and saves first-sign-in name metadata. Credentials and
+  a development build are still missing; the screen must keep the module out of the Android import path.
 - [x] T149 [D02] Supabase Google/Apple provider configuration: `backend/supabase/config.toml`'s
   `[auth.external.google]` and `[auth.external.apple]` blocks (client ID + secret env-var references) for
   local dev, plus a `docs/environments.md` note on enabling and configuring the same two providers in the
@@ -615,10 +625,15 @@ environments only, not local dev.
   `iosUrlScheme` (the reversed iOS client ID) under `plugins`, and `ios.usesAppleSignIn: true` plus the
   `expo-apple-authentication` config plugin. **Both require a development build** (native modules, not
   available in Expo Go) — confirms the dependency on T184 above is real, not incidental. [AUTH-02][AUTH-03]
+  **Partial 2026-10-27:** compatible packages installed and Apple capability/plugin configured. Google
+  config plugin is added only when `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` is set; no client ID is available,
+  so the value and generated native config remain unverified. EAS/dev build is still required.
 - [ ] T151 [P] [D02] Unit tests: Apple nonce round-trip (the SHA-256 hash of the raw nonce sent to
   `signInWithIdToken` matches the hashed nonce sent to `AppleAuthentication.signInAsync`); the Apple
   module is never reachable on Android (`Platform.OS === 'ios'` gate, asserted by mocking `Platform.OS`
   both ways and checking the module import/render path). [AUTH-03]
+  **Partial 2026-10-27:** nonce round-trip and native-availability guard have focused unit coverage;
+  Android screen import-path assertion remains pending T193/T194 integration.
 
 ## Email templates (new, 2026-10-18)
 
@@ -700,11 +715,19 @@ environments only, not local dev.
 
 - [ ] T173 [D02] Mobile route guard `mobile/src/lib/route-guard.ts`: redirects on signed-out, profile
   incomplete, suspended, force-update, maintenance. Depends on T135, T164, T144.
+  **Owner decisions (2026-10-27):** suspended/deleted/missing or expired sessions route to `/welcome`;
+  minimum supported version is `app_config.min_mobile_version` with `{version: "x.y.z"}`; maintenance
+  routes to the maintenance screen. Authorization/config uncertainty must keep protected routes hidden
+  without loops. **Partial 2026-10-27:** the tab layout now validates the Supabase user, active profile,
+  required terms/privacy consent rows, public app config, maintenance state, and minimum version before
+  rendering protected tabs. Focused route-decision tests pass. Keep open until redirect target screens
+  exist and the auth/profile/config transitions are exercised through the app.
 - [x] T174 [D02] Web route guard (extends T167/T168): same five states for the dashboard. Depends on T167.
   **Scope note**: implements signed-out (T167), role gate (T167), suspended/deleted (→ `/no-access`), and
-  maintenance (→ `/maintenance`, new `app_config` key, see implementation-log). Profile-incomplete and
-  force-update are deliberately not implemented for the web dashboard — see implementation-log's Batch 9
-  entry for why; not a silent gap.
+  admin MFA. Per the 2026-10-27 T183 decision, maintenance no longer redirects authorized users; T183's
+  dashboard layout shows a banner while this middleware continues to enforce auth and role checks.
+  Profile-incomplete and force-update remain deliberately unimplemented for the web dashboard — see
+  implementation-log's Batch 9 entry for why; not a silent gap.
 - [x] T175 [D02] Onboarding flow orchestration `mobile/src/features/onboarding/router.ts` — new-user path
   (Language→Onboarding→Welcome→**Email**→Verify→Profile→pet steps→Permissions→Summary→Home, 2026-10-18 —
   was Phone) and the returning-user path (Welcome→Sign-in **by email or Google**→Verify (email path
@@ -736,6 +759,9 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   non-OAuth (email) identity is not fully documented and may need the Admin API instead of a plain client
   call; record the finding as a one-line note in `research.md` §13 if it differs from this description.
   Depends on T121, T122. [AUTH-06]
+  **Owner decision 2026-10-27:** implement supported Google OAuth identity linking only; defer secondary
+  email identity linking because its attachment to an existing Google-only account is unverified. Do not
+  advertise the unsupported email-link action.
 - [ ] T180 [D02] Map a link-conflict response (the identity already belongs to a different account) to
   the new `IDENTITY_ALREADY_LINKED` error code (`contracts/error-codes.md`) and show the "clear message"
   AUTH-06 requires; wire this into T179's two actions. Depends on T179. [AUTH-06]
@@ -752,6 +778,11 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   (`/forgot-password`) below, the actual screens whose files this task edits.
 - [ ] T183 [D02] Maintenance banner in the dashboard shell `web/src/components/dashboard/
   MaintenanceBanner.tsx`, reading `app_config` via T144. [PLT-02]
+  **Owner decision (2026-10-27):** authenticated, authorized dashboard users remain on their requested
+  dashboard route during maintenance and see the banner; maintenance must not bypass authentication or
+  role checks. **Partial 2026-10-27:** the bilingual banner, dashboard layout hook, and middleware behavior
+  are implemented; role/auth checks fail closed for profile lookup errors. Keep open until the dashboard
+  routes and authenticated maintenance path are exercised end to end.
 - [ ] T184 [D02] Produce the first EAS development build (`eas build --profile development`) and confirm
   it launches past Splash on a device/emulator. Depends on D00e's T043 and the manual-prerequisites EAS
   account.
@@ -760,17 +791,22 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   preference events and small allowlisted tracking APIs are wired; `sign_up_completed` remains
   unwired until the auth flow has a successful verification handler. Keep this task unchecked until all
   three events are implemented.
-- [ ] T186 [D02] Write `backend/supabase/scripts/check-policy-coverage.ts`: lists every policy from
+- [x] T186 [D02] Write `backend/supabase/scripts/check-policy-coverage.ts`: lists every policy from
   `pg_policies` and fails if a policy has no matching pgTAP test reference (grep the test suite for the
-  policy/table name). **Partial implementation recorded 2026-10-26**: standalone checker and focused
-  parser/matcher test are implemented; CI wiring remains unstarted because T074/T075 CI/CD work was
-  formally descoped by owner decision 2026-10-25. Do not create a workflow or mark T186 complete unless
-  that decision is reopened. If resumed, this becomes a standing CI gate through D08.
+  policy/table name). **Owner-approved scope adjustment (2026-10-27):** keep this as a standalone local
+  command; GitHub Actions and broader CI/CD remain out of scope and T074-T076 stay descoped. The checker
+  must return nonzero on missing references and the local invocation must be documented. No hosted CI gate
+  is claimed. **Completed 2026-10-27:** local checker supports host `psql` or `SUPABASE_DB_CONTAINER`,
+  the command is documented in README, all 31 local public policies have test references, and missing
+  clinic_staff coverage was added before the successful run.
 
 ## Shared schemas, i18n, test tooling
 
-- [ ] T187 [D02] Add auth/profile Zod schemas to `packages/shared/src/schemas/auth.ts` (email required;
-  phone optional, Egyptian-format check applied only when present). [AUTH-01..05]
+- [x] T187 [D02] Add auth/profile Zod schemas to `packages/shared/src/schemas/auth.ts` (email required;
+  phone optional, Egyptian-format check applied only when present). [AUTH-01..05] **Owner decision
+  (2026-10-27):** accept Egyptian local `01[0125]...` or `+20` format and normalize to E.164; reject other
+  international numbers and non-digit formatting. Shared schema and backend constraint are implemented;
+  screens must consume the shared contract as they are built.
 - [x] T188 [D02] Add auth/onboarding keys to `packages/i18n`. [AUTH-01..10]
 - [ ] T189 [D02] Install and configure Maestro (`mobile/.maestro/`) and Playwright
   (`web/playwright.config.ts`).

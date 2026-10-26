@@ -613,9 +613,9 @@ Recorded here, not guessed, and not written into `spec.md` (that file is not edi
    using Supabase's OTP primitives for the security-sensitive part, then mint the session through an
    admin-only path. **Remediation pass, 2026-10-19**: §17 also evaluated CAPTCHA protection and a longer
    OTP length (both from official docs) as "Option A+" — real mitigations, but neither closes the gap on
-   its own either. **This remains an owner decision, not an engineering default** — `tasks.md` T120
-   (spike, now also evaluating Option A+) and T138 (hardening placeholder) block `verify-otp-guard`
-   (T139) until it's made; D02 must not proceed past T138 with the decision still open.
+   its own either. **Owner approved Option C on 2026-10-27.** T138/T139 remain gated on proving a supported
+   session-establishment path that does not reopen direct public-OTP bypass; if none exists, request a
+   narrow technical decision without weakening the lockout policy.
 
 **Coverage counts, re-confirmed after this change**: still **59 Phase 1 stories** and **70 Phase 1
 screens** (owner mobile 41, clinic dashboard 12, admin dashboard 17) — the sign-in method change rewrote

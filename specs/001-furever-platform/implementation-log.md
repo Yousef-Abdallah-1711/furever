@@ -1,5 +1,100 @@
 # Implementation Log — FurEver Platform (specs/001-furever-platform)
 
+## D02 continuation — approved decisions and safe implementation batch (2026-10-27)
+
+**Starting state**: audited branch `main` at `4f011fe`, clean and synchronized with `origin/main`. No
+previous changes were recreated. Applied the nine owner decisions to the authoritative task/spec/research
+records; the decisions are approvals, not automatic completion claims. This batch completed or advanced
+T123, T173, T183, T186, and T187. No D03 implementation was started.
+
+**T123 — launch-city seed and T187 — Egyptian phone contract**: T123 now has an idempotent seed with
+stable UUIDs and bilingual Cairo, Giza, and Alexandria rows only. Its pgTAP assertion checks IDs, names,
+order, and count. T187 adds a shared Zod contract accepting Egyptian local prefixes `010`, `011`, `012`,
+`015` or their `+20` equivalents, normalizing local values to E.164, and treating empty optional values as
+omitted. A profiles check constraint rejects non-Egyptian or non-canonical persisted phone values. The
+shared auth schema normalizes required email and composes the optional phone field. T123 and T187 are
+complete; future auth/profile screens still need to consume the shared schema.
+
+**T173 — mobile route guard (partial)**: added `mobile/src/lib/route-guard.ts` and focused decision tests,
+then gated the protected tab layout on a validated Supabase user, active profile, required `terms` and
+`privacy` consent rows, and the public `app-config` function. It routes missing/expired sessions and
+suspended/deleted users to `/welcome`, incomplete profiles to `/complete-profile`, maintenance to
+`/maintenance`, and clients below `app_config.min_mobile_version.value.version` to `/force-update`.
+Unknown auth/profile/config state keeps tabs hidden and fails closed. Auth-state callbacks defer follow-up
+reads until Supabase releases its auth lock. T173 stays open because the redirect screens do not yet all
+exist and app-level transition/runtime coverage remains outstanding.
+
+**T183 — dashboard maintenance (partial)**: the middleware no longer redirects authorized users away
+from their requested route for maintenance. It still enforces sign-in, allowed role, active profile, and
+`aal2` for admin routes; profile lookup errors fail closed. The `(admin)` layout reads the existing public
+`app_config.maintenance` value and renders a bilingual banner with fallback copy. A focused parser test
+covers disabled, malformed, localized, and fallback values. Keep T183 open until dashboard routes and an
+authenticated maintenance state can be exercised end to end.
+
+**T186 — standalone policy coverage**: completed under the approved local-only scope (no GitHub Actions
+or hosted CI claim). `pnpm db:policy-coverage` supports host `psql` or a local Docker database container;
+the README documents the command. The real local scan passed for 31 public policies after adding clinic
+staff policy assertions. This checker fails nonzero on missing test references.
+
+**T138 remains blocked**: Supabase's public OTP endpoints remain reachable and a supported, authoritative
+custom-code-to-session exchange has not been established. No custom verification/session flow was built.
+
+**T142 authentication freshness finding and partial implementation**: Supabase's signed access token
+contains `amr` entries with the authentication method and event timestamp; the official MFA guide states
+the entries are ordered newest first and can be checked for recency. `getClaims()` verifies the token
+before returning claims, and Supabase Auth calculates AMR from the session's persisted authentication
+methods, rather than using `iat` (which changes on token refresh). Added
+`backend/supabase/functions/_shared/recent-auth.ts` to require a non-expired verified subject, a matching
+self-target, and a recognized AMR event no older than five minutes; token refresh, missing AMR, stale and
+future timestamps, a mismatched subject, and cross-account targets are rejected. The helper ignores
+client-supplied timestamps. It does not yet delete accounts: consent/push-token cleanup, storage cleanup,
+future pet/appointment/review records, and safe coordination with Auth deletion need to be implemented as
+one supported lifecycle before an irreversible endpoint can be enabled. T142 remains unchecked.
+See [Supabase JWT claims](https://supabase.com/docs/guides/auth/jwt-fields),
+[`getClaims()`](https://supabase.com/docs/reference/javascript/auth-getclaims), and the
+[Supabase MFA AMR guidance](https://supabase.com/docs/guides/auth/auth-mfa#how-do-i-check-when-a-user-went-through-mfa),
+plus [Supabase Auth's access-token generation](https://github.com/supabase/auth/blob/master/internal/tokens/service.go).
+
+**T147/T148/T150/T151 — native authentication (partial)**: safely recovered the prior T150 install
+blocker. From `mobile/`, `pnpm.cmd view expo-apple-authentication@57.0.2 version` reached the HTTPS
+registry; Expo's SDK-compatible install then succeeded with the existing pnpm store, adding
+`expo-apple-authentication@~57.0.2` and `@react-native-google-signin/google-signin@^16.1.5`. Added the
+Apple capability/plugin and a dynamic Google URL-scheme plugin that is enabled only when the real
+`EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` is set; no placeholder native scheme is generated. Added public
+Google client-ID placeholders to `mobile/.env.example` and local/EAS setup notes to `docs/environments.md`.
+Expo config was parsed with no Google scheme and with a synthetic test scheme to verify both branches;
+this does not verify real provider credentials or a native build. `expo install --check` reports only the
+previous Expo SDK drift (`@expo/ui`, `expo`, `expo-router`), no drift for the newly installed packages.
+
+T147's Google adapter/core and T148's Apple adapter/core are implemented but remain partial because
+provider credentials, UI integration, and a development build are missing. The installed Google Sign-In
+16 API returns `{ type: 'cancelled' }`; this was confirmed from its installed declarations and is handled
+as a quiet cancel. Apple's raw nonce uses Expo Crypto random bytes and SHA-256; the raw nonce is sent to
+Supabase and the hash to Apple. First-sign-in full name is saved via `updateUser`. Jest tests exercise both
+cores without importing native modules. T151 remains partial until T193/T194 proves Android never imports
+the Apple adapter.
+
+**Verification performed**: local `supabase test db` PASS (7 files, 53 assertions); live
+`pnpm db:policy-coverage` PASS (31 policies); shared Vitest PASS (4 files, 24 tests); mobile Jest PASS
+(12 suites, 34 tests), mobile typecheck PASS, Expo lint PASS (0 errors, 3 existing warnings); Deno recent-
+auth helper tests PASS (6); web Vitest PASS (3 files, 8 tests),
+web TypeScript PASS, focused ESLint PASS; i18n parity PASS (713 keys); shared strict TypeScript PASS;
+focused maintenance-config tests are included in the web suite. No EAS/dev build or authenticated mobile
+runtime was available, and no dashboard authenticated-session E2E was run.
+
+**External readiness snapshot**: Node 24.16.0 is installed although `.nvmrc` specifies 22.13.0; pnpm
+9.12.2 and the configured `H:\.pnpm-store\v3` store are available. Docker and local Supabase are
+available. Java, Android SDK/`adb`, Maestro CLI, and EAS CLI/account are missing. OAuth credentials and
+hosted SMTP/domain configuration are not verified. No credentials were added. T150 package installation
+recovered successfully using the configured HTTPS registry and pnpm store.
+
+**Files**: city and phone migrations/tests; shared auth/phone schemas and tests; policy checker, README and
+root script; mobile route guard, auth modules, Expo config and tests; web maintenance banner/parser/tests/
+admin layout and middleware; recent-auth helper/tests; task/spec/research/handoff records and this log.
+
+**Result**: PASS for completed gates above; T173/T183 partial; T138/T142 security paths remain open. D02
+is not complete.
+
 ## D00c — Packages: tokens, i18n, shared, test runners
 
 | Task | Worker | Retries | Commands run | Result | Commit |

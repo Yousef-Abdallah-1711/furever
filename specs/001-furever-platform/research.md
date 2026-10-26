@@ -488,3 +488,39 @@ sources only. Sources are linked inline for every other finding.
   Question 3 both record this as a blocking gate before D02 proceeds past `tasks.md` T138.
 - **New (this fix pass)**: whether email sent to an Apple private-relay address (§14) needs the sending
   domain separately registered with Apple's Private Email Relay program — see §14's addendum below.
+
+## 18. Approved owner decisions (2026-10-27)
+
+- **T123 launch cities:** seed Cairo, Giza, and Alexandria only, with stable IDs and bilingual names.
+- **T138 OTP security:** Option C is approved. The implementation must use custom random codes, keyed or
+  salted verification storage, server-side attempts/expiry/lockout/throttling, no enumeration, and an
+  authoritative path that cannot be bypassed through Supabase's public native OTP endpoints. No custom
+  verification code may ship until a supported Supabase session-establishment mechanism is proven. The
+  earlier local T120 observations remain partial and do not establish this property.
+- **T140 invitations:** Option B is approved. Clinic managers may invite vets and receptionists within
+  their clinic; only platform administrators may grant manager level.
+- **T142 deletion:** the trusted backend must verify authentication within the prior five minutes. A
+  client timestamp is not evidence of freshness; a supported step-up flow is required if the current
+  session cannot prove it. **Implementation finding (2026-10-27):** Supabase's signed access-token `amr`
+  claim contains method/timestamp entries for authentication events. `getClaims()` verifies the token;
+  the MFA guide states AMR entries are newest-first and suitable for checking recent authentication.
+  `iat` is not used because token refresh changes it. The pure backend freshness helper is implemented,
+  but T142 remains open until safe account-data/storage/Auth deletion is coordinated transactionally.
+  Sources: [JWT claim reference](https://supabase.com/docs/guides/auth/jwt-fields),
+  [`getClaims()`](https://supabase.com/docs/reference/javascript/auth-getclaims),
+  [MFA AMR guidance](https://supabase.com/docs/guides/auth/auth-mfa#how-do-i-check-when-a-user-went-through-mfa),
+  [Auth token generation](https://github.com/supabase/auth/blob/master/internal/tokens/service.go).
+- **T173 mobile guard:** suspended/deleted/missing or expired sessions route to `/welcome`; minimum
+  supported version is `app_config.min_mobile_version` with `{ "version": "x.y.z" }`. Maintenance routes
+  to the mobile maintenance screen. Unknown authorization/config state must not expose protected screens.
+- **T183 maintenance:** authorized dashboard users retain their requested route and see a bilingual
+  maintenance banner. Authentication and role checks remain mandatory; public maintenance behavior
+  follows the app's public screen contract.
+- **T186 CI/CD scope:** keep T074-T076 descoped. T186 is a local standalone checker only; no hosted CI
+  gate is claimed.
+- **T179 identity linking:** implement supported Google OAuth linking. Secondary email identity linking
+  is deferred because its attachment to an existing Google-only account is unverified; do not advertise
+  that action.
+- **T187 phone validation:** accept Egyptian local mobile numbers with prefixes 010/011/012/015 and
+  equivalent `+20` values, normalize to E.164, and reject other country codes, invalid lengths, and
+  non-digit formatting.
