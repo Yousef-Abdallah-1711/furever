@@ -2073,3 +2073,13 @@ readiness. No auth flow, screen, D03 work, CI, or other task status was changed.
 **Files changed for this attempt**: this log only. `mobile/app.json`, `mobile/.env.example`,
 and `mobile/package.json` are restored/unchanged; `mobile/app.config.ts` was removed; the
 lockfile is unchanged.
+
+## T140 clinic-manager invite-level decision remains unresolved (2026-10-26)
+
+Clarified the T140 note: `contracts/edge-functions.md` permits admins and clinic managers to call
+`admin-create-staff`, and `clinic_staff.staff_level` includes manager/vet/receptionist, but the
+contract does not define whether clinic managers can invite/grant manager level. The owner choices
+are A) managers may invite any level within their clinic; B) managers may invite vet/receptionist
+within their clinic and only platform admins may grant manager level (recommended least-privilege,
+not approved); or C) defer invites until the role boundary is specified. T140 remains unchecked
+pending the owner's choice and SMTP/T145 delivery readiness. No implementation has started.

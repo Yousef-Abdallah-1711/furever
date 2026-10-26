@@ -560,7 +560,14 @@ environments only, not local dev.
   enforceable once T138 closes or restricts the direct path (`contracts/edge-functions.md`). Depends on
   T136, T137, T138. [AUTH-01]
 - [ ] T140 [P] [D02] Edge Function `admin-create-staff/` (sends the invite email — needs SMTP, T145).
-  [CS-01][CS-10]
+  [CS-01][CS-10] Owner decision unresolved: `contracts/edge-functions.md` allows admins and clinic
+  managers to call this function, and `clinic_staff.staff_level` supports manager/vet/receptionist, but
+  the contract does not say whether clinic managers may invite/grant the `manager` level. Options:
+  **A.** Managers may invite any level (manager/vet/receptionist) within their own clinic;
+  **B.** Managers may invite vet/receptionist within their own clinic, while only platform admins may
+  grant manager level (**recommended least-privilege option; not approved**);
+  **C.** Defer invites until the role boundary is specified. T140 remains unchecked until the owner
+  chooses a rule and SMTP/T145 delivery readiness is established. No implementation has started.
 - [x] T141 [P] [D02] Edge Function `admin-set-user-status/`, calling `write_audit_log()` for every status
   change. Depends on T130. [AUTH-10][AD-03]
 - [ ] T142 [P] [D02] Edge Function `delete-account/`. [AUTH-08]
