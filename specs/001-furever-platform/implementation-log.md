@@ -1346,4 +1346,41 @@ total, both independently inspected).
 **Worker**: Codex (`gpt-6-luna`, `high`) for the SQL; every verification step (clean reset, schema/grant
 queries, and the live audit-trigger test) was done entirely by the orchestrator, since the sandbox could
 run none of it this time. **Result**: PASS — independently confirmed, not self-reported.
+**Commit**: `d2b677d`.
+
+## D02 database foundation, Batch 4 — T134, completes Group B (2026-10-26)
+
+**Scope**: `otp_attempts`, the last of the 10 D02 foundation migrations (T123-T134). Dispatched to
+Codex (`gpt-6-luna`, `high`), one batch.
+
+**A third, different sandbox limitation than Batches 1-3**: Docker access was denied as before, but
+this time `supabase migration up --local` *also* failed with `MigrationMissingLocalError` ("Remote
+migration versions not found in local migrations directory") — the sandboxed session's view of the
+local migration history had drifted from what the orchestrator's own direct `supabase db reset` runs had
+already applied in Batches 1-3. Codex correctly recognized this, fell back to applying the single
+migration's statements individually via `supabase db query --local`, and reported the mismatch rather
+than silently working around it or guessing.
+
+**One fact worth confirming rather than assuming**: the migration enables RLS with zero policies and
+grants full access only to `service_role` — this is correct specifically because Supabase's
+`service_role` carries `rolbypassrls = true` by default (RLS doesn't apply to it regardless of policy
+count), which is Supabase's own standard configuration, not something this migration sets up itself.
+Verified this directly rather than taking it on faith: queried `pg_roles.rolbypassrls` for all three
+roles (`service_role: true`, `authenticated`/`anon`: `false`), then literally `SET ROLE service_role;`
+and inserted a real test row into `otp_attempts`, confirming write access in practice, not just by
+inference from the catalog flag — deleted the test row afterward.
+
+**Verification performed** (orchestrator's own, from a genuine clean reset): `pnpm --filter backend exec
+supabase db reset` — all 15 migrations (3 D00 + Batches 1-4's 12) applied cleanly in order, completing
+the entire D02 database foundation. Direct queries confirmed the exact column set, the unique
+`identifier` constraint, the partial `locked_until` index, RLS enabled, zero grants for `anon`/
+`authenticated`, and the `service_role` bypass-RLS write test above.
+
+**T123-T134 (Group B, database foundation) is now fully complete** except T123's seed data, still
+pending Decision D (launch cities) — table/RLS/FK structure for all 10 tables is in place and verified.
+
+**Files this pass**: `backend/supabase/migrations/20261026120007_create_otp_attempts.sql`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`); the clean-reset verification and the `service_role` bypass-RLS
+proof were done directly by the orchestrator. **Result**: PASS.
 **Commit**: (pending — this pass's files not yet committed).

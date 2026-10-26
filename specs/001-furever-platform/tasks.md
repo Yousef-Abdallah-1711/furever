@@ -538,7 +538,7 @@ environments only, not local dev.
   directly in this migration. Depends on T130. [PLT-01][PLT-02]
 - [x] T133 [D02] REVOKE direct `UPDATE` of `clinics.status` from `authenticated` (only `set_clinic_status`,
   D05, may change it). Depends on T125.
-- [ ] T134 [D02] Migration: `otp_attempts` table + RLS (service-role only), **keyed by a normalized email
+- [x] T134 [D02] Migration: `otp_attempts` table + RLS (service-role only), **keyed by a normalized email
   `identifier`** (2026-10-18 — was `phone_number`). [AUTH-01]
 
 ## Role claim, OTP guard, Edge Functions
