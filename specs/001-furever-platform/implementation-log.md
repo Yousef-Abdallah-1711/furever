@@ -2018,3 +2018,58 @@ remain unverified. T150 and all other tasks are unchanged.
 
 **Files**: `backend/supabase/config.toml`, `backend/.env.example`, `docs/environments.md`,
 `specs/001-furever-platform/tasks.md`, and this log.
+
+## D02 - T150: Expo native auth config (partial, 2026-10-26)
+
+No T150 config changes are retained. The package installs did not complete, and leaving
+`expo-apple-authentication` configured while its package is absent made Expo config
+resolution fail. Restored `mobile/app.json` and `mobile/.env.example` to their prior contents
+and removed the untracked `mobile/app.config.ts`. `mobile/package.json` and
+`pnpm-lock.yaml` remain untouched. T150 remains unchecked.
+
+Checked the [Expo SDK 57 app config reference](https://docs.expo.dev/versions/v57.0.0/config/app/)
+and [SDK 57 AppleAuthentication guide](https://docs.expo.dev/versions/v57.0.0/sdk/apple-authentication/).
+The SDK 57 docs list `expo-apple-authentication` `~57.0.2` and require both the Apple
+capability property and plugin. Checked the Google library's official
+[Expo setup](https://react-native-google-signin.github.io/docs/setting-up/expo) and
+[installation/compatibility guidance](https://react-native-google-signin.github.io/docs/install):
+the non-Firebase plugin takes `iosUrlScheme`, the native package needs a development build,
+and its compatibility table includes Expo 57 and React Native 0.86.
+
+**Earlier install attempts and evidence**: from `mobile/`,
+`$env:EXPO_OFFLINE='1'; pnpm.cmd exec expo install expo-apple-authentication` selected
+`expo-apple-authentication@~57.0.2`, then failed with `ERR_PNPM_UNEXPECTED_STORE`: existing
+workspace dependencies are linked from `H:\.pnpm-store\v3`, while pnpm selected
+`H:\Projects\Furever\.pnpm-store\v3`. The same offline command for
+`@react-native-google-signin/google-signin` failed with the same store mismatch before
+installation. Retried both in the normal Expo install workflow with
+`pnpm.cmd exec expo install expo-apple-authentication @react-native-google-signin/google-signin -- --store-dir H:\Projects\Furever\.pnpm-store\v3`;
+it did not update package files or produce an install. The earlier normal install attempt
+`pnpm.cmd exec expo install @react-native-google-signin/google-signin expo-apple-authentication`
+also failed with `EACCES` fetching React Native Directory compatibility data. No package
+manifest or lockfile was hand-edited.
+
+**Corrected-store retry**: independently confirmed with `pnpm.cmd store path` from `mobile/`
+that the configured store is `H:\.pnpm-store\v3`. Retried the requested combined Expo resolver
+command from `mobile/` with `$env:EXPO_OFFLINE='1'` and
+`$env:npm_config_store_dir='H:\.pnpm-store\v3'`. Expo selected
+`expo-apple-authentication@~57.0.2` and reported the Google package as the other requested
+package, but pnpm could not obtain metadata offline. Exact final error:
+`ERR_PNPM_META_FETCH_FAIL GET https://registry.npmjs.org/expo-apple-authentication: request to https://registry.npmjs.org/expo-apple-authentication failed, reason:`.
+Per the retry instruction, cleared `EXPO_OFFLINE`, kept the same `npm_config_store_dir`, and
+retried once. Exact final error: `AggregateError` / `AggregateError [EACCES]:` followed by
+`at internalConnectMultiple (node:net:1193:18)` and
+`at afterConnectMultiple (node:net:1783:7)`.
+
+Neither retry installed dependencies or changed the package manifest/lockfile. No config
+changes are retained; `mobile/app.json` and `mobile/.env.example` remain restored/unchanged,
+and `mobile/app.config.ts` remains absent. Expo config resolution, including scheme-absent and
+scheme-present cases, and mobile typecheck/lint could not be verified because installation
+failed. T150 remains open and unchecked; the earlier temporary config assertions do not
+establish completion. No native build was run. Google/Apple credential readiness remains
+unconfirmed, and T184's real development build remains blocked on external Expo/EAS account
+readiness. No auth flow, screen, D03 work, CI, or other task status was changed.
+
+**Files changed for this attempt**: this log only. `mobile/app.json`, `mobile/.env.example`,
+and `mobile/package.json` are restored/unchanged; `mobile/app.config.ts` was removed; the
+lockfile is unchanged.
