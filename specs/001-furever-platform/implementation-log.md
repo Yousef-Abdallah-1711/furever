@@ -1695,7 +1695,7 @@ code defect.
 
 **Worker**: Codex (`gpt-6-luna`, `high`), two passes; both the original and the post-fix clean-reset
 verification were performed directly by the orchestrator. **Result**: PASS, 29/29 pgTAP assertions.
-**Commit**: (pending — this pass's files not yet committed).
+**Commit**: `51b7aa0`.
 
 ## D02 Batch 10 — T176, T177, T178: mobile tab shells (2026-10-26)
 
