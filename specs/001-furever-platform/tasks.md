@@ -565,12 +565,15 @@ environments only, not local dev.
   change. Depends on T130. [AUTH-10][AD-03]
 - [ ] T142 [P] [D02] Edge Function `delete-account/`. [AUTH-08]
 - [ ] T143 [P] [D02] Edge Function `export-my-data/`. [AUTH-09]
-- [ ] T144 [P] [D02] Edge Function `app-config/`. [PLT-01][PLT-02]
+- [x] T144 [P] [D02] Edge Function `app-config/`. [PLT-01][PLT-02]
 - [ ] T145 [D02] **Replaces the Twilio provider task (2026-10-18)**: configure custom SMTP and the
   login-code email template (`{{ .Token }}`, not `{{ .ConfirmationURL }}` — research.md §12) in
   `config.toml` and in the staging and production projects. [AUTH-01]
 - [ ] T146 [D02] Document and wire required Supabase secrets for every Edge Function above
-  (`supabase secrets set` — SMTP credentials, Sentry DSN) in `docs/environments.md`.
+  (`supabase secrets set` — SMTP credentials, Sentry DSN) in `docs/environments.md`. Document and
+  configure the Edge Function `DASHBOARD_ORIGINS` environment variable; local defaults are
+  `http://localhost:3100` and `http://127.0.0.1:3100`, while hosted dashboard origins must be supplied
+  explicitly.
 
 ## Google and Apple sign-in (new, this fix pass — AUTH-02/AUTH-03 had no implementation task before)
 

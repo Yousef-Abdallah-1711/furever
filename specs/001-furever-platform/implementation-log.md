@@ -1743,3 +1743,22 @@ Output: `0 design-token violations across mobile/app/(tabs)/index.tsx, mobile/ap
 
 **Worker**: Codex (`gpt-6-luna`, `high`). **Result**: PASS.
 **Commit**: pending; no commit SHA yet. Batch 10 is ready for commit.
+
+## D02 — T144: public app-config Edge Function (2026-10-26)
+
+Implemented `GET /functions/v1/app-config` as a public Edge Function. It reads the public RLS-protected
+`feature_flags` and `app_config` tables using legacy `SUPABASE_ANON_KEY`, or the `default` key from
+`SUPABASE_PUBLISHABLE_KEYS` when the legacy key is absent. Response shape is
+`{ feature_flags: [...], app_config: { [key]: value } }`; absent tables return `[]` and `{}`. Flag
+platform and minimum-version metadata are preserved. The function does not compare versions because no
+comparison rule is specified. Dashboard CORS matches exact origins from `DASHBOARD_ORIGINS`; local
+defaults are `http://localhost:3100` and `http://127.0.0.1:3100`. Failures return a generic error, and
+support values are not hardcoded.
+
+**Orchestrator-independent verification**: `.\node_modules\.bin\biome.cmd check backend/supabase/functions/app-config/index.ts backend/supabase/functions/app-config/index.test.ts` PASS;
+`npx.cmd --yes deno test backend/supabase/functions/app-config/index.test.ts` PASS (9 tests);
+`git diff --check` PASS. No local Supabase functions serve/runtime test was performed. Hosted dashboard
+origins remain to be configured and documented in T146.
+
+**Files**: `backend/supabase/functions/app-config/index.ts`,
+`backend/supabase/functions/app-config/index.test.ts`.
