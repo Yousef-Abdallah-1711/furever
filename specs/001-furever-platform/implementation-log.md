@@ -2255,3 +2255,35 @@ readiness and the T210 acceptance UI/session-refresh integration.
 
 **Files**: `backend/supabase/migrations/20261027133000_serialize_invitation_acceptance.sql` and this log.
 **Commit**: recorded in the subsequent checkpoint.
+
+## D02 - T210: staff invitation acceptance screen (partial, 2026-10-27)
+
+Added the bilingual `/accept-invite` route and password form. The page requires the invitation session
+created by Supabase Auth, updates the invited user's password, calls `accept_staff_invitation()` with the
+authenticated browser client, refreshes the session, and checks the new access token's `user_role` is
+`clinic_staff` before navigating to `/clinic`. The stored invitation remains authoritative for clinic and
+staff level; the browser sends no role or clinic assignment. Errors remain generic, and failed RPC,
+refresh, or role checks never navigate into the protected portal.
+
+Connected the invitation sender to the screen with a fixed `/en/accept-invite` callback derived from the
+trusted `DASHBOARD_URL` function setting (defaulting to loopback for local development); it never uses the
+request `Origin`. Local Auth config allowlists explicit loopback/localhost callback URLs for ports 3000 and
+3010. Hosted deployments must configure their own exact callback URL. This is needed because Auth
+otherwise falls back to the Site URL instead of entering the acceptance route.
+
+T210 remains partial because Auth invite email and real browser acceptance cannot be exercised until SMTP
+is ready. No delivery or hosted callback was claimed.
+
+**Verification**: `pnpm.cmd --filter web test` PASS (4 files, 14 tests); direct TypeScript check
+`node web/node_modules/typescript/bin/tsc --noEmit --incremental false -p web/tsconfig.json` PASS;
+focused ESLint PASS; `pnpm.cmd i18n:check` PASS (727 matching keys); the eight `admin-create-staff` Deno
+tests PASS and `deno check` PASS. Local Next dev server returned 200 for `/en/accept-invite` and
+`/ar/accept-invite`; English/Arabic title text and Arabic `dir="rtl"` were confirmed. Unit tests verified
+the password -> accept RPC -> refresh -> role claim -> navigation sequence and failure paths. No live
+invitation session or SMTP delivery was exercised.
+
+**Files**: `web/src/app/[locale]/(auth)/accept-invite/page.tsx`,
+`web/src/components/auth/AcceptInviteForm.tsx`, `web/src/lib/accept-staff-invitation.ts` and test,
+`backend/supabase/functions/admin-create-staff/index.ts` and test, `backend/supabase/config.toml`, locale
+dictionaries, `docs/environments.md`, `tasks.md`, this log, and the D02 checkpoint. **Commit**: recorded
+in the checkpoint update.

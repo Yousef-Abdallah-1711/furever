@@ -94,6 +94,25 @@ function validUuid(value: unknown): value is string {
   );
 }
 
+function invitationRedirect(getEnv: Dependencies["getEnv"]): string {
+  const configured = getEnv("DASHBOARD_URL")?.trim() || "http://127.0.0.1:3000";
+  const url = new URL(configured);
+  const localHttp =
+    url.protocol === "http:" &&
+    ["localhost", "127.0.0.1"].includes(url.hostname);
+  if (
+    (url.protocol !== "https:" && !localHttp) ||
+    url.username ||
+    url.password ||
+    (url.pathname !== "/" && url.pathname !== "") ||
+    url.search ||
+    url.hash
+  ) {
+    throw new Error("Invalid dashboard URL configuration");
+  }
+  return new URL("/en/accept-invite", url.origin).toString();
+}
+
 function errorBody(code: string, message: string) {
   return { error: { code, message } };
 }
@@ -201,6 +220,7 @@ export function createHandler(
       const serviceKey = dependencies
         .getEnv("SUPABASE_SERVICE_ROLE_KEY")
         ?.trim();
+      const redirectTo = invitationRedirect(dependencies.getEnv);
       if (!baseUrl || !serviceKey) {
         throw new Error("Backend configuration is incomplete");
       }
@@ -294,7 +314,9 @@ export function createHandler(
 
       let emailResponse: Response;
       try {
-        emailResponse = await dependencies.fetch(`${baseUrl}/auth/v1/invite`, {
+        const inviteUrl = new URL(`${baseUrl}/auth/v1/invite`);
+        inviteUrl.searchParams.set("redirect_to", redirectTo);
+        emailResponse = await dependencies.fetch(inviteUrl, {
           method: "POST",
           headers: {
             apikey: serviceKey,

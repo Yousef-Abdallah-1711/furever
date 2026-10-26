@@ -50,6 +50,15 @@ be configured with the exact dashboard origin(s) for that environment, for examp
 only). Neither hosted origin can be set yet: the Supabase projects and dashboard domains
 have not been provisioned or verified. Do not use these example placeholders as values.
 
+`admin-create-staff` also reads `DASHBOARD_URL` to construct the fixed invitation callback
+`/en/accept-invite`; it never derives a redirect from the caller's `Origin` header. Local
+development defaults to `http://127.0.0.1:3000`. For each hosted Supabase project, set
+`DASHBOARD_URL` to that environment's HTTPS dashboard origin and add the resulting exact
+`<DASHBOARD_URL>/en/accept-invite` callback URL to Auth's allowed redirect URLs. The local
+`backend/supabase/config.toml` includes exact localhost and loopback callback URLs for the
+documented 3000 and Docker 3010 web ports. Hosted callback configuration has not been
+applied or verified.
+
 `_shared/sentry.ts` supports optional Edge Function Sentry initialization. It runs only
 when `ENABLE_SENTRY` is exactly `true` and `SENTRY_DSN` is present; otherwise it makes no
 Sentry initialization call. If Sentry is used, configure the DSN as a project-specific

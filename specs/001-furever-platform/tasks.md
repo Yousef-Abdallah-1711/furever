@@ -871,8 +871,11 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   Users). [AD-01]
 - [ ] T209 [P] [D02] Build admin Settings — `web/src/app/[locale]/(admin)/settings/page.tsx` (Spec;
   pattern: Clinic profile).
-- [ ] T210 [P] [D02] Build `/accept-invite` — `web/src/app/[locale]/(auth)/accept-invite/page.tsx` (Spec;
-  pattern: Sign in). [CS-01]
+- [ ] T210 [P] [D02] Build `/accept-invite` - `web/src/app/[locale]/(auth)/accept-invite/page.tsx` (Spec;
+  pattern: Sign in). [CS-01] **Partial 2026-10-27:** bilingual page verifies the invite session, sets the
+  password, calls `accept_staff_invitation()`, refreshes the session, requires the refreshed
+  `user_role=clinic_staff` claim, then navigates to `/clinic`. Unit coverage verifies sequencing and failure
+  states; live invitation/Auth/SMTP acceptance is not verified, so this task remains open.
 - [ ] T211 [P] [D02] Build `/forgot-password` — `web/src/app/[locale]/(auth)/forgot-password/page.tsx`
   (Spec; pattern: Sign in).
 - [ ] T212 [P] [D02] Build `/no-access` — `web/src/app/[locale]/(auth)/no-access/page.tsx` (Spec; pattern:

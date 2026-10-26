@@ -138,6 +138,22 @@
         "updateApp": "Update app",
         "maintenanceTitle": "FurEver is under maintenance",
         "maintenanceMessage": "Please try again later."
+      },
+      "acceptInvite": {
+        "title": "Accept your invitation",
+        "description": "Set a password to finish joining your clinic team.",
+        "checkingInvitation": "Checking your invitation…",
+        "invalidInvitation": "This invitation is invalid or expired. Ask your clinic administrator for a new invitation.",
+        "signIn": "Go to sign in",
+        "password": "Password",
+        "confirmPassword": "Confirm password",
+        "passwordHint": "Use at least 6 characters.",
+        "passwordMismatch": "The passwords do not match.",
+        "passwordTooShort": "Use at least 6 characters.",
+        "acceptanceFailed": "We could not accept this invitation. Check the link and try again, or contact your clinic administrator.",
+        "accepting": "Setting up your account…",
+        "setPassword": "Set password and continue",
+        "success": "Your account is ready. Opening the clinic portal…"
       }
     },
     "audit": {

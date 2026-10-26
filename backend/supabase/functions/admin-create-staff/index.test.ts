@@ -19,6 +19,7 @@ const baseEnv: Record<string, string> = {
   SUPABASE_URL: "https://project.example/",
   SUPABASE_ANON_KEY: publicKey,
   SUPABASE_SERVICE_ROLE_KEY: serviceKey,
+  DASHBOARD_URL: "https://dashboard.example",
 };
 const getEnv = (name: string) => baseEnv[name];
 
@@ -109,6 +110,26 @@ Deno.test("admin-create-staff validates the user before creating a staff invitat
   }
 });
 
+Deno.test("admin-create-staff rejects an unsafe dashboard callback before network access", async () => {
+  let calls = 0;
+  const handler = createHandler({
+    getEnv: (name) =>
+      name === "DASHBOARD_URL"
+        ? "https://dashboard.example/path"
+        : baseEnv[name],
+    fetch: async () => {
+      calls += 1;
+      return Response.json({});
+    },
+  });
+  const response = await handler(inviteRequest());
+  if (response.status !== 503 || calls !== 0) {
+    throw new Error(
+      "An unsafe dashboard callback must be rejected before backend requests",
+    );
+  }
+});
+
 Deno.test("admin-create-staff uses caller authorization for policy RPC and service key only for Auth invite", async () => {
   const requests: Request[] = [];
   const handler = createHandler({
@@ -122,7 +143,7 @@ Deno.test("admin-create-staff uses caller authorization for policy RPC and servi
       if (request.url.endsWith("/rpc/create_staff_invitation")) {
         return Response.json(invitationId);
       }
-      if (request.url.endsWith("/auth/v1/invite")) {
+      if (new URL(request.url).pathname.endsWith("/auth/v1/invite")) {
         return Response.json(
           { id: "8d68ed72-8d7d-45b1-8f79-1e61423e4ad2" },
           {
@@ -147,7 +168,7 @@ Deno.test("admin-create-staff uses caller authorization for policy RPC and servi
     request.url.endsWith("/rpc/create_staff_invitation"),
   );
   const authInvite = requests.find((request) =>
-    request.url.endsWith("/auth/v1/invite"),
+    new URL(request.url).pathname.endsWith("/auth/v1/invite"),
   );
   if (!rpc || !authInvite) {
     throw new Error("Expected RPC and Auth invite requests");
@@ -183,6 +204,14 @@ Deno.test("admin-create-staff uses caller authorization for policy RPC and servi
   ) {
     throw new Error(
       "The Auth invite should carry the already-authorized invitation reference",
+    );
+  }
+  if (
+    new URL(authInvite.url).searchParams.get("redirect_to") !==
+    "https://dashboard.example/en/accept-invite"
+  ) {
+    throw new Error(
+      "The invite link must return to the configured acceptance route",
     );
   }
 });
@@ -230,7 +259,7 @@ Deno.test("admin-create-staff cancels its pending invitation after a definite Au
       if (request.url.endsWith("/rpc/create_staff_invitation")) {
         return Response.json(invitationId);
       }
-      if (request.url.endsWith("/auth/v1/invite")) {
+      if (new URL(request.url).pathname.endsWith("/auth/v1/invite")) {
         return new Response("mail not configured", { status: 500 });
       }
       if (request.url.endsWith("/rpc/cancel_staff_invitation")) {

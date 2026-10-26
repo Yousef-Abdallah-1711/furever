@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `f77a56a` (`feat(D02): enforce scoped staff invitations`)
+**Latest implementation commit:** `92c9c3b` (`fix(D02): serialize staff invitation acceptance`); T210 batch pending commit.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -37,8 +37,13 @@
 - **Partial:** T140 now has a pending invitation ledger, clinic-scoped create/cancel/accept RPCs, the
   `admin-create-staff` Edge Function, and audited staff-level change/removal RPCs. Managers can invite
   vets/receptionists only in their own clinic; platform admins alone can grant manager level. Direct
-  `clinic_staff` writes are revoked. Nine pgTAP files / 84 assertions pass, plus seven Edge Function unit
-  tests. SMTP delivery and T210's acceptance UI/session refresh remain outstanding.
+  `clinic_staff` writes are revoked. Acceptance locks the Auth user row for retry serialization. Invite
+  links have an explicit fixed dashboard callback. Nine pgTAP files / 84 assertions pass, plus seven Edge
+  Function unit tests (8 now, including callback validation). SMTP delivery remains outstanding.
+- **Partial:** T210 has the bilingual invitation acceptance form. It sets the password, invokes the
+  authenticated acceptance RPC, refreshes the session, and verifies the `clinic_staff` role claim before
+  navigating to the portal. Six focused tests pass and both localized routes render locally; actual Auth
+  invite/SMTP acceptance remains unverified.
 
 The nine owner decisions are recorded in `research.md`, `spec.md`, `plan.md`, and task notes. Approval
 does not mean every decision's implementation is complete.
@@ -85,6 +90,10 @@ does not mean every decision's implementation is complete.
 - `pnpm.cmd exec expo install --check`: reports only the pre-existing Expo SDK drift in `@expo/ui`,
   `expo`, and `expo-router`; the two newly installed native auth libraries are compatible.
 - `pnpm.cmd i18n:check`: PASS, 713 matching keys.
+- T210 continuation: `pnpm.cmd --filter web test` PASS (4 files / 14 tests); direct web TypeScript check
+  PASS; focused ESLint PASS; `pnpm.cmd i18n:check` PASS (727 keys); admin-create-staff Deno tests PASS
+  (8) and `deno check` PASS; local `/en/accept-invite` and `/ar/accept-invite` both returned 200 with the
+  expected localized content and RTL direction.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 
@@ -99,10 +108,8 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Finish recording and committing the local-only T140 concurrency migration
-   `20261027133000_serialize_invitation_acceptance.sql`; its full pgTAP suite passes (9 files / 84
-   assertions). Then build T210's `/accept-invite` screen around `accept_staff_invitation()` and refresh the session so the
-   `user_role` claim reflects the accepted clinic assignment. Keep SMTP delivery gated by T145.
+1. Commit and push the T210 acceptance page, callback, and verification record. Keep SMTP delivery gated
+   by T145; do not claim real invite acceptance until a local or hosted Auth email is delivered.
 2. Extend T143 as later-phase data tables land and investigate T142's supported step-up mechanism without
    trusting client time.
 3. Continue T173 redirect screens and mobile onboarding/auth screens only along the verified OTP/session
