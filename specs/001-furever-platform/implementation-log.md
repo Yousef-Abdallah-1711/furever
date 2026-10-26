@@ -1295,4 +1295,55 @@ tables and the exact `consents` grant state described above.
 
 **Worker**: Codex (`gpt-6-luna`, `high`); the clean-reset verification was done directly by the
 orchestrator after the sandboxed run hit the same Docker-access limitation as Batch 1. **Result**: PASS.
+**Commit**: `6aed6b3`.
+
+## D02 database foundation, Batch 3 — T129, T130, T131, T132 (2026-10-26)
+
+**Scope**: `audit_logs`, the shared `write_audit_log()` function, `feature_flags`, `app_config` — the
+generic admin-write audit mechanism every later phase's admin RPCs/Edge Functions depend on. Dispatched
+to Codex (`gpt-6-luna`, `high`), one sequential batch.
+
+**Codex's sandbox was fully blocked this time, correctly self-reported rather than silently skipped**:
+unlike Batches 1-2 (which could at least fall back to an incremental `supabase migration up`/`db query`
+against the already-running stack), this run hit both the same Docker-API permission denial *and* a
+`psql`-unavailable limitation, plus an `EPERM` writing Supabase's own telemetry temp file. It wrote the
+four migrations and explicitly reported it had run **zero** verification — no schema check, no grant
+check, no audit-trigger test. Correctly left T129-T132 unmarked in its own report rather than claiming
+anything passed.
+
+**One real, security-relevant judgment call worth recording, found by reading the actual SQL**: the
+brief asked Codex to block direct client writes to `audit_logs` from `authenticated`/`anon`. Codex's
+migration went further and also `REVOKE ALL ... FROM ... service_role` — a stricter read of
+`data-model.md`'s own stated intent ("`audit_logs` is written exclusively through `write_audit_log()`
+... never a raw `INSERT` from a client") than what was explicitly asked. This does not break
+`write_audit_log()` itself: it's `SECURITY DEFINER`, so it inserts using the *function owner's*
+privileges (the migration-running role), not the caller's — a table-level `REVOKE` from `service_role`
+has no effect on a `SECURITY DEFINER` function's own internal operations. Confirmed this holds in
+practice below (the live audit-trigger test below inserted successfully despite the revoke). Kept as-is
+rather than loosened, since it correctly forces every writer — even privileged backend code — through
+the one audited chokepoint, which is the stronger and more correct interpretation of the stated design.
+
+**Verification performed entirely by the orchestrator, from zero** (Codex ran none): `pnpm --filter
+backend exec supabase db reset` — clean, all 14 migrations (3 D00 + Batches 1-3's 11) applied in order.
+Direct `psql` queries confirmed: all 5 `feature_flags` seeded correctly (`shop_enabled`, `mating_enabled`,
+`adoption_enabled`, `payments_enabled`, `video_enabled`, all `enabled = false`); `app_config` empty; RLS
+enabled on `audit_logs`/`feature_flags`/`app_config` (one early query without a schema join returned a
+confusing duplicate `feature_flags` row — turned out to be Supabase's own unrelated internal
+`_realtime.feature_flags` table coincidentally sharing the name, not a real issue, resolved by
+re-scoping the query to `nspname = 'public'`); `audit_logs` grants confirmed exactly `authenticated:
+SELECT` and nothing else for `anon`/`service_role` (matching the stricter revoke above). **Then actually
+exercised the audit trigger end to end**, the thing Codex itself couldn't test: ran `UPDATE feature_flags
+SET enabled = true WHERE key = 'shop_enabled';` directly, confirmed a real row landed in `audit_logs`
+with `action = 'update'`, `entity = 'feature_flags'`, `entity_id = 'shop_enabled'`, and a `diff` jsonb
+containing both the full old and new row state; reverted the flag to `false` and confirmed a second,
+correctly-captured audit row for the revert, leaving the seed state exactly as it started (2 audit rows
+total, both independently inspected).
+
+**Files this pass**: `backend/supabase/migrations/20261026120003_create_audit_logs.sql`,
+`.../20261026120004_create_write_audit_log.sql`, `.../20261026120005_create_feature_flags.sql`,
+`.../20261026120006_create_app_config.sql`.
+
+**Worker**: Codex (`gpt-6-luna`, `high`) for the SQL; every verification step (clean reset, schema/grant
+queries, and the live audit-trigger test) was done entirely by the orchestrator, since the sandbox could
+run none of it this time. **Result**: PASS — independently confirmed, not self-reported.
 **Commit**: (pending — this pass's files not yet committed).

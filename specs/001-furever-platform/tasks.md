@@ -520,21 +520,21 @@ environments only, not local dev.
 - [x] T126 [D02] Migration: `clinic_staff` table + RLS. Depends on T124, T125 (FKs to both).
 - [x] T127 [P] [D02] Migration: `push_tokens` table + RLS. Depends on T124.
 - [x] T128 [P] [D02] Migration: `consents` table + RLS. Depends on T124.
-- [ ] T129 [D02] Migration: `audit_logs` table + RLS (append-only: no `UPDATE`/`DELETE` grant to any
+- [x] T129 [D02] Migration: `audit_logs` table + RLS (append-only: no `UPDATE`/`DELETE` grant to any
   role). Moved here from D07 because the generic audit mechanism (next task) needs it to exist first.
   **Created before `feature_flags`/`app_config` (this fix pass)** — both tables' audit triggers call
   `write_audit_log()`, which itself needs `audit_logs` to exist, so the two tables can no longer come
   first.
-- [ ] T130 [D02] Write the shared helper function `write_audit_log(p_actor_id, p_action, p_entity,
+- [x] T130 [D02] Write the shared helper function `write_audit_log(p_actor_id, p_action, p_entity,
   p_entity_id, p_diff)` — `security definer`, insert-only into `audit_logs`. Every admin-write RPC/Edge
   Function in every later phase calls this instead of inserting directly. Depends on T129. **Tag added,
   this fix pass**: this is the generic mechanism behind AD-08's "immutable audit entry for every admin
   write and every admin read of health data." [AD-08]
-- [ ] T131 [P] [D02] Migration: `feature_flags` table + RLS + seed (5 flags, all `false` — constitution
+- [x] T131 [P] [D02] Migration: `feature_flags` table + RLS + seed (5 flags, all `false` — constitution
   VI) + an `AFTER INSERT OR UPDATE OR DELETE` trigger calling `write_audit_log()`, **attached in this same
   migration** (this fix pass removes the old forward-reference and its separate follow-up task —
   `write_audit_log()` already exists by this point, T130). Depends on T130.
-- [ ] T132 [P] [D02] Migration: `app_config` table + RLS + the same audit trigger as T131, attached
+- [x] T132 [P] [D02] Migration: `app_config` table + RLS + the same audit trigger as T131, attached
   directly in this migration. Depends on T130. [PLT-01][PLT-02]
 - [x] T133 [D02] REVOKE direct `UPDATE` of `clinics.status` from `authenticated` (only `set_clinic_status`,
   D05, may change it). Depends on T125.
