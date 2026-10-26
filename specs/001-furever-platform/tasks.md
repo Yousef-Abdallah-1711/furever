@@ -694,10 +694,10 @@ environments only, not local dev.
   maintenance (→ `/maintenance`, new `app_config` key, see implementation-log). Profile-incomplete and
   force-update are deliberately not implemented for the web dashboard — see implementation-log's Batch 9
   entry for why; not a silent gap.
-- [ ] T175 [D02] Onboarding flow orchestration `mobile/src/features/onboarding/router.ts` — new-user path
+- [x] T175 [D02] Onboarding flow orchestration `mobile/src/features/onboarding/router.ts` — new-user path
   (Language→Onboarding→Welcome→**Email**→Verify→Profile→pet steps→Permissions→Summary→Home, 2026-10-18 —
   was Phone) and the returning-user path (Welcome→Sign-in **by email or Google**→Verify (email path
-  only)→Home). [AUTH-01]
+  only)→Home). [AUTH-01] **Implemented and checked 2026-10-26**: see implementation-log D02 Batch 10.
 - [x] T176 [D02] Build the Home tab shell `mobile/app/(tabs)/index.tsx` (empty shell — D04 adds the
   vaccines-due banner). Infrastructure; Home's Screen Coverage credit stays with D04.
 - [x] T177 [D02] Build `mobile/app/(tabs)/_layout.tsx` (tab bar: Home, Pets, Bookings, Profile). Depends on

@@ -1871,3 +1871,32 @@ URL), and invalid recipient/URL inputs. No live Auth or SMTP delivery verificati
 **Files**: `packages/shared/src/testing/read-local-inbox.ts`,
 `packages/shared/src/testing/read-local-inbox.test.ts`, `packages/shared/src/index.ts`, this log, and the T154
 status in `tasks.md`.
+
+## D02 Batch 10 — T175: onboarding flow orchestration (2026-10-26)
+
+**Scope**: added pure, typed next-route functions for the D02 new-owner and returning-owner onboarding
+flows in `mobile/src/features/onboarding/router.ts`, with focused unit tests. New-owner progress covers
+Language → Onboarding → Welcome → email sign-in → OTP → Complete Profile → pet setup → Permissions →
+Setup Summary → Home. Returning-owner email selection routes through OTP; Google selection remains at
+Sign-in until the explicit `google-sign-in-complete` state routes Home. Email verification routes Home,
+and unknown provider state stays at Sign-in. Incomplete pet setup continues to `/pets/new`, with completion
+reported by the pet flow. No auth side effects, persistence, D03 source, or unresolved policy choices were
+added.
+
+Expo Router convention checked against the Expo Router notation docs: group segments are omitted from the
+public URL (`/(auth)/sign-in` is `/sign-in`; `/(tabs)` targets the tabs group's index at `/`). The grouped
+hrefs are retained in the typed route contract to select the intended navigator. The auth route files are
+specified by T194–T196; the existing `(tabs)` group and index are present.
+
+**Verification**: `pnpm.cmd --filter mobile test` PASS (9 suites, 18 tests);
+`pnpm.cmd --filter mobile typecheck` PASS; `pnpm.cmd --filter mobile lint` PASS (0 errors, 3 existing
+warnings in `src/i18n/__tests__/locale-switch.test.tsx` and `src/i18n/index.ts`);
+`pnpm.cmd exec tsx scripts/lint-design-tokens.ts mobile/src/features/onboarding/router.ts
+mobile/src/features/onboarding/router.test.ts` PASS (0 violations). `pnpm` PowerShell shim was blocked by
+execution policy, so equivalent commands used `pnpm.cmd`.
+
+**Correction verification**: `pnpm.cmd --filter mobile exec jest --runInBand
+src/features/onboarding/router.test.ts` PASS (5 tests); `pnpm.cmd --filter mobile typecheck` PASS.
+
+**Files**: `mobile/src/features/onboarding/router.ts`, `mobile/src/features/onboarding/router.test.ts`,
+this log, and T175 status in `tasks.md`.
