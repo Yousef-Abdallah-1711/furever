@@ -5,6 +5,9 @@ RPC errors raise a short upper-case code with a custom SQLSTATE so PostgREST map
 `{ "error": { "code": "...", "message": "..." } }`. Clients translate `code` into the user's language via
 `packages/i18n` and **never** show raw server text (constitution IV).
 
+OTP-related codes below describe the planned Option C contract. `verify-otp-guard` is not implemented, so
+these codes are not evidence that custom code verification or its lockout is currently enforced.
+
 | Code | HTTP | When |
 | --- | --- | --- |
 | `UNAUTHENTICATED` | 401 | Missing or expired token |

@@ -460,12 +460,10 @@ and secondary email linking remains deferred.
     3-cancelled-lockout rule is still unenforced on the direct path, and an attacker can still request
     unlimited new codes for a target email every 60 seconds regardless of code length. It raises the cost
     of brute-forcing one code; it does not stop someone from skipping the guard's bookkeeping entirely.
-  - **Where this leaves A+**: both are real, officially-documented mitigations worth doing regardless of
-    which option is chosen — but **neither fully closes the bypass on its own**, same conclusion as A and
-    B. They could be layered on top of Option C (defense in depth) or substituted for part of Option A if
-    the owner judges the residual risk acceptable; that judgment call is exactly what stays undecided here.
-- **Options and trade-offs** (no recommendation is final here — **this is an owner decision**, per the
-  explicit instruction that produced this section):
+  - **Where this leaves A+**: both are officially documented mitigations, but **neither fully closes the
+    bypass on its own**. They may be considered as defense in depth on top of approved Option C; they are
+    not a substitute for its lockout and non-bypassability requirements.
+- **Options and trade-offs** (historical evaluation; the owner selected Option C on 2026-10-27):
 
   | Option | What it is | Closes the bypass? | Cost |
   | --- | --- | --- | --- |
@@ -473,13 +471,11 @@ and secondary email linking remains deferred.
   | A+. CAPTCHA and/or longer OTP length *(new)* | hCaptcha/Turnstile on send; `auth.email.otp_length` raised to 8-10 | **No** — raises attacker cost (automation, brute-force odds) but doesn't enforce the 3-cancelled-lockout rule or add a per-email verify cap | Low-Medium — CAPTCHA needs a `WebView` on mobile (no native SDK documented); OTP length is one dashboard setting |
   | B. Send Email hook / `generateLink` only | Control delivery and who *generates* our own code server-side | **No** — the public endpoints remain reachable for any email regardless | Low — useful for templates anyway (T145/T147), but not a security fix |
   | C. Custom-code design | Guard owns code generation, hashing, and verification; Supabase Auth OTP primitives unused for this flow; session minted via an admin-only path | **Yes** | Highest — new columns/logic in `otp_attempts`, a session-issuance path that doesn't exist yet, more surface to test (T138/T149) |
-- **Recommendation (non-binding, for the owner to confirm or override)**: Option C, optionally layered with
-  A+'s longer OTP length as cheap defense in depth. Option C is the only one of the four that actually
-  enforces the policy `spec.md`/`research.md` §3 already commits to; A, A+, and B are real but partial and
-  would leave the stated lockout rule unenforceable against a bypasser who knows the anon key is not
-  secret. **`tasks.md` T120 evaluates A+ as part of the spike; T138 is a placeholder for whichever option
-  the owner ultimately picks** — D02 should not proceed past it with the decision still open (see
-  `plan.md`'s Open Question 3).
+- **Decision status**: owner-approved Option C is recorded in §18 and `spec.md` Open Decision 12. A, A+,
+  and B remain rejected as complete solutions because they leave the stated lockout unenforceable against
+  direct public Auth endpoint calls. Optional CAPTCHA or longer OTP may be evaluated only as defense in
+  depth without replacing Option C. T138 is not an unresolved owner choice: implementation remains gated
+  on proving an authoritative, supported session-establishment path that preserves the approved policy.
 - Sources: [Supabase Auth: Rate Limits](https://supabase.com/docs/guides/auth/rate-limits),
   [Supabase Auth Hooks](https://supabase.com/docs/guides/auth/auth-hooks),
   [Supabase Auth: Send Email Hook](https://supabase.com/docs/guides/auth/auth-hooks/send-email-hook),
@@ -510,9 +506,10 @@ and secondary email linking remains deferred.
   or the `verify-otp-guard` design (identifier-keyed, action-based `send-code`/`verify-code`) prevents
   adding a phone identifier type alongside email if the business revisits this; it is not committed to any
   phase (`spec.md` Open Decisions item 10).
-- **Which of §17's options (A/A+/B/C) to build** for closing the direct-Auth-path bypass — an owner
-  decision, not something research can settle; `spec.md` Open Decisions item 12 and `plan.md` Open
-  Question 3 both record this as a blocking gate before D02 proceeds past `tasks.md` T138.
+- **Supabase session issuance after custom OTP verification** — the owner-approved Option C is fixed
+  (`spec.md` Open Decision 12 and §18 above). The unresolved question is technical: identify and prove a
+  supported, refreshable Supabase session path that cannot be reached through public OTP endpoints. Do not
+  reopen the policy choice or ship a workaround while this evidence is absent.
 - **New (this fix pass)**: whether email sent to an Apple private-relay address (§14) needs the sending
   domain separately registered with Apple's Private Email Relay program — see §14's addendum below.
 

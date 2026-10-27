@@ -382,10 +382,10 @@ RTL-safe email templates.
 **Exit criteria**: a brand-new email address can complete AUTH-01→04 end to end on a dev build, including
 receiving and typing the code from the local email inbox; an admin can sign in with MFA and reach
 `/admin`; a suspended test user is rejected; force-update and maintenance screens are reachable by flag;
-all in the 4 combinations. **Added, remediation pass (C2)**: the guard-enforceability decision
-(`research.md` §17; `tasks.md` T120/T138) is recorded in writing — which of Option A/A+/B/C was chosen
-and why — before this phase is considered exited; `verify-otp-guard` (T139) must not ship on an
-unresolved placeholder.
+all in the 4 combinations. **Added, remediation pass (C2; owner decision recorded 2026-10-27)**: approved
+Option C is documented in `research.md` §18 and `spec.md` Open Decision 12. Before this phase is considered
+exited, the supported session-establishment path must be proven and Option C implemented so the public
+Auth OTP endpoints cannot bypass its enforcement; `verify-otp-guard` (T139) must not ship until then.
 
 ### D03 — Pets and passport
 
@@ -605,7 +605,8 @@ Recorded here, not guessed, and not written into `spec.md` (that file is not edi
    task that confirms this against the real project settings, and also checks whether Manual Linking
    (a separate, also-off-by-default mechanism) needs enabling for AUTH-06's new "Add Google"/"Add email
    sign-in" actions (T174-T176) — both must be confirmed before D02 reaches those tasks.
-3. **Is the email-code guard bypassable, and if so, which fix?** *(new, this fix pass, 2026-10-18)*:
+3. **Is the email-code guard bypassable, and if so, which fix?** *(new, this fix pass, 2026-10-18;
+   policy decision resolved 2026-10-27)*:
    Supabase Auth's email-OTP send/verify endpoints are reachable directly with the public anon key, so a
    client could skip `verify-otp-guard` and its lockout rules entirely — confirmed against official
    Supabase docs in `research.md` §17. Neither a Send Email hook nor `auth.admin.generateLink()` closes
@@ -614,8 +615,9 @@ Recorded here, not guessed, and not written into `spec.md` (that file is not edi
    admin-only path. **Remediation pass, 2026-10-19**: §17 also evaluated CAPTCHA protection and a longer
    OTP length (both from official docs) as "Option A+" — real mitigations, but neither closes the gap on
    its own either. **Owner approved Option C on 2026-10-27.** T138/T139 remain gated on proving a supported
-   session-establishment path that does not reopen direct public-OTP bypass; if none exists, request a
-   narrow technical decision without weakening the lockout policy.
+   session-establishment path that does not reopen direct public-OTP bypass. If no supported path exists,
+   the phase remains blocked pending authoritative vendor guidance or a separately approved architecture
+   change; the Option C policy choice is resolved and must not be weakened.
 
 **Coverage counts, re-confirmed after this change**: still **59 Phase 1 stories** and **70 Phase 1
 screens** (owner mobile 41, clinic dashboard 12, admin dashboard 17) — the sign-in method change rewrote

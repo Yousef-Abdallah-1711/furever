@@ -29,8 +29,9 @@ reference, reordered D02's migrations so `audit_logs`/`write_audit_log()` preced
 
 **This remediation pass (2026-10-19 — `/speckit-analyze` findings C1/C2/H1/H2/H3/M1/L1)**: added a
 `purge_soft_deleted()` cron job + Storage-cleanup queue (constitution IV, C1); flagged FR-001's lockout
-guarantee as contingent on a still-open owner decision and added two more researched options to
-`research.md` §17 (C2); gave NTF-02 a real preference schema + enqueue-time checks (H1); gave CS-09
+guarantee as contingent on a decision that the owner later resolved by approving Option C on 2026-10-27,
+and added two more researched options to `research.md` §17 (C2); gave NTF-02 a real preference schema +
+enqueue-time checks (H1); gave CS-09
 reporting RPCs + a CSV export (H2); gave PLT-03 real offline infrastructure instead of a verify-only task
 (H3); gave AUTH-06 its linking actions, conflict error, and E2E test (M1); de-duplicated two PRD
 amendments (L1).

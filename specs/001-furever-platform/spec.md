@@ -119,9 +119,10 @@ without touching any other epic.
   **Enforcement note (added 2026-10-19, `/speckit-analyze` finding C2)**: this lockout guarantee holds
   for a client that goes through `verify-otp-guard` as intended. Supabase Auth's own email-OTP endpoints
   are reachable directly with the project's (non-secret) anon key, so the guarantee is **fully enforced
-  only once** the guard-enforceability decision in `research.md` section 17 is made and built (`tasks.md`
-  T120/T138/T139). Until then, treat it as guaranteed for compliant clients, not as a security boundary —
-  see Open Decisions item 12.
+  only once** the owner-approved Option C guard is safely implemented (`tasks.md` T120/T138/T139). Option C
+  is approved in Open Decisions item 12; its supported Supabase session-establishment path remains an
+  engineering gate. Until that is proven and built, treat the lockout as guaranteed for compliant clients,
+  not as a security boundary.
 - **AUTH-02** (P1) — Google sign-in. **Given** an owner taps Continue with Google, **When** they pick an
   account, **Then** a session and profile exist on success. **Given** they cancel the picker, **When** they
   return, **Then** Sign in is shown with no error toast.

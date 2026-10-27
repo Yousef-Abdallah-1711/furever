@@ -32,6 +32,19 @@
 - The three protected audit handoff files remain untouched and unstaged. The only untracked workspace
   files are those three preserved audit documents.
 
+## Session update — OTP decision-record reconciliation (2026-10-27)
+
+- Rechecked current official Supabase Auth Hooks, `generateLink()`, and session documentation. No documented
+  email-OTP verification hook or supported custom-code-to-refreshable-session mechanism was established;
+  public OTP endpoints remain a separate bypass path.
+- Corrected stale language in `research.md`, `plan.md`, `spec.md`, `tasks.md`, and the REST/RPC/Edge Function
+  contracts: Option C is an approved owner decision, while implementation is still blocked on technical
+  proof. The contracts now state that `verify-otp-guard` is not implemented and the current OTP ledger RPCs
+  alone do not enforce the lockout.
+- No OTP code was shipped and no security requirement was weakened. T120/T138/T139 stay open.
+- At the start of this documentation batch, HEAD and `origin/main` were both
+  `c3c78666c4a238d262b6c0352d04e9808f03a54b`; these documentation updates are pending commit/push.
+
 ## Completed or advanced in this batch
 
 - **Complete:** T123 launch cities (Cairo, Giza, Alexandria; stable IDs, bilingual, idempotent seed,

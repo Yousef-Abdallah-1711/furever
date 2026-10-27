@@ -5,14 +5,15 @@ Every client also sends `x-app-version` and `x-platform` so `app-config` can enf
 RLS is the only real access gate (constitution III); the endpoint list below exists for discoverability and
 contract testing, not as an additional permission layer.
 
-**Owner auth note (2026-10-18)**: owners sign in via email + a 6-digit code (Google and, on iOS, Apple
-remain available) — never via `POST /auth/v1/otp` with a phone number, and mobile never calls Supabase
-Auth's phone or email OTP endpoints directly at all. Every send/verify call goes through
-`POST /functions/v1/verify-otp-guard` (`send-code`/`verify-code` actions — see
-[edge-functions.md](./edge-functions.md)), which enforces the lockout, throttling, and no-enumeration
-rules before ever touching Supabase Auth. There is no SMS path anywhere in Phase 1; Twilio is not
-integrated. Dashboard sign-in (clinic staff/admins) is unaffected and still uses email + password directly
-against Supabase Auth, with TOTP (`aal2`) for admins.
+**Owner auth decision (2026-10-27)**: owner email sign-in must use approved Option C: custom code generation,
+protected storage, server-side verification/expiry/attempt limits/lockout/throttling, no enumeration, and a
+supported refreshable Supabase session path that cannot be bypassed through public Auth OTP endpoints.
+That path is not implemented or proven, so no production owner email-code flow may be wired to
+`/auth/v1/otp` or `/auth/v1/verify`; `verify-otp-guard` is not currently implemented. This is an explicit
+implementation blocker, not a resolved security boundary. Google and (on iOS) Apple remain available as
+the other owner sign-in methods. There is no SMS path in Phase 1. Dashboard sign-in (clinic staff/admins)
+remains email + password through Supabase Auth, with TOTP (`aal2`) for admins. See `research.md` §17 and
+the approved decision in §18.
 
 ## Table API (direct PostgREST)
 

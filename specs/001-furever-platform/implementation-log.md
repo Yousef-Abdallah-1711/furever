@@ -2663,3 +2663,23 @@ mobile runtime was available.
 
 **Files**: `mobile/app/(tabs)/_layout.tsx`, `mobile/src/lib/route-guard.ts`,
 `mobile/src/lib/route-guard.test.ts`, `specs/001-furever-platform/{tasks.md,implementation-log.md}`.
+
+## D02 — T120/T138 OTP decision-record reconciliation (2026-10-27)
+
+Rechecked current official Supabase documentation for Auth Hooks, Admin `generateLink()`, and user sessions.
+The documented hook inventory includes custom access-token, email/SMS delivery, MFA-attempt, and password-
+attempt hooks, but no email-OTP verification-attempt hook. `generateLink()` generates email links/OTPs; the
+session guide describes refreshable sessions as the result of a sign-in flow. This confirms the existing
+technical gap: these documented mechanisms do not prove a supported custom-code-to-refreshable-session
+path or stop a separate client from calling public `/auth/v1/otp` and `/auth/v1/verify` endpoints.
+
+Corrected stale language that still presented Option C as an unresolved owner choice in `research.md`,
+`plan.md`, `spec.md`, and the REST/RPC/Edge Function contracts. Option C was approved on 2026-10-27; that
+policy is fixed. Only the technical session-issuance and non-bypassability proof remains open. Contract
+pages now distinguish planned guard behavior from implemented functionality: no `verify-otp-guard` exists,
+and the service-only OTP ledger RPCs do not themselves enforce the policy.
+
+**Verification**: reviewed current official Supabase sources for [Auth Hooks](https://supabase.com/docs/guides/auth/auth-hooks),
+[Auth Admin `generateLink()`](https://supabase.com/docs/reference/javascript/auth-admin-generatelink), and
+[User sessions](https://supabase.com/docs/guides/auth/sessions); `git diff --check` PASS. No authentication
+implementation was attempted because the supported session path remains unproven.
