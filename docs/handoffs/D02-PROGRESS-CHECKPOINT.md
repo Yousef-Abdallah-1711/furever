@@ -62,6 +62,8 @@
   `rakmyat.online`. Public DNS resolution does not establish Hostinger dashboard verification or successful
   delivery. `Test-NetConnection smtp.hostinger.com -Port 465` reports TCP reachable; SMTP authentication is
   still untested. No DNS mutation or hosted Supabase configuration was performed.
+- An SMTP TLS connection to `smtp.hostinger.com:465` received the server greeting, completed `EHLO`, and
+  closed with `QUIT`. TLS/protocol negotiation passed; SMTP AUTH was not attempted.
 - SMTP connection, delivery, invitation acceptance, and recovery authentication remain NOT RUN pending a
   rotated local credential. T145 remains open; login-code template stays unwired pending the approved custom
   OTP session and public-endpoint bypass proof. D02 remains 54/97 verified (55.67%).

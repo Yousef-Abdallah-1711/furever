@@ -2760,3 +2760,7 @@ No SMTP secret value was read, printed, or persisted.
 **Files**: `docs/environments.md`, `specs/001-furever-platform/tasks.md`,
 `specs/001-furever-platform/implementation-log.md`. Ignored local file `backend/.env` contains non-secret
 settings only and was not staged.
+
+**Additional SMTP protocol check**: opened TLS to `smtp.hostinger.com:465`, received the SMTP greeting,
+completed `EHLO`, and closed with `QUIT`. TLS and protocol negotiation passed; SMTP AUTH was deliberately
+not attempted because the only supplied mailbox password must be rotated first.
