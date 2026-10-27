@@ -2664,6 +2664,33 @@ mobile runtime was available.
 **Files**: `mobile/app/(tabs)/_layout.tsx`, `mobile/src/lib/route-guard.ts`,
 `mobile/src/lib/route-guard.test.ts`, `specs/001-furever-platform/{tasks.md,implementation-log.md}`.
 
+## D02 — T173 protect direct profile routes (2026-10-27)
+
+The existing mobile authorization guard covered only `(tabs)`, leaving direct navigation to `/profile/*`
+outside the same session/profile/config checks. Extracted the runtime query and fail-closed route decision
+into a testable loader and shared `ProtectedRouteLayout`; applied it to the tabs and the `/profile` route
+group. During navigation or an Auth state change, the layout renders a loading state until the current
+path/session generation has been checked, then redirects without rendering protected child content.
+
+Focused tests cover missing and failed sessions, profile/consent/config errors, incomplete profile routing,
+valid access, maintenance, and minimum-version enforcement. T173 remains partial: `/complete-profile` is
+still absent, and no authenticated native/app runtime transition was exercised. The first Expo export
+attempt lacked public Supabase build settings; the successful rerun set the local API URL and public anon
+key in process memory only and ran from the mobile project directory. Static export passed and listed all
+`/profile/*` routes, including account, settings, edit, and help. The local public key was not printed or
+persisted; no service-role key or hosted configuration was used.
+
+**Verification**: `pnpm.cmd --filter mobile test` PASS (17 suites / 52 tests);
+`pnpm.cmd --filter mobile typecheck` PASS; `pnpm.cmd --filter mobile lint` PASS with 0 errors and 3
+pre-existing i18n warnings. `mobile/node_modules/.bin/expo.cmd export --platform web` PASS (26 static
+routes); the initial export attempt without local public Supabase settings failed before the corrected run.
+`git diff --check` pending after documentation changes. Native builds and authenticated runtime tests were
+NOT RUN.
+
+**Files**: `mobile/app/(tabs)/_layout.tsx`, `mobile/app/profile/_layout.tsx`,
+`mobile/src/components/ProtectedRouteLayout.tsx`, `mobile/src/lib/route-guard-runtime.ts`,
+`mobile/src/lib/route-guard-runtime.test.ts`, `specs/001-furever-platform/{tasks.md,implementation-log.md}`.
+
 ## D02 — T120/T138 OTP decision-record reconciliation (2026-10-27)
 
 Rechecked current official Supabase documentation for Auth Hooks, Admin `generateLink()`, and user sessions.

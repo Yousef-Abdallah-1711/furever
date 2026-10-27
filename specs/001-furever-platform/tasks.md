@@ -766,9 +766,12 @@ environments only, not local dev.
   routes to the maintenance screen. Authorization/config uncertainty must keep protected routes hidden
   without loops. **Partial 2026-10-27:** the tab layout validates the Supabase user, active profile,
   soft-deletion timestamp, required terms/privacy consent rows, public app config, maintenance state, and
-  minimum version before rendering protected tabs. Focused route-decision and profile-state tests pass.
-  Keep open until redirect target screens exist and the auth/profile/config transitions are exercised
-  through the app.
+  minimum version before rendering protected tabs. **Updated 2026-10-27:** extracted the shared fail-closed
+  guard into a reusable layout and applied it to both `(tabs)` and every `/profile/*` route, closing direct
+  deep-link rendering into profile/account/settings screens. Runtime loading tests cover missing/failed
+  sessions, profile/consent/config failures, incomplete profiles, maintenance, minimum version, and valid
+  access. Expo web static export now includes the guarded profile routes. Keep open until
+  `/complete-profile` exists and authenticated app navigation is exercised.
 - [x] T174 [D02] Web route guard (extends T167/T168): same five states for the dashboard. Depends on T167.
   **Scope note**: implements signed-out (T167), role gate (T167), suspended/deleted (→ `/no-access`), and
   admin MFA. Per the 2026-10-27 T183 decision, maintenance no longer redirects authorized users; T183's
