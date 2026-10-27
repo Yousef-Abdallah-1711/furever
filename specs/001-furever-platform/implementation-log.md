@@ -2478,3 +2478,32 @@ Turnstile remains unconfigured and T182 stays open. A real recovery email/sessio
 `web/src/lib/dashboard-auth.ts` and test, `web/src/middleware.ts`,
 `web/tests/d02-dashboard-auth.spec.ts`, both locale dictionaries, `tasks.md`, and this log.
 **Commit**: pending.
+
+## D02 — T209: dashboard personal settings (2026-10-27)
+
+Completed the existing partial settings screen without changing the `/admin` route or its middleware.
+The server page reads the signed-in user's own `profiles.full_name` under the existing self-select RLS
+policy. The screen saves only that name field with a self-ID filter and requires a returned row, updates
+the account password through Supabase Auth with the configured six-character minimum, and lists TOTP
+factors for the signed-in user. It supports new TOTP enrollment with a locally rendered Auth-provided QR
+and manual secret, verifies enrollment through a server challenge, and requires a fresh six-digit challenge
+before removing a verified factor. Abandoned unverified factors are cleared before a new enrollment. Existing
+language/theme controls remain present.
+
+Auth API methods and the `aal2` requirement for removing a verified factor were checked against the
+installed `@supabase/auth-js@2.118.0` declarations/implementation before use. The existing middleware still
+requires a verified role, active profile, and AAL2 on `/admin`; no alternate route or privilege path was
+added. The page can surface Auth's configured password-change reauthentication error and does not bypass it.
+
+**Verification**: web unit suite PASS (8 files / 33 tests, including 5 new settings-helper cases); focused
+dashboard-auth Playwright PASS (6 tests, including signed-out access to `/admin/settings` redirecting to
+login); web TypeScript PASS; web lint PASS (0 errors, 1 pre-existing `Avatar.tsx` warning); Biome PASS;
+locale parity PASS (847 keys); production web build PASS and route manifest includes
+`/[locale]/admin/settings`; `git diff --check` PASS. No authenticated session was available, so profile update, password update, MFA
+enrollment/removal, and visual behavior inside an authenticated dashboard were not runtime-exercised.
+
+**Files**: `web/src/components/admin/PersonalSettingsScreen.tsx`,
+`web/src/app/[locale]/(admin)/admin/settings/page.tsx`,
+`web/src/lib/dashboard-settings.ts` and test, `web/tests/d02-dashboard-auth.spec.ts`, both locale dictionaries,
+`tasks.md`, and this log.
+**Commit**: pending.

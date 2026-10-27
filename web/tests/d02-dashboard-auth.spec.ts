@@ -28,6 +28,13 @@ test("MFA route returns signed-out users to dashboard login", async ({
   await expect(page).toHaveURL(/\/en\/login$/);
 });
 
+test("personal settings remain behind the dashboard authentication gate", async ({
+  page,
+}) => {
+  await page.goto("/en/admin/settings");
+  await expect(page).toHaveURL(/\/en\/login$/);
+});
+
 test("password recovery form renders without revealing account state", async ({
   page,
 }) => {

@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `654be13` (`feat(D02): add dashboard password recovery`).
+**Latest implementation commit:** pending T209 settings commit.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -49,8 +49,11 @@
   Arabic RTL was confirmed.
 - **Partial:** T208 provides a server-queried platform admin directory restricted to `super_admin`. The
   platform-admin invite/role/MFA-reset/removal actions have no matching backend contract and remain open.
-- **Partial:** T209 shows the signed-in account identity and supports existing language/theme preferences.
-  Profile editing, password changes, and MFA device management remain open.
+- **Complete:** T209 now edits the caller's own profile name through profiles RLS, changes the password via
+  Supabase Auth, and supports TOTP enroll/remove through challenge and verify, alongside language/theme
+  preferences. The admin route retains its role/status/AAL2 middleware. Unit/helper checks and production
+  build pass; a focused browser test confirms signed-out users redirect from settings to login. No
+  authenticated settings operation was runtime-exercised.
 - **Complete:** T205/T206 provide mobile force-update and maintenance routes. They read the existing
   `min_mobile_version.version` and `maintenance.message_en/message_ar` config contracts. Expo web static
   export and browser route checks pass, including the bilingual maintenance fallback. Native build/device
@@ -156,6 +159,11 @@ does not mean every decision's implementation is complete.
   direct TypeScript and Biome PASS; `pnpm.cmd i18n:check` PASS (825 keys); production web build PASS with
   both localized recovery routes in the manifest; `git diff --check` PASS. SMTP delivery and a real recovery
   session were not tested.
+- T209 continuation: web tests PASS (8 files / 33 tests); focused dashboard-auth Playwright PASS (6 tests);
+  direct TypeScript PASS; web lint PASS (0 errors,
+  1 existing warning); Biome PASS; i18n parity PASS (847 keys); production web build PASS with the guarded
+  settings route in the manifest; `git diff --check` PASS. No authenticated profile/password/MFA action was
+  exercised.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 
@@ -170,10 +178,9 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Extend T209 with self-service profile, password, and MFA management only through existing RLS and
-   Supabase Auth/TOTP APIs; preserve the mandatory admin AAL2 gate.
-2. Define and implement the platform-admin lifecycle contract before completing T208's invite/role/MFA/remove
-   actions. Keep email-code mobile sign-in blocked until T138's authoritative safe session path is resolved.
+1. Assess remaining D02 tasks for work whose contracts and local prerequisites are available; preserve T208's
+   unsupported platform-admin lifecycle actions as open. Keep email-code mobile sign-in blocked until T138's
+   authoritative safe session path is resolved.
 3. Extend T143 as later-phase data tables land and complete T142 only when trusted backend reauthentication
    and the coordinated deletion lifecycle are implemented.
 4. Keep native OAuth/E2E tasks partial until provider credentials, EAS, Android/Java, and test devices are
