@@ -166,6 +166,29 @@
         "signingOut": "Signing out…",
         "signOutFailed": "We could not sign you out. Check your connection and try again.",
         "backToSignIn": "Back to sign in"
+      },
+      "dashboard": {
+        "loginTitle": "Sign in to the dashboard",
+        "loginDescription": "Clinic staff and administrators use their invited account.",
+        "email": "Email address",
+        "password": "Password",
+        "signIn": "Sign in",
+        "signingIn": "Signing in…",
+        "loginError": "Sign-in failed. Check your credentials or contact your administrator.",
+        "mfaEnrollTitle": "Set up an authenticator",
+        "mfaVerifyTitle": "Verify your identity",
+        "mfaEnrollDescription": "Scan this QR code with your authenticator app, then enter its six-digit code.",
+        "mfaVerifyDescription": "Enter the six-digit code from your authenticator app to continue.",
+        "mfaCode": "Authenticator code",
+        "mfaSetupError": "Authenticator setup could not be completed. Sign in again or contact your administrator.",
+        "returnToSignIn": "Return to sign in",
+        "mfaQrCodeAlt": "Authenticator setup QR code",
+        "mfaManualSecret": "If you cannot scan the QR code, enter this setup key in your authenticator app.",
+        "checkingSession": "Checking your secure session…",
+        "mfaCodeError": "That code could not be verified. Check it and try again.",
+        "mfaVerifying": "Verifying…",
+        "mfaConfirmEnrollment": "Verify and finish setup",
+        "mfaVerify": "Verify and continue"
       }
     },
     "admin": {

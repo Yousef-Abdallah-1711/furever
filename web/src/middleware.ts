@@ -11,6 +11,7 @@ const publicRoutes = new Set([
   "no-access",
   "mfa",
   "maintenance",
+  "_dev",
 ]);
 const dashboardRoles = new Set(["clinic_staff", "admin", "super_admin"]);
 

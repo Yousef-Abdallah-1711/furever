@@ -870,7 +870,7 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   banner equivalent for mobile). [PLT-02] Verified 2026-10-27: reads localized `maintenance.message_en/message_ar`
   with the bilingual fallback. Expo web export and Playwright verify the route, fallback, and Arabic locale; unit
   tests cover config parsing. Native device/build was not run and is not claimed.
-- [ ] T207 [P] [D02] Build `/login`, `/mfa` — `web/src/app/[locale]/(auth)/{login,mfa}/page.tsx` (Built).
+- [x] T207 [P] [D02] Build `/login`, `/mfa` — `web/src/app/[locale]/(auth)/{login,mfa}/page.tsx` (Built).
   [CS-01][AD-01]
 - [ ] T208 [P] [D02] Build Admin team — `/admin/team`, `web/src/app/[locale]/(admin)/admin/team/page.tsx` (Spec; pattern:
   Users). [AD-01] **Partial 2026-10-27:** the real `admin` segment is nested inside the transparent `(admin)` route group
