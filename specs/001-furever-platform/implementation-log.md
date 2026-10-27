@@ -3018,3 +3018,43 @@ reports 20 unrelated pre-existing violations outside the D03-scoped files; no un
 partial code but lack one or more acceptance items/runtime verification (T224-T225, T232-T235); 6 remain
 open/not run (T222-T223, T228-T229, T236-T237). D02 remains 54/97 at the historical baseline, T216 FAIL;
 D03 is IN PROGRESS; D04 is BLOCKED.
+
+## D03 completion/verification continuation (2026-10-27)
+
+Starting at `24fbcb4` on `main`, with `origin/main` synchronized and a clean tracked worktree. Preserved
+the five pre-existing untracked D02 audit/handoff files. No D02 task was newly completed; T216 remains
+FAIL and D04 remains BLOCKED.
+
+Improved T224's upload implementation: Expo native upload task byte progress, web `XMLHttpRequest.upload`
+byte progress, cancellation, retry retention, temporary native/cache and browser blob URL cleanup, and
+best-effort object removal if the parent save fails. PET-05 and FR-015 explicitly require upload progress.
+Scoped persisted pet list/detail cache keys to owner identity, persisted only explicit opt-in queries, and
+cleared private cache/persisted state on sign-in/sign-out/owner change. Fixed photo replacement so a later
+cache refresh error cannot remove an object after the database pointer was committed. T225 now refreshes
+expired signed URLs and lets image errors retry; PDFs open via Expo WebBrowser's SDK 57 platform browser
+surface. Its supported native behavior has not been device-verified, and T225 remains partial.
+
+Added `purge_soft_deleted(p_dry_run boolean DEFAULT true)` as a service-role-only dry-run. It counts
+proposed 30-day pet/profile and 7-day OTP candidates, writes an audit row, and rejects `false`; it has no
+delete statements and no cron schedule. Added a service-only storage cleanup queue with a bucket allowlist,
+unique bucket/path idempotency, attempt count, last-error field, and pending index. No enqueue caller,
+Storage deletion worker, or schedule was added. The legal review and final owner approval remain required.
+Synthetic pgTAP tests prove the 30-day vs 29-day counts without changing rows, audit evidence, service-only
+access, destructive rejection, and idempotent queue insertion. These are engineering-policy tests only;
+they do not approve retention periods. T222/T223/T228/T229 remain partial and unchecked.
+
+The full supported authenticated mobile CRUD sequence was not run: approved Option C still lacks a supported
+refreshable session path, and native provider credentials/build prerequisites are missing. No OTP or RLS
+bypass was used. The local Storage API integration rerun passed 20/20 disposable-fixture checks and cleaned
+fixtures; this does not claim app sign-in or authenticated UI CRUD.
+
+**Verification:** mobile typecheck PASS; mobile Jest PASS (22 suites / 64 tests); mobile lint PASS (0 errors,
+3 existing warnings); shared Vitest PASS (5 files / 33 tests); web Vitest PASS (8 files / 33 tests) and web
+typecheck PASS; pgTAP
+PASS (14 files / 152 assertions); public policy reference check PASS (42/42); local Storage API integration
+PASS (20/20); D03-scoped design-token lint PASS (0); i18n parity PASS (920 keys); Expo static web export
+PASS (32 routes); mobile browser Playwright PASS (11/11). None of the browser/static results count as native
+or authenticated pet-flow acceptance. Java, Android SDK/emulator, EAS CLI, Maestro CLI, and generated native
+folders are unavailable; T236/T237 were not run. D03 stays at 9 verified, 10 partial, and 2 open; T237
+FAIL; T216 FAIL; D04 BLOCKED. Full A-Q evidence is in
+`docs/handoffs/D03-COMPLETION-SESSION-2026-10-27.md`.

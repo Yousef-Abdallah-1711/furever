@@ -1014,8 +1014,11 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   needs a longer window. **Under the 2026-10-27 owner phase amendment, implement idempotent cleanup logic
   and dry-run/test support, but leave the cron schedule disabled and never hard-delete live data until the
   retention policy receives Egyptian legal review and final owner approval. T222 remains partial while
-  scheduled deletion is disabled.** Not implemented in this session: no purge function, schedule, or live-
-  data deletion was added. Depends on T218 (pets), T130 (`write_audit_log`, from D02). [PET-03]
+  scheduled deletion is disabled.** Partial 2026-10-27: service-role-only dry-run counts pets/profiles at
+  the proposed 30-day threshold and OTP attempts at 7 days, writes an audit row, and rejects destructive
+  execution. No delete logic or cron schedule is installed. See migration `20261027180008_retention_dry_run.sql`
+  and pgTAP `022_retention_dry_run.test.sql`. Depends on T218 (pets), T130 (`write_audit_log`, from D02).
+  [PET-03]
 - [ ] T223 [D03] Migration: `storage_cleanup_queue` table + RLS (service-role only: `bucket`, `path`,
   `queued_at`, `done_at`) + Edge Function `purge-storage-objects/` that reads undone rows and calls the
   Storage API's `remove()` in batches of ≤1000 (confirmed from official Supabase docs: **deleting via SQL
@@ -1024,21 +1027,27 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   activate irreversible object deletion before retention receives Egyptian legal review and final owner
   approval. T223 remains partial while scheduled deletion is disabled. `T222`'s
   purge enqueues the `photo_path`/`document_path` of every purged pet into this queue for the
-  `pet-photos`/`pet-documents` buckets. Not implemented in this session: no queue, removal worker, or
-  schedule was added. Depends on T222, T219, T220. [PET-03]
+  `pet-photos`/`pet-documents` buckets. Partial 2026-10-27: added a service-role-only, deduplicated queue
+  with an allowlisted bucket set, attempt count, and last-error field; no enqueue caller, removal worker,
+  or schedule is installed. See migration `20261027180009_storage_cleanup_queue.sql`. Depends on T222,
+  T219, T220. [PET-03]
 
 ## Shared attachment handling (point 7)
 
 - [ ] T224 [D03] Build the shared `mobile/src/components/AttachmentUpload.tsx` (image/document picker,
   `expo-image-manipulator` resize, 10 MB + MIME checks, upload progress, retry on failure).
-  **Partial 2026-10-27:** image/document selection, resize, size/MIME checks, private upload, staged
-  progress, and retry are implemented. Unit tests cover file-policy limits; native picker/upload runtime
-  and true byte-level upload progress are not verified. Web reports staged progress only.
+  **Partial 2026-10-27:** native image/document selection, resize, size/MIME checks, private upload,
+  cancellation, retry, temporary-file cleanup, and actual byte progress are implemented; web uses
+  `XMLHttpRequest.upload.onprogress` (spec PET-05 and FR-015 explicitly require progress). Upload paths
+  include the authenticated owner, pet, and random UUID. Parent-save failure removes the uploaded object.
+  Typecheck and Jest pass; native picker/upload runtime remains unverified.
 - [ ] T225 [D03] Build the shared `mobile/src/components/AttachmentViewer.tsx` (opens a private file via
   signed URL, pinch-to-zoom for images, PDF preview). Used by Document viewer (T235) and D04's Add
-  vaccination/Add record/Passport share screens. **Partial 2026-10-27:** private 5-minute signed URLs
-  and native image pinch interaction are implemented; PDFs open through the system browser rather than an
-  in-app preview, and no native runtime was exercised.
+  vaccination/Add record/Passport share screens. **Partial 2026-10-27:** private 5-minute signed URLs,
+  image pinch interaction, signed-link retry/recovery, and PDF display through Expo WebBrowser's iOS
+  Safari modal / Android Chrome Custom Tab are implemented. This uses the SDK 57-supported browser
+  surface; no embedded PDF renderer is added because the maintained `react-native-pdf` plugin's published
+  compatibility table currently stops at SDK 56. Native runtime remains unverified.
 
 ## pgTAP
 
@@ -1047,9 +1056,12 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   `021_d03_breeds_pets_access.test.sql`: owned pet becomes hidden after soft delete, repeated delete is
   idempotent, and cross-owner/missing IDs share the not-found result.
 - [ ] T228 [P] [D03] pgTAP: `purge_soft_deleted()` (T222) removes a pet/profile row whose `deleted_at`
-  is exactly 30 days (or older) in the past, and leaves a row at 29 days untouched. [PET-03]
+  is exactly 30 days (or older) in the past, and leaves a row at 29 days untouched. [PET-03] **Partial
+  2026-10-27:** synthetic pgTAP verifies the dry-run identifies an at-threshold pet and leaves both the
+  30-day and 29-day rows unchanged. Destructive boundary behavior is intentionally not implemented.
 - [ ] T229 [P] [D03] pgTAP: a `purge_soft_deleted()` (T222) run writes an `audit_logs` row via
-  `write_audit_log()`. [PET-03]
+  `write_audit_log()`. [PET-03] **Partial 2026-10-27:** pgTAP verifies a dry-run audit entry and rejects
+  a non-service caller and any destructive invocation. No destructive cleanup path exists to test.
 
 ## Shared schemas, i18n
 
@@ -1060,8 +1072,9 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 
 - [ ] T232 [P] [D03] Build `/(tabs)/pets` My pets — `mobile/app/(tabs)/pets.tsx` (Built). **Partial
   implementation 2026-10-27:** persisted React Query list, offline banner, cached-list retention after a
-  refetch error, and pet cards are implemented. Expo web export includes `/pets`; no authenticated/native
-  runtime evidence. **Reference
+  refetch error, and pet cards are implemented. Owner-scoped query keys and explicit-only persistence
+  are now enforced; private query cache clears on sign-out, sign-in, or owner change. Expo web export
+  includes `/pets`; no authenticated/native runtime evidence. **Reference
   implementation, remediation pass**: the first list screen to wire `OfflineBanner` (T171) above the
   list and read from the React Query cache (T169) so it still renders offline; later screens follow this
   pattern. [PET-01][PET-02][PET-03][PLT-03]
@@ -1070,15 +1083,17 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   `useOfflineGuardedAction` (T172) so it is disabled with a reason when offline, instead of silently
   queuing or failing. [PET-01][PLT-03] **Partial implementation 2026-10-27:** the four-step form,
   shared-schema validation, offline guard, create mutation, and optional photo upload are implemented;
-  exported route compiles, but no authenticated/native interaction was run.
+  exported route compiles, but no supported authenticated/native interaction was run.
 - [ ] T234 [P] [D03] Build `/pets/[id]/edit` Edit pet — `mobile/app/pets/[id]/edit.tsx` (Spec; pattern:
   Add pet). [PET-02] **Partial implementation 2026-10-27:** owner edit, offline guarded save/delete, and
   upcoming-bookings contact-clinic warning are implemented. No authenticated/native runtime was run; the
-  D04 timeline-based weight history is not available and is not claimed.
+  D04 timeline-based weight history is not available and is not claimed. Photo replacement now preserves
+  the new Storage object after the pet row has committed, even if cache refresh later fails.
 - [ ] T235 [P] [D03] Build `/documents/[path]` Document viewer — `mobile/app/documents/[path].tsx` (Spec;
   pattern: Passport share; uses T225). [PET-05] **Partial implementation 2026-10-27:** catch-all route,
-  protected layout, path validation, signed URL and image viewing are implemented. PDF in-app preview and
-  native route execution remain unverified; PDFs currently open in the system browser.
+  protected layout, path validation, signed URL and image viewing are implemented. PDFs open through the
+  platform in-app browser; native route execution remains unverified. Signed-link and image-loading
+  failures now expose a retry action.
 
 ## E2E
 
