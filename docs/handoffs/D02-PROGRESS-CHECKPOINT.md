@@ -14,16 +14,15 @@
   authenticated transition/runtime proof.
 - Local migrations applied; pgTAP 11 files / 100 assertions PASS, including the legacy-signature removal
   and authenticated/anonymous execute grants; mobile tests 18 suites / 57 tests PASS; mobile typecheck
-  PASS; mobile lint PASS (0 errors, 3 existing
-  i18n warnings); i18n parity 850 keys PASS; Expo static export 29 routes PASS. These checks must be
-  rerun after any later route or configuration change. Static export preceded the final RPC parameter
-  addition. No authenticated native/browser profile completion was run.
+  PASS; mobile lint PASS (0 errors, 3 existing i18n warnings); i18n parity 850 keys PASS. Expo static
+  export previously passed with 29 routes before the final RPC parameter addition. No authenticated
+  native/browser profile completion was run.
 - SMTP remains unchanged: ignored `backend/.env` password is blank; no Hostinger AUTH or external inbox
   delivery. OTP/session architecture remains blocked. Verified D02 count stays 54/97 (55.67%).
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `f3be531f15da736c8478d9e63ea9763c4788015c` (`fix(D02): guard direct mobile profile routes`), pushed and synchronized.
+**Latest implementation commit:** `d55002eb6bd764f19ee2bd676e3ab03092d9de6e` (`feat(D02): complete owner profile with consent gate`), pushed and synchronized.
 **Checkpoint status:** T173 guards direct profile routes; profile completion and bilingual legal viewer are implemented partially with a fail-closed legal configuration requirement. Local dashboard Auth/invitation email integration is exercised; Hostinger SMTP AUTH and delivery remain unverified.
 **Phase status:** D02 remains open. No D03 work has started.
 
