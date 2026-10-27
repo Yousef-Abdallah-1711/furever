@@ -21,7 +21,7 @@
 | Starting `HEAD` | `8cd65f92eb175a2d0848bb22f719c74352720010` |
 | Starting `origin/main` | `8cd65f92eb175a2d0848bb22f719c74352720010` |
 | Starting remote branch (`git ls-remote`) | `8cd65f92eb175a2d0848bb22f719c74352720010` |
-| Final Git state | Changes prepared and verified locally; commit/push status is recorded at handoff completion below. |
+| Final Git state | Commit `e655d4bf94f16ae77c336f0911f046d06b30e0f4` pushed normally; remote verification matched at push. |
 
 Protected owner-review files and pre-existing untracked session reports were preserved. `backend/.env` was not read, printed, or changed. No hosted Supabase or SMTP settings were changed.
 
@@ -118,3 +118,12 @@ No tasks were newly verified. D02 remains **54/97 = 55.67%**; 65 checked, 32 unc
 ## P. Next-session master prompt
 
 > Continue FurEver D02 closure from the current `main` branch and the latest D02 closure report. Do not start D03 while T216 fails. Preserve all protected owner-review files and `backend/.env`; do not reset, clean, or force-push. The owner has decided to keep approved Option C blocked. Do not switch to Supabase-owned OTP or invent a token/session workaround. The proposed deletion-retention schedule is pending Egyptian legal review; do not activate irreversible cleanup or automatic purging until legal review and explicit approval. Bilingual Terms/Privacy drafts with IDs `terms-v1.0.0`, `privacy-v1.0.0` and proposed date `2026-11-01` are saved in `docs/legal/drafts/`; they are not approved, and production profile completion must remain fail-closed. The local English and Arabic invitation browser flows pass through the delivered SSR token-hash callback; invalid-token and reused-link cases fail closed, and existing local integration covers cross-clinic and role-escalation denial. Add expired-token browser coverage and any remaining retry/negative scenarios, preserving the non-readable invitation ledger. Audit all remaining D02 tasks against the full matrix, implement only authorized independent work, run the necessary targeted quality/security gates, keep counts accurate, and commit/push only intended verified changes. T216 must stay FAIL and D03 NOT STARTED until every exact plan exit criterion passes.
+
+
+## Git handoff completion
+
+- Implementation/report commit: `e655d4bf94f16ae77c336f0911f046d06b30e0f4` (`fix(D02): verify localized clinic invitation acceptance`).
+- Push to `origin/main`: succeeded without force-push.
+- At push verification, `HEAD`, `origin/main`, and `git ls-remote origin refs/heads/main` all matched `e655d4bf94f16ae77c336f0911f046d06b30e0f4`.
+- Tracked worktree was clean after the commit. The pre-existing untracked protected owner-review documents and earlier session reports remain untouched.
+- Git printed a credential-manager-core helper warning, but the push succeeded and remote synchronization was confirmed directly.
