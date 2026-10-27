@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FurEver sign-in code</title>
+  </head>
+  <body style="margin:0;background:#f5f7f4;color:#20312b;font-family:Arial, sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f7f4;padding:24px 12px;">
+      <tr><td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;">
+          <tr><td style="padding:32px 28px;">
+            <p style="margin:0 0 8px;color:#26734d;font-size:14px;font-weight:bold;">FurEver</p>
+            <section lang="en" dir="ltr" style="text-align:left;line-height:1.6;">
+              <h1 style="font-size:22px;">Your sign-in code</h1>
+              <p>Enter this code in the FurEver app to continue. It expires after the time shown in the app.</p>
+              <p style="font-size:30px;font-weight:bold;letter-spacing:8px;">{{ .Token }}</p>
+              <p>If you did not request this code, you can ignore this email.</p>
+            </section>
+            <hr style="border:0;border-top:1px solid #e4e9e5;margin:24px 0;" />
+            <section lang="ar" dir="rtl" style="text-align:right;line-height:1.8;font-family:Arial, sans-serif;">
+              <h1 style="font-size:22px;">رمز تسجيل الدخول</h1>
+              <p>أدخل هذا الرمز في تطبيق فورإيفر للمتابعة. تنتهي صلاحيته بعد المدة الموضحة في التطبيق.</p>
+              <p style="font-size:30px;font-weight:bold;letter-spacing:8px;direction:ltr;text-align:right;">{{ .Token }}</p>
+              <p>إذا لم تطلب هذا الرمز، يمكنك تجاهل هذه الرسالة.</p>
+            </section>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>

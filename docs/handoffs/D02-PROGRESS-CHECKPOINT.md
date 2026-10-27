@@ -6,6 +6,20 @@
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial; local dashboard Auth integration is now exercised end to end.
 **Phase status:** D02 remains open. No D03 work has started.
 
+## Session update — bilingual email templates (2026-10-27)
+
+- Added English/Arabic RTL HTML artifacts for login code, staff invitation, and password reset under
+  `backend/supabase/templates/`.
+- Added standalone Vitest checks: 1 file / 6 tests passed, covering both language sections, Supabase
+  placeholders, escaped values, and table-based email markup. `git diff --check` passed.
+- T152/T153 remain unchecked/partial: Arabic native review, Auth wiring, SMTP delivery, and common email
+  client preview checks remain outstanding. Login template was not configured because it could expose the
+  public Supabase OTP route around the approved Option C policy.
+- No D02 task is promoted to verified by this batch. D02 remains 54/97 verified (55.67%).
+- At checkpoint time HEAD remains `73b20f520ce1819c9b6588fe0faa2e49a2d7b138`, equal to `origin/main`;
+  these implementation and tracking edits are not yet committed or pushed. The three audit handoff files
+  remain untouched and unstaged.
+
 ## Completed or advanced in this batch
 
 - **Complete:** T123 launch cities (Cairo, Giza, Alexandria; stable IDs, bilingual, idempotent seed,

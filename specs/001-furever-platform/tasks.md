@@ -655,8 +655,15 @@ environments only, not local dev.
 - [ ] T152 [D02] Author the 3 bilingual (Arabic and English in the same email, RTL-safe) email templates —
   login code, staff invite, password reset — in `backend/supabase/templates/` (Arabic marked draft, needs
   native review per `spec.md` Open Decisions item 11). Depends on T145.
+  **Partial 2026-10-27:** all three HTML artifacts now contain English LTR and Arabic RTL sections using
+  documented Supabase Auth variables. They are deliberately not wired into Auth configuration: the login
+  template must not create an alternate public-OTP path around approved Option C, and SMTP delivery is
+  unconfigured. Arabic native review and provider setup remain outstanding.
 - [ ] T153 [D02] Rendering check test for the 3 templates (T152): both languages render correctly in one
   email, RTL markup is valid, no broken layout in common email clients' preview panes.
+  **Partial 2026-10-27:** standalone Vitest rendering checks cover all three fixtures, bilingual language/
+  direction sections, placeholder substitution, escaped values, and email-safe table structure. Preview
+  rendering in common email clients has not been run.
 
 ## Local email inbox test helper (new, 2026-10-18)
 

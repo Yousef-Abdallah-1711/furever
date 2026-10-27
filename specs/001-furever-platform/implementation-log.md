@@ -2620,3 +2620,26 @@ recorded in `research.md` section 17 with official Supabase links.
 
 **Files**: `specs/001-furever-platform/{research.md,tasks.md,implementation-log.md}` and
 `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`. **Commit**: `d4deb1d`.
+
+## D02 — T152/T153 bilingual email template artifacts and rendering checks (2026-10-27)
+
+Added English LTR and Arabic RTL sections to the login-code, clinic-staff invitation, and password-reset
+HTML templates. The templates use Supabase Auth's documented `{{ .Token }}` and `{{ .ConfirmationURL }}`
+variables and table-based, inline styling for email-client compatibility. Added standalone Vitest checks for
+all three templates, bilingual direction markup, placeholder rendering, escaped inserted values, and the
+table-based email structure.
+
+These are template artifacts only. They are not wired into `config.toml` or the Auth dashboard: using the
+native public email OTP template for owner sign-in would bypass the approved Option C lockout, and the
+custom OTP-to-session mechanism remains unproven. The invite/recovery templates also have no SMTP delivery
+evidence. Arabic is still draft pending native review; actual previews in common email clients remain open.
+Kept T152 and T153 unchecked/partial and did not change the D02 verified-task count.
+
+**Verification**: `pnpm.cmd exec vitest run --config backend/supabase/templates/vitest.config.ts` PASS
+(1 file / 6 tests); `git diff --check` PASS. Vitest printed the repository's existing Vite native-config
+loader compatibility warning. No SMTP send, Supabase Auth template integration, or email-client preview
+was run.
+
+**Files**: `backend/supabase/templates/{login-code,staff-invite,password-reset}.html`,
+`backend/supabase/templates/{templates.test.ts,vitest.config.ts}`, `specs/001-furever-platform/{tasks.md,
+implementation-log.md}`. No template was configured for delivery.
