@@ -2416,3 +2416,41 @@ non-deterministic pixel differences.
 **Files**: `mobile/app/(tabs)/profile.tsx`, `mobile/app/profile/{settings,edit,help,about}.tsx`,
 `mobile/tests/d02-profile-screens.spec.ts`, both locale dictionaries, `tasks.md`, and this log.
 **Commit**: `5eb87fd`.
+
+## D02 — T207: dashboard password sign-in and MFA enrollment/verification (2026-10-27)
+
+Replaced the placeholder `/login` page with bilingual email/password sign-in using the existing browser
+Supabase client. Successful sign-in reads verified JWT claims and routes clinic staff to `/clinic`,
+platform admins to `/admin` (where the existing middleware still enforces role, active profile, and AAL2),
+and other/missing roles to `/no-access`; credential failures use one generic message. Added `/mfa`: it
+validates the current Auth user and `user_role`, redirects already-AAL2 admins through the guarded admin
+route, and either verifies a verified TOTP factor or enrolls a new one. Abandoned unverified TOTP factors
+are removed before creating a new enrollment because Supabase does not return their secret again. The
+screen renders the Supabase-returned local SVG data URI and manual secret, then creates a server challenge
+and calls `mfa.verify` with exactly six numeric digits. Only successful verification navigates to `/admin`;
+the existing middleware remains the final AAL2 authorization check.
+
+Verified the installed `@supabase/auth-js@2.118.0` declarations and implementation for `listFactors()`'s
+`all` array (including unverified factors), TOTP `enroll`, `challenge`, `verify`, and the fact that `verify`
+saves the returned AAL2 session. No OTP route or session shortcut was added. The component-gallery
+screenshots exposed that `/en/_dev/gallery` was being redirected by the dashboard gate; added only the
+read-only `_dev` route segment to the explicit public-route allowlist so the existing gallery check can
+run without an authenticated admin. The gallery has no data access and does not bypass any API/RPC policy.
+
+**Verification**: direct web TypeScript check PASS; web unit suite PASS (7 files / 26 tests, including
+role routing, factor cleanup/reuse, six-digit validation, challenge-before-verify); web lint PASS (0 errors,
+1 pre-existing `Avatar.tsx` warning); Biome PASS; i18n parity PASS (808 keys); full web Playwright PASS
+(6 tests across dashboard login/MFA public route and existing D00e/D01 galleries); `pnpm --filter web
+build` PASS and route manifest includes `/[locale]/login` and `/[locale]/mfa`; `git diff --check` PASS.
+The four D00e login screenshots were regenerated and visually inspected in English/Arabic and light/dark;
+non-deterministic D01 gallery screenshot changes were restored.
+
+Dashboard Auth was not exercised with a real authenticated user or live TOTP factor. CAPTCHA/Turnstile is
+still a separate T182 task and has no configured site/secret key; the password screen does not claim
+Turnstile coverage. T215 authenticated dashboard/MFA E2E remains open. No hosted provider, SMTP, or mobile
+runtime check was performed.
+
+**Files**: `web/src/app/[locale]/(auth)/{login,mfa}/page.tsx`,
+`web/src/components/auth/{DashboardLoginForm,DashboardMfaScreen}.tsx`,
+`web/src/lib/dashboard-auth.ts` and test, `web/src/middleware.ts`, the web screenshot/auth specs, both locale
+dictionaries, updated D00e login screenshots, `tasks.md`, and this log. **Commit**: `d00253e`.

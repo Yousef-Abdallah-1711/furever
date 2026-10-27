@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `5eb87fd` (`feat(D02): add mobile profile screens`).
+**Latest implementation commit:** `d00253e` (`feat(D02): add dashboard login and MFA screens`).
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -55,6 +55,11 @@
   `min_mobile_version.version` and `maintenance.message_en/message_ar` config contracts. Expo web static
   export and browser route checks pass, including the bilingual maintenance fallback. Native build/device
   behavior remains unverified.
+- **Complete:** T207 provides the bilingual web dashboard email/password page and TOTP enrollment/verification
+  page. Password sign-in routes using verified role claims; TOTP uses Supabase `enroll`, `challenge`, and
+  `verify`, with the `/admin` middleware retaining the final role/status/AAL2 gate. Unit tests, login/MFA
+  route Playwright checks, full web Playwright, and production build pass. No authenticated sign-in or live
+  TOTP factor was exercised. CAPTCHA remains T182; no Turnstile keys are configured.
 - **Complete:** T190-T193 provide the mobile Splash, language selection, three-slide onboarding, and welcome
   screens. The entry path was browser-verified. T193 calls the provider modules; Google/Apple native runtime
   remains unverified while T147-T150 are open. T176 Home now uses `/home` to keep `/` available for Splash.
@@ -90,8 +95,8 @@ does not mean every decision's implementation is complete.
 
 - **Screens still open:** T194-T195 remain blocked on the safe OTP/session design (T138/T139); T196 lacks
   approved legal content/version inputs and the verified auth/onboarding flow; T200 account linking/deletion
-  depends on T179/T180/T142; T204 needs approved Terms/Privacy text and versions. T207/T211 and T213-T216
-  remain to be assessed/implemented where existing supported auth flows permit.
+  depends on T179/T180/T142; T204 needs approved Terms/Privacy text and versions. T211 recovery UI remains
+  unbuilt, T213/T215 authenticated E2E require test Auth accounts and email/MFA setup, and T216 remains open.
 
 ## Verification evidence
 
@@ -139,6 +144,9 @@ does not mean every decision's implementation is complete.
   (0 violations); i18n parity PASS (787 keys); Biome and `git diff --check` PASS. New browser tests verify
   About version display, Help FAQ expansion and missing-contact fallback, and Arabic Help/Edit-profile copy.
   This did not establish authenticated database writes or native runtime.
+- T207 continuation: web tests PASS (7 files / 26 unit tests); full Playwright PASS (6 tests); direct TypeScript,
+  Biome, i18n (808 keys), and production build PASS. Route manifest includes localized `/login` and `/mfa`.
+  Four refreshed D00e screenshots were visually inspected; no real Auth credentials or TOTP enrollment were used.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 
@@ -153,10 +161,10 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Implement T207's dashboard password sign-in and MFA screens using the installed Supabase Auth APIs,
-   preserving the existing middleware role/AAL2 gates; keep email-code mobile sign-in blocked until T138's
-   authoritative safe session path is resolved. Then consider T211 only if its supported recovery flow is
-   available without hosted SMTP.
+1. Build T211's password-recovery screen using the supported Supabase recovery API, keeping SMTP delivery
+   verification open until T145 is provisioned; then assess T182 (Turnstile) only if its site key/secret
+   become available. Keep email-code mobile sign-in blocked until T138's authoritative safe session path is
+   resolved.
 2. Define and implement the platform-admin lifecycle contract before completing T208's invite/role/MFA/remove
    actions. Complete T209 after secure profile, password, and MFA management flows are available.
 3. Extend T143 as later-phase data tables land and complete T142 only when trusted backend reauthentication
