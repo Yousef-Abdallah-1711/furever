@@ -258,11 +258,12 @@ does not mean every decision's implementation is complete.
 - **T172:** hook and tests exist, but the representative `/pets/new` action is owned by D03 and was not
   started. T172 stays open.
 
-- **Screens still open:** T194-T195 remain blocked on the safe OTP/session design (T138/T139); T196 lacks
-  approved legal content/version inputs and the verified auth/onboarding flow; T200 remains partial pending
-  T142's safe account-deletion endpoint; T204 needs approved Terms/Privacy text and versions. T213 still needs
-  a supported email-code session path plus native prerequisites. T215 is complete for the local dashboard flow;
-  T216 remains open.
+- **Screens still open:** T194-T195 remain blocked on the safe OTP/session design (T138/T139); T196 now has
+  a profile completion screen/RPC but cannot finish without approved legal content/version inputs and the
+  verified auth/onboarding flow. T200 remains partial pending T142's safe account-deletion endpoint; T204's
+  bilingual viewer exists but needs approved Terms/Privacy text and versions. T213 still needs a supported
+  email-code session path plus native prerequisites. T215 is complete for the local dashboard flow; T216
+  remains open.
 
 ## Verification evidence
 
@@ -357,10 +358,12 @@ does not mean every decision's implementation is complete.
 1. Resolve the authoritative email OTP/session design before T138/T139, T155, T194/T195, or T213. Supabase's
    public OTP endpoints have not been proven to enforce the approved lockout, and no supported session issuance
    mechanism is established. Do not issue sessions through an insecure workaround or weaken lockout.
-2. Configure a hosted SMTP provider/domain (T145), then finish T140/T152/T153/T210 and dependent T146 work.
-   No SMTP credentials or verified domain are available.
-3. Obtain approved Terms/Privacy copy and version identifiers (T204); complete T196 only with the consent
-   contract and authentication path established. T197 also depends on pet onboarding owned by D03; do not start D03.
+2. Complete local Hostinger SMTP setup after a newly rotated password is stored in ignored `backend/.env`;
+   verify DNS/sender status, SMTP AUTH, and external inbox delivery before finishing T145 and dependent
+   T140/T146/T152/T153/T210 evidence. Do not configure hosted Supabase without explicit authorization.
+3. Obtain approved Terms/Privacy copy and version identifiers (T204); complete T196 acceptance/runtime only
+   after those values and the safe auth entry path exist. T197 also depends on pet onboarding owned by D03;
+   do not start D03.
 4. Provide Google/Apple credentials, an EAS account/build environment, Android SDK/Java/adb and Maestro CLI to
    complete T147/T148/T150/T181/T184/T189/T214. Keep provider/native runtime claims open until actually tested.
 5. Keep T142/T200 open until the coordinated deletion lifecycle is implemented; extend T143 as future-phase data
@@ -372,17 +375,17 @@ does not mean every decision's implementation is complete.
 | Tasks | Blocker |
 | --- | --- |
 | T120, T138, T139, T155, T194, T195, T213 | Current official Auth Hooks docs show no email-OTP verification interceptor; `generateLink()` is not documented to mint a refreshable session. Exact wrong-code experiment still needs a numeric-code template. Preserve the lockout; T213 also needs Maestro/native prerequisites. |
-| T140, T145, T152, T153, T210 | SMTP provider and verified domain are unavailable; invite/template delivery cannot be truthfully verified. |
+| T140, T145, T152, T153, T210 | Hostinger details are known, but ignored `backend/.env` has no SMTP password; AUTH, sender/DNS verification, external inbox delivery, and browser acceptance remain unverified. |
 | T142, T200 | Coordinated account deletion and trusted cleanup contract are not implemented. |
 | T143 | Current-schema export exists; later-phase tables and full runtime coverage are outstanding. |
 | T146 | Hosted projects/origins/secrets and dependent Edge Functions are not provisioned. |
 | T147, T148, T150, T181, T184, T214 | Provider credentials and native development build/device prerequisites are unavailable. |
 | T172 | Representative `/pets/new` action belongs to D03; D03 has not started. |
-| T173 | Route guard code is partial until remaining onboarding destinations and authenticated mobile integration are complete. |
+| T173 | Route guard and destination routes exist, but authenticated app transitions and native runtime are unverified. |
 | T182 | Cloudflare Turnstile site/secret keys are unavailable. |
 | T185 | `sign_up_completed` awaits the verified auth completion handler; preference events are implemented. |
 | T189 | Maestro CLI, Java, Android SDK/adb, and native runtime are unavailable. |
-| T196, T204 | Consent flow needs approved Terms/Privacy content and version identifiers; T196 also needs the safe auth entry path. |
+| T196, T204 | Profile/legal routes and atomic consent RPC exist; owner-approved Terms/Privacy content and version IDs are missing, and T196 also needs the safe auth entry path/runtime. |
 | T197 | Summary depends on completed pet setup (D03) and the preceding auth/profile flow. |
 | T208 | Directory is implemented; platform-admin invite, role change, MFA reset, and removal lack backend contracts. |
 | T216 | Final end-to-end gate depends on the above OTP, SMTP, legal, native, and later-phase work. |
