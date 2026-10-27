@@ -2738,3 +2738,25 @@ printed. No task checkbox was promoted.
 
 **Files**: `backend/supabase/config.toml`, `docs/environments.md`, `specs/001-furever-platform/tasks.md`,
 `specs/001-furever-platform/implementation-log.md`.
+
+## D02 — Hostinger local SMTP provider and DNS inspection (2026-10-27)
+
+Selected Hostinger Email for the local Auth sender. Configured only non-secret local values in ignored
+`backend/.env`: `smtp.hostinger.com`, SSL port `465`, the sender mailbox as SMTP username and From address,
+and display name `FurEver`. The SMTP password remains blank. A mailbox password was disclosed in chat; it
+was treated as exposed, was not copied into a file or used, and must be rotated before any SMTP attempt.
+
+Read-only DNS lookups for `rakmyat.online` found Hostinger MX records, the Hostinger SPF TXT record, all three
+Hostinger DKIM CNAME records, and a DMARC TXT record. This establishes that these records are publicly
+resolvable from this machine; it does not verify the sender in Hostinger's dashboard or prove inbox
+deliverability. No DNS or hosted Supabase settings were changed. T145 remains open; the login-code template
+remains intentionally unwired.
+
+**Verification**: `Resolve-DnsName` MX/TXT/CNAME lookups returned the expected Hostinger records and
+`Test-NetConnection smtp.hostinger.com -Port 465` confirmed TCP reachability. SMTP authentication, message
+delivery, invitation acceptance, recovery authentication, and provider dashboard verification were not run.
+No SMTP secret value was read, printed, or persisted.
+
+**Files**: `docs/environments.md`, `specs/001-furever-platform/tasks.md`,
+`specs/001-furever-platform/implementation-log.md`. Ignored local file `backend/.env` contains non-secret
+settings only and was not staged.

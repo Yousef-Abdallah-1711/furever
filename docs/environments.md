@@ -74,6 +74,11 @@ of tracked files and chat. Until that opt-in local configuration is complete, lo
 development continues to use Supabase's Mailpit inbox. The login-code template must
 remain unwired while the approved custom OTP/session architecture is unresolved.
 
+Hostinger Email is selected for the current local configuration: its documented SMTP
+endpoint is `smtp.hostinger.com`, SSL on port `465` (or TLS/STARTTLS on port `587` if
+needed). The configured From address is `furever@rakmyat.online`. Its mailbox password
+must be entered locally only after rotating the credential that was exposed in chat.
+
 For each hosted Supabase project, configure its Auth SMTP settings and email templates
 separately in that project's supported Auth configuration. Hosted projects are not
 changed as part of local setup. The sender domain must be verified with the provider's

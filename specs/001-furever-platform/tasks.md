@@ -599,7 +599,13 @@ environments only, not local dev.
 - [x] T144 [P] [D02] Edge Function `app-config/`. [PLT-01][PLT-02]
 - [ ] T145 [D02] **Replaces the Twilio provider task (2026-10-18)**: configure custom SMTP and the
   login-code email template (`{{ .Token }}`, not `{{ .ConfirmationURL }}` — research.md §12) in
-  `config.toml` and in the staging and production projects. [AUTH-01]
+  `config.toml` and in the staging and production projects. [AUTH-01] **Partial 2026-10-27:** Hostinger
+  Email is selected for the local sender `furever@rakmyat.online`; local host/port/user/from/name are set in
+  ignored `backend/.env`. Public DNS currently resolves the Hostinger MX, SPF, all three Hostinger DKIM
+  CNAMEs, and a DMARC record. The mailbox password pasted into chat is treated as exposed and has not been
+  stored or used; rotate it and set the replacement locally before SMTP authentication/delivery checks.
+  Hostinger dashboard verification and hosted Supabase configuration remain unverified/not performed. The
+  login-code template stays unwired until the approved custom OTP session/bypass architecture is proven.
 - [ ] T146 [D02] Document and wire required Supabase secrets for every Edge Function above in
   `docs/environments.md`. **Partial documentation progress (2026-10-26):** current Supabase-provided
   API variables, service-role handling, exact-origin `DASHBOARD_ORIGINS` behavior and local defaults,

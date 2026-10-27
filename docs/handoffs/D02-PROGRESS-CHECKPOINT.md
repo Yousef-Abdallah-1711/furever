@@ -51,6 +51,23 @@
   pushed; `HEAD` equals `origin/main`. Checkpoint update pending in the following commit. The three
   protected audit handoff files remain untouched and untracked.
 
+## Session update — Hostinger SMTP details and DNS check (2026-10-27)
+
+- The owner supplied Hostinger Email settings for `rakmyat.online`. Selected the documented SMTP endpoint
+  `smtp.hostinger.com`, SSL port `465`, mailbox username/From address `furever@rakmyat.online`, and sender
+  name `FurEver`; these non-secret local values are now in ignored `backend/.env`. The password field remains
+  blank. A mailbox password was disclosed in chat, treated as exposed, and was not saved or used. Rotate it
+  and put the replacement directly in the ignored local file before attempting SMTP authentication.
+- Read-only `Resolve-DnsName` checks returned Hostinger MX, SPF, three DKIM CNAMEs, and DMARC records for
+  `rakmyat.online`. Public DNS resolution does not establish Hostinger dashboard verification or successful
+  delivery. `Test-NetConnection smtp.hostinger.com -Port 465` reports TCP reachable; SMTP authentication is
+  still untested. No DNS mutation or hosted Supabase configuration was performed.
+- SMTP connection, delivery, invitation acceptance, and recovery authentication remain NOT RUN pending a
+  rotated local credential. T145 remains open; login-code template stays unwired pending the approved custom
+  OTP session and public-endpoint bypass proof. D02 remains 54/97 verified (55.67%).
+- Official provider documentation checked: Hostinger SMTP config and Hostinger Email DNS setup. Changes to
+  `docs/environments.md`, `tasks.md`, and `implementation-log.md` are pending commit/push at checkpoint time.
+
 ## Session update — OTP decision-record reconciliation (2026-10-27)
 
 - Rechecked current official Supabase Auth Hooks, `generateLink()`, and session documentation. No documented
