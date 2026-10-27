@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `5f3ad98` (`feat(D02): add mobile account identity linking`), pending push.
+**Latest implementation commit:** `5f3ad98` (`feat(D02): add mobile account identity linking`), pushed in checkpoint commit `615f1ed`.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
