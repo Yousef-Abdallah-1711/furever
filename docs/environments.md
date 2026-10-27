@@ -136,6 +136,26 @@ Use the Services ID first in the Apple Client IDs field, followed by native App 
 needed. Apple OAuth signing secrets require regular rotation; follow the current Apple
 and Supabase guidance when provisioning them.
 
+## Dashboard Auth requirements
+
+The local `backend/supabase/config.toml` enables the Custom Access Token hook at
+`pg-functions://postgres/public/custom_access_token_hook` and enables TOTP enrollment
+and verification. The hook adds `user_role` to signed JWTs; the web middleware requires
+that claim and an active profile, and it requires AAL2 for `/admin` routes.
+
+Configure each hosted Supabase project separately under **Authentication > Hooks** by
+selecting the Custom Access Token hook and the deployed
+`public.custom_access_token_hook` function. Under **Authentication > Multi-Factor
+Authentication**, enable Authenticator App (TOTP) enrollment and verification. Apply and
+verify these settings in staging and production before enabling dashboard access; the
+local config file does not change hosted project settings. No hosted hook or TOTP setting
+was configured or tested in this pass.
+
+See Supabase's [Auth Hooks guide](https://supabase.com/docs/guides/auth/auth-hooks),
+[Custom Access Token Hook guide](https://supabase.com/docs/guides/auth/auth-hooks/custom-access-token-hook),
+and [TOTP MFA guide](https://supabase.com/docs/guides/auth/auth-mfa/totp) for current
+configuration details.
+
 All hostnames, project references, origins, callback URLs, IDs, and secrets above are
 illustrative placeholders. Replace them only after the staging or production Supabase
 project and actual app domains are known, and the applicable provider account, verified

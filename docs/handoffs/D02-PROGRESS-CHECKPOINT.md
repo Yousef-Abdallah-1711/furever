@@ -2,8 +2,8 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `5f3ad98` (`feat(D02): add mobile account identity linking`), pushed in checkpoint commit `615f1ed`.
-**Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
+**Latest implementation commit:** pending this local Auth integration batch; prior implementation `5f3ad98` is pushed and synchronized.
+**Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial; local dashboard Auth integration is now exercised end to end.
 **Phase status:** D02 remains open. No D03 work has started.
 
 ## Completed or advanced in this batch
@@ -19,9 +19,10 @@
   maintenance, and minimum app version before rendering tabs. Missing/expired/suspended/deleted routes
   to `/welcome`; incomplete profile to `/complete-profile`; maintenance/update use their dedicated routes.
   Unknown state fails closed. Redirect screens and authenticated app runtime tests remain outstanding.
-- **Partial:** T183 dashboard maintenance banner and admin layout are implemented; authorized routes remain
-  available while maintenance is enabled. Middleware still requires authentication, allowed role, active
-  profile, and AAL2 for admin. Authenticated dashboard E2E remains outstanding.
+- **Complete locally:** T183 dashboard maintenance banner and admin layout are implemented; authorized routes
+  remain available while maintenance is enabled. A synthetic local super-admin completed password login,
+  first-time TOTP enrollment, AAL2 verification, and the guarded Settings landing route; English and Arabic/RTL
+  maintenance banners were browser-verified. Hosted maintenance settings remain unconfigured and unverified.
 - **Partial:** T147/T148 native Google/Apple sign-in adapters and pure cores are implemented. T150's
   compatible packages were installed and Expo config was checked with absent and synthetic Google URL
   schemes. T151 has nonce and availability tests. Provider credentials, UI integration, Android import-path
@@ -66,11 +67,11 @@
   `min_mobile_version.version` and `maintenance.message_en/message_ar` config contracts. Expo web static
   export and browser route checks pass, including the bilingual maintenance fallback. Native build/device
   behavior remains unverified.
-- **Complete:** T207 provides the bilingual web dashboard email/password page and TOTP enrollment/verification
-  page. Password sign-in routes using verified role claims; TOTP uses Supabase `enroll`, `challenge`, and
-  `verify`, with the `/admin` middleware retaining the final role/status/AAL2 gate. Unit tests, login/MFA
-  route Playwright checks, full web Playwright, and production build pass. No authenticated sign-in or live
-  TOTP factor was exercised. CAPTCHA remains T182; no Turnstile keys are configured.
+- **Complete locally:** T207 provides the bilingual web dashboard email/password page and TOTP enrollment/
+  verification page. Local Auth config enables the custom access-token hook and TOTP enrollment/verification;
+  password login issues the expected signed `user_role`, and a synthetic local super-admin completed first-time
+  enrollment and AAL2 navigation. The `/admin` route lands at `/admin/settings`. Hosted Auth configuration,
+  accounts, and provider behavior remain unverified. CAPTCHA remains T182; no Turnstile keys are configured.
 - **Complete:** T211 provides bilingual `/forgot-password` and `/reset-password` routes using Supabase Auth's
   recovery request, `PASSWORD_RECOVERY` event, and `updateUser` APIs. The response copy is generic and the
   reset route requires a recovery session. Focused unit/browser checks, TypeScript, i18n parity, and production
@@ -112,8 +113,9 @@ does not mean every decision's implementation is complete.
 
 - **Screens still open:** T194-T195 remain blocked on the safe OTP/session design (T138/T139); T196 lacks
   approved legal content/version inputs and the verified auth/onboarding flow; T200 remains partial pending
-  T142's safe account-deletion endpoint; T204 needs approved Terms/Privacy text and versions. T213/T215 authenticated
-  E2E require test Auth accounts and email/MFA setup, and T216 remains open.
+  T142's safe account-deletion endpoint; T204 needs approved Terms/Privacy text and versions. T213 still needs
+  a supported email-code session path plus native prerequisites. T215 is complete for the local dashboard flow;
+  T216 remains open.
 
 ## Verification evidence
 
@@ -182,8 +184,17 @@ does not mean every decision's implementation is complete.
   i18n parity PASS (849 keys); Expo web static export PASS (26 routes, including `/profile/account`) with
   local-only placeholder Supabase values; `git diff --check` PASS. No live provider credential, Auth session,
   native linking flow, or export invocation was available.
-- Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
-  not run.
+- T135/T183/T207/T215 local dashboard Auth integration: local custom access-token hook and TOTP were enabled;
+  password sign-in produced the `super_admin` role claim. Focused Playwright with a disposable local fixture
+  passed first-time TOTP enrollment, AAL2 routing, `/admin` → `/admin/settings`, and English/Arabic RTL
+  maintenance rendering. Fixture and maintenance row were deleted and both absence counts verified. Full web
+  Playwright PASS (9 tests), Vitest PASS (8 files / 33 tests), TypeScript PASS, lint PASS (0 errors, 1 existing
+  warning), production build PASS (includes `/[locale]/admin`), i18n parity PASS (849 keys), Biome PASS, and
+  `git diff --check` PASS. Hosted Auth, email/SMTP, native runtime, and Maestro remain unverified.
+- **T215:** focused local Playwright verified password login, first-time TOTP enrollment, AAL2-gated routing,
+  and the English/Arabic maintenance banner with disposable local Auth/profile fixtures. The fixtures and
+  maintenance row were deleted and verified absent. This is not hosted-provider or native-device verification.
+- Real authenticated mobile runtime flows, EAS build, Maestro, and hosted service checks: not run.
 
 ## Environment snapshot
 
@@ -196,9 +207,9 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Assess remaining D02 tasks for work whose contracts and local prerequisites are available; preserve T208's
-   unsupported platform-admin lifecycle actions as open. Keep email-code mobile sign-in blocked until T138's
-   authoritative safe session path is resolved.
+1. Preserve T208 as partial: the super-admin directory is implemented, but platform-admin invite/role/MFA-reset/
+   removal actions have no backend contract. Keep mobile email-code sign-in and T194-T197 blocked until T138/T139's
+   authoritative safe session path is resolved; do not create an alternate session issuer or bypass lockout.
 3. Extend T143 as later-phase data tables land and complete T142 only when trusted backend reauthentication
    and the coordinated deletion lifecycle are implemented.
 4. Keep native OAuth/E2E tasks partial until provider credentials, EAS, Android/Java, and test devices are

@@ -2555,3 +2555,47 @@ identity, or live export response was available for runtime verification.
 `mobile/app/profile/account.tsx`, `mobile/app/(tabs)/profile.tsx`, both locale dictionaries,
 `specs/001-furever-platform/{tasks.md,research.md}`, this log, and the D02 progress checkpoint.
 **Commit**: `5f3ad98`.
+
+## D02 — T135/T183/T207/T215 local dashboard Auth integration (2026-10-27)
+
+**Scope**: enable and exercise the already-implemented dashboard custom access-token hook, local TOTP MFA,
+maintenance banner, and MFA-protected admin landing path. No hosted project or external provider was changed.
+
+**Load-bearing config gaps found in a real local sign-in**: the SQL hook from T135 existed but the local
+`[auth.hook.custom_access_token]` config was commented out, so local login tokens lacked `user_role`; local
+TOTP enrollment and verification were also disabled. Enabled the supported local hook URI
+`pg-functions://postgres/public/custom_access_token_hook` and both TOTP switches in
+`backend/supabase/config.toml`. Restarted the local Supabase stack and verified a password sign-in produced
+a signed JWT with `user_role=super_admin` and `aal1`. Hosted projects still need their own Auth Hook/MFA
+configuration; this local file does not configure them. Documented those steps and the unverified hosted
+state in `docs/environments.md`, based on Supabase's [Auth Hooks](https://supabase.com/docs/guides/auth/auth-hooks),
+[Custom Access Token Hook](https://supabase.com/docs/guides/auth/auth-hooks/custom-access-token-hook), and
+[TOTP MFA](https://supabase.com/docs/guides/auth/auth-mfa/totp) guides.
+
+**Three real UI/runtime defects fixed by the local flow**:
+1. Supabase's generated QR data URI included trailing whitespace rejected by `next/image`; the MFA screen now
+   trims only the returned URI before rendering.
+2. Successful verification updated the local Auth session but SPA navigation raced middleware's cookie view.
+   The screen now confirms a current user and `aal2`, then performs a full locale-prefixed navigation so
+   middleware receives the refreshed cookie.
+3. Strict Mode's development effect replay could enroll duplicate TOTP factors. A shared setup promise now
+   lets both effect subscriptions consume one enrollment result while still honoring cleanup.
+
+Added `/[locale]/admin` as a landing route redirecting to the existing `/[locale]/admin/settings`; dashboard
+login and MFA previously redirected there despite no landing page. T183, T207, and T215 were updated only
+for behaviors proven by the local fixture; T208 remains partial and unsupported platform-admin lifecycle
+actions remain absent.
+
+**Verification**: focused local Playwright PASS (1 test): synthetic super-admin password login, first-time
+TOTP enrollment, AAL2 guard, `/admin` to Settings, and bilingual maintenance rendering including Arabic RTL.
+Then deleted the disposable Auth user and maintenance row and queried both counts as zero. Existing full web
+Playwright PASS (9 tests), web Vitest PASS (8 files / 33 tests), web TypeScript PASS, web lint PASS (0 errors,
+1 pre-existing `Avatar.tsx` warning), production build PASS (manifest includes `/[locale]/admin`), i18n parity
+PASS (849 keys), Biome PASS for the changed TypeScript, and `git diff --check` PASS. The full Playwright
+gallery test emitted the already-known Chromium-injected `caret-color: transparent` hydration warning; the
+test passed and no application-generated mismatch was observed in the focused Auth flow. No hosted Auth,
+provider, email/SMTP, native-device, or Maestro verification was performed.
+
+**Files**: `backend/supabase/config.toml`, `docs/environments.md`, `web/src/components/auth/DashboardMfaScreen.tsx`,
+`web/src/app/[locale]/(admin)/admin/page.tsx`, `specs/001-furever-platform/{tasks.md,implementation-log.md}`,
+and `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`. **Commit**: pending.

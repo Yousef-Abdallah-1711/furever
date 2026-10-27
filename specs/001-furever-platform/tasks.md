@@ -543,7 +543,9 @@ environments only, not local dev.
 ## Role claim, OTP guard, Edge Functions
 
 - [x] T135 [D02] Extend `custom_access_token_hook` (D00b skeleton) to inject `profiles.role` as
-  `user_role` (research.md §8). Depends on T124. [AD-01]
+  `user_role` (research.md §8). Enabled the local Auth hook in `backend/supabase/config.toml` with the
+  supported `pg-functions://postgres/public/custom_access_token_hook` URI. Local password sign-in
+  verified that a super-admin JWT receives `user_role`. Depends on T124. [AD-01]
 - [x] T136 [P] [D02] RPC `record_otp_attempt(p_identifier, p_outcome)` (2026-10-18 — was
   `p_phone`). Depends on T134. [AUTH-01]
 - [x] T137 [P] [D02] RPC `get_otp_lock_status(p_identifier)` (2026-10-18 — was `p_phone`). Depends on
@@ -780,13 +782,13 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   {login,forgot-password}/page.tsx`). **Fixed (this fix pass — the previous revision wrongly pointed this
   at an E2E task and a D03 migration, two unrelated tasks)**: depends on T207 (`/login`) and T211
   (`/forgot-password`) below, the actual screens whose files this task edits.
-- [ ] T183 [D02] Maintenance banner in the dashboard shell `web/src/components/dashboard/
+- [x] T183 [D02] Maintenance banner in the dashboard shell `web/src/components/dashboard/
   MaintenanceBanner.tsx`, reading `app_config` via T144. [PLT-02]
   **Owner decision (2026-10-27):** authenticated, authorized dashboard users remain on their requested
   dashboard route during maintenance and see the banner; maintenance must not bypass authentication or
-  role checks. **Partial 2026-10-27:** the bilingual banner, dashboard layout hook, and middleware behavior
-  are implemented; role/auth checks fail closed for profile lookup errors. Keep open until the dashboard
-  routes and authenticated maintenance path are exercised end to end.
+  role checks. **Verified 2026-10-27:** local Playwright signed in a synthetic super-admin, enrolled and
+  verified TOTP, passed the AAL2 middleware to `/admin/settings`, and confirmed the localized maintenance
+  banner in English and Arabic/RTL. No hosted maintenance setting was exercised.
 - [ ] T184 [D02] Produce the first EAS development build (`eas build --profile development`) and confirm
   it launches past Splash on a device/emulator. Depends on D00e's T043 and the manual-prerequisites EAS
   account.
@@ -868,7 +870,9 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   with the bilingual fallback. Expo web export and Playwright verify the route, fallback, and Arabic locale; unit
   tests cover config parsing. Native device/build was not run and is not claimed.
 - [x] T207 [P] [D02] Build `/login`, `/mfa` — `web/src/app/[locale]/(auth)/{login,mfa}/page.tsx` (Built).
-  [CS-01][AD-01]
+  [CS-01][AD-01] **Verified 2026-10-27:** first-time local TOTP enrollment and verification route through
+  the active profile/role/AAL2 guard. The MFA success path confirms the refreshed user and `aal2` before a
+  full localized navigation; `/admin` redirects to the implemented `/admin/settings` landing screen.
 - [ ] T208 [P] [D02] Build Admin team — `/admin/team`, `web/src/app/[locale]/(admin)/admin/team/page.tsx` (Spec; pattern:
   Users). [AD-01] **Partial 2026-10-27:** the real `admin` segment is nested inside the transparent `(admin)` route group
   so the URL receives the required admin middleware/MFA guard. Server-side super-admin-only directory reads administrator profiles through
@@ -906,7 +910,8 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   and confirm the Apple button is entirely absent from the screen; on iOS, Apple sign-in happy path
   (T148) including the first-sign-in full-name capture, plus Google sign-in happy path (both buttons
   present on iOS). [AUTH-02][AUTH-03]
-- [ ] T215 [D02] Playwright: dashboard login + MFA enrollment + aal2 gate. [AD-01]
+- [x] T215 [D02] Playwright: dashboard login + MFA enrollment + aal2 gate. [AD-01] Verified locally
+  2026-10-27 with disposable Auth/profile fixtures; no hosted account or provider was used.
 - [ ] T216 [D02] **Checkpoint**: AUTH-01→04 completes end to end on a dev build incl. the Summary screen,
   using a real email code read from the local inbox; admin signs in with MFA and reaches `/admin`;
   suspended user rejected; force-update/maintenance reachable by flag; `write_audit_log()` fires on a flag

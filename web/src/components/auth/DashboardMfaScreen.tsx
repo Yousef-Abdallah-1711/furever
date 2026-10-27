@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { type FormEvent, useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
@@ -16,42 +16,49 @@ type SetupState =
   | { kind: "error" }
   | { kind: "enroll"; factorId: string; qrCode: string; secret: string }
   | { kind: "verify"; factorId: string };
+type SetupResult = SetupState | { kind: "redirect"; path: string };
 
 export function DashboardMfaScreen() {
   const t = useTranslations("screens.auth.dashboard");
+  const locale = useLocale();
   const router = useRouter();
   const [setup, setSetup] = useState<SetupState>({ kind: "checking" });
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const setupPromise = useRef<Promise<SetupResult> | null>(null);
 
   useEffect(() => {
     let active = true;
-    void (async () => {
+    setupPromise.current ??= (async (): Promise<SetupResult> => {
       const client = createClient();
       const { data: auth, error: authError } = await client.auth.getUser();
-      if (authError || !auth.user) {
-        router.replace("/login");
-        return;
-      }
+      if (authError || !auth.user) return { kind: "redirect", path: "/login" };
       const claims = await client.auth.getClaims();
       const role = claims.data?.claims?.user_role;
       if (claims.error || (role !== "admin" && role !== "super_admin")) {
-        router.replace(role === "clinic_staff" ? "/clinic" : "/no-access");
-        return;
+        return {
+          kind: "redirect",
+          path: role === "clinic_staff" ? "/clinic" : "/no-access",
+        };
       }
       const assurance = await client.auth.mfa.getAuthenticatorAssuranceLevel();
       if (assurance.error) throw assurance.error;
-      if (assurance.data.currentLevel === "aal2") {
-        router.replace("/admin");
-        return;
-      }
+      if (assurance.data.currentLevel === "aal2")
+        return { kind: "redirect", path: "/admin" };
       const next = await prepareTotp(client);
       if (!next) throw new Error("TOTP setup unavailable");
-      if (active) setSetup(next);
-    })().catch(() => {
-      if (active) setSetup({ kind: "error" });
-    });
+      return next;
+    })();
+    void setupPromise.current
+      .then((result) => {
+        if (!active) return;
+        if (result.kind === "redirect") router.replace(result.path);
+        else setSetup(result);
+      })
+      .catch(() => {
+        if (active) setSetup({ kind: "error" });
+      });
     return () => {
       active = false;
     };
@@ -64,13 +71,28 @@ export function DashboardMfaScreen() {
     setBusy(true);
     setError(false);
     try {
-      const valid = await verifyTotp(
-        createClient(),
-        setup.factorId,
-        code.trim(),
-      );
-      if (valid) router.replace("/admin");
-      else setError(true);
+      const supabase = createClient();
+      const valid = await verifyTotp(supabase, setup.factorId, code.trim());
+      if (!valid) {
+        setError(true);
+        return;
+      }
+      const [user, assurance] = await Promise.all([
+        supabase.auth.getUser(),
+        supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+      ]);
+      if (
+        user.error ||
+        !user.data.user ||
+        assurance.error ||
+        assurance.data.currentLevel !== "aal2"
+      ) {
+        setError(true);
+        return;
+      }
+      // A full request carries the newly persisted AAL2 cookie through middleware.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign(`/${locale}/admin`);
     } catch {
       setError(true);
     } finally {
@@ -113,7 +135,7 @@ export function DashboardMfaScreen() {
           <div className="mt-sp-5 flex flex-col items-center gap-sp-3">
             {/* Supabase returns an SVG data URI, so the QR stays local and the TOTP secret is not sent to a third party. */}
             <Image
-              src={setup.qrCode}
+              src={setup.qrCode.trimEnd()}
               unoptimized
               width={220}
               height={220}
