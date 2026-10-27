@@ -770,9 +770,10 @@ environments only, not local dev.
   guard into a reusable layout and applied it to both `(tabs)` and every `/profile/*` route, closing direct
   deep-link rendering into profile/account/settings screens. Runtime loading tests cover missing/failed
   sessions, profile/consent/config failures, incomplete profiles, maintenance, minimum version, and valid
-  access. Expo web static export now includes the guarded profile routes. `/complete-profile` and
-  `/legal/[doc]` now exist; keep open until authenticated transition behavior and native app navigation
-  are exercised.
+  access. Fresh Expo web export includes the guarded profile routes; static Playwright now verifies
+  signed-out direct links to `/profile/about`, `/profile/help`, and `/profile/edit` return to localized
+  Welcome. `/complete-profile` and `/legal/[doc]` exist; keep open until authenticated transition behavior
+  and native app navigation are exercised.
 - [x] T174 [D02] Web route guard (extends T167/T168): same five states for the dashboard. Depends on T167.
   **Scope note**: implements signed-out (T167), role gate (T167), suspended/deleted (→ `/no-access`), and
   admin MFA. Per the 2026-10-27 T183 decision, maintenance no longer redirects authorized users; T183's

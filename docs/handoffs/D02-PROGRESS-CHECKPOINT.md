@@ -1,5 +1,27 @@
 # D02 Progress Checkpoint
 
+## Final D02 closeout verification — 2026-10-27
+
+- Reconfirmed `main` at starting HEAD/remote `b8bc68a3ac17ae97b4fee947e69ec86d662d31b9`. D02 remains
+  54/97 verified (55.67%); task audit now reconciles to 54 verified, 11 checked but needing integration/
+  runtime evidence, 14 partial, and 18 blocked. T196/T204 are partial after adding the profile/legal routes
+  and atomic consent RPC; neither is complete without owner-approved text/version IDs and runtime proof.
+- Fresh local verification: mobile Jest 18 suites / 57 tests; mobile typecheck; web Vitest 8 files / 33
+  tests; web TypeScript; shared 4 files / 24 tests; i18n 1 file / 1 test and 850-key parity; templates
+  Vitest 1 file / 6 tests; local pgTAP 11 files / 100 assertions; policy coverage 32/32; component prop
+  checker 0 drift across 18 contracts / 36 port files; web Playwright 9/9; mobile static Playwright 11/11;
+  Expo web export 29 routes. `git diff --check` passed.
+- Mobile E2E initially failed three assertions because old tests opened protected `/profile/*` routes while
+  signed out. Updated those tests to verify the route guard redirects to localized Welcome; fresh rerun
+  passed 11/11. Screenshot outputs from gallery tests were restored to the pre-run baseline.
+- D02 exit verdict: **FAIL**. AUTH-01→04 via safe OTP/session path and native dev build is unproven; approved
+  Option C remains unenforced; legal texts/versions and real external email delivery are missing. T216 stays
+  open. D03/T217–T237 remains blocked and was not started.
+- SMTP was explicitly deferred by the owner for this session. No password was read or used; local Auth SMTP
+  remains disabled and no hosted Supabase configuration was touched.
+- Full 97-task reconciliation, project D00–D08 status, next-phase readiness, blockers, and next-session map:
+  `docs/handoffs/D02-FINAL-STATUS-AND-NEXT-PHASE-READINESS-2026-10-27.md`.
+
 ## Session update — T196/T204 profile completion and legal viewer (2026-10-27)
 
 - Added `/complete-profile` and `/legal/[doc]` mobile routes. The completion route loads the

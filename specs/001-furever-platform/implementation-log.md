@@ -2864,3 +2864,19 @@ pnpm emitted existing virtual-store/TTY warnings before commands; the requested 
 `mobile/src/features/onboarding/legal-documents.test.ts`, `packages/i18n/{en.json,ar.json,draft-keys.json}`,
 `specs/001-furever-platform/{tasks.md,implementation-log.md,contracts/rpc-functions.md}`, and
 `docs/{environments.md,handoffs/D02-PROGRESS-CHECKPOINT.md}`.
+
+## D02 — final status verification: mobile guard E2E expectations (2026-10-27)
+
+Final verification found the mobile static Playwright profile-screen tests assumed `/profile/*` routes
+could be opened without a session. The shared route guard correctly redirects signed-out users to Welcome,
+so the old About/Help/Edit assertions tested an unauthorized state. Updated the browser tests to verify the
+English and Arabic Welcome destinations and confirm signed-out direct access does not render protected
+profile screens. Fresh Expo web export lists 29 routes; mobile static Playwright passes 11/11 and web
+Playwright passes 9/9. The authenticated profile screens remain unverified; no task was promoted. D02 is
+54/97 verified and T216 fails its mandatory gate.
+
+The generated screenshot tests rewrote tracked baseline images; those outputs were restored to their
+clean-at-start versions after verification. No hosted configuration or secrets were accessed.
+
+**Files**: `mobile/tests/d02-profile-screens.spec.ts`, `specs/001-furever-platform/{tasks.md,
+implementation-log.md}`, `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`, and the new dated readiness handoff.
