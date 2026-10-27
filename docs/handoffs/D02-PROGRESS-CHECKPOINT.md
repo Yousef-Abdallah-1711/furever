@@ -32,6 +32,25 @@
 - The three protected audit handoff files remain untouched and unstaged. The only untracked workspace
   files are those three preserved audit documents.
 
+## Session update — local SMTP setup preparation (2026-10-27)
+
+- Verified starting HEAD and `origin/main`: `6e1787ffc3263e095318497928212d2a6b10e0fa`; working tree had
+  only the three protected audit handoff files untracked.
+- Prepared opt-in local SMTP and invite/recovery template blocks in `backend/supabase/config.toml` using
+  existing names `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_SENDER_EMAIL`, and
+  `SMTP_SENDER_NAME`. Created ignored `backend/.env` with blank values only; no secret was read, printed,
+  or committed. The login-code template remains unwired under the approved Option C security blocker.
+- Updated `docs/environments.md`, `tasks.md`, and `implementation-log.md` with local-vs-hosted setup and
+  evidence. T140/T145/T146/T152/T153/T210 remain open/partial. Verified completion remains 54/97
+  (55.67%).
+- Template rendering: `pnpm.cmd exec vitest run --config backend/supabase/templates/vitest.config.ts`
+  PASS (1 file / 6 tests; existing Vite config-loader warning). No SMTP connection, delivery, or real
+  authentication test was possible because provider credentials and verified sending-domain details have
+  not been supplied. Hosted Supabase was not modified.
+- Commit `ed28080dcf228a038999c318d418f7bf129bdefd` (`docs(D02): prepare local SMTP configuration`)
+  pushed; `HEAD` equals `origin/main`. Checkpoint update pending in the following commit. The three
+  protected audit handoff files remain untouched and untracked.
+
 ## Session update — OTP decision-record reconciliation (2026-10-27)
 
 - Rechecked current official Supabase Auth Hooks, `generateLink()`, and session documentation. No documented
