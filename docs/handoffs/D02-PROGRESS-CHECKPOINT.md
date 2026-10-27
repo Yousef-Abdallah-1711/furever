@@ -1,5 +1,15 @@
 # D02 Progress Checkpoint
 
+
+## Latest continuation - invitation callback and owner inputs (2026-10-27)
+
+- Starting branch/HEAD/`origin/main`/remote were `main` / `8cd65f92eb175a2d0848bb22f719c74352720010`; this continuation changes only the local branch until the verified batch is committed and pushed.
+- Replaced the invitation's implicit Auth confirmation route with a direct Supabase token-hash callback through the Next.js SSR server client. `admin-create-staff` now validates and preserves `locale=en|ar`; the invite template sends the callback hash and `type=invite`.
+- Authenticated local Mailpit Playwright passed 4/4: English acceptance, Arabic RTL acceptance, invalid token hash, and reused token link rejection. The successful flows verified refreshed `clinic_staff` role and clinic membership; the English flow verified invitation acceptance and navigation. Existing local integration covers cross-clinic and manager-role escalation denial. Expired-token browser and further retry/negative cases remain; T140/T210 remain partial.
+- Owner response: keep approved Option C blocked. The proposed V1 retention schedule is recorded as pending Egyptian legal review; no irreversible cleanup worker or automatic purge was activated.
+- Draft EN/AR Terms and Privacy documents are in `docs/legal/drafts/` with IDs `terms-v1.0.0`, `privacy-v1.0.0` and proposed effective date `2026-11-01`. Drafts are not approved; profile completion remains fail-closed and T196/T204/T216 remain open.
+- Targeted final checks: web Vitest 8 files / 33 tests PASS; web TypeScript PASS; email-template Vitest 1 file / 6 tests PASS; authenticated invitation Playwright 4/4 PASS; `git diff --check` PASS. Deno tests unavailable. No task was newly completed; D02 remains 54/97 verified (55.67%), T216 FAIL, D03 BLOCKED / NOT STARTED.
+
 ## Latest continuation — 2026-10-27
 
 - Starting branch/HEAD was `main` / `f255be1822cd307082145c901e1259f6687bc1e0`, synchronized with `origin/main`.

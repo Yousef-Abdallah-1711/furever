@@ -13,7 +13,12 @@ async function loadTemplate(name: (typeof templateNames)[number]) {
 
 function renderSupabaseVariables(
   template: string,
-  variables: { Token?: string; ConfirmationURL?: string },
+  variables: {
+    Token?: string;
+    TokenHash?: string;
+    RedirectTo?: string;
+    ConfirmationURL?: string;
+  },
 ) {
   const escapeHtml = (value: string) =>
     value.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
@@ -21,6 +26,8 @@ function renderSupabaseVariables(
       .replaceAll("'", "&#39;");
   return template
     .replaceAll("{{ .Token }}", escapeHtml(variables.Token ?? ""))
+    .replaceAll("{{ .TokenHash }}", escapeHtml(variables.TokenHash ?? ""))
+    .replaceAll("{{ .RedirectTo }}", escapeHtml(variables.RedirectTo ?? ""))
     .replaceAll(
       "{{ .ConfirmationURL }}",
       escapeHtml(variables.ConfirmationURL ?? ""),
@@ -55,18 +62,30 @@ describe("bilingual Supabase email templates", () => {
     expect(rendered).not.toContain('<img src=x');
   });
 
-  it.each(["staff-invite.html", "password-reset.html"] as const)(
-    "uses the Auth confirmation URL in %s",
-    async (name) => {
-      const template = await loadTemplate(name);
-      const rendered = renderSupabaseVariables(template, {
-        ConfirmationURL: "https://example.test/auth/verify?token=abc&next=%2F",
-      });
+  it("uses the SSR token-hash callback for staff invitations", async () => {
+    const template = await loadTemplate("staff-invite.html");
+    const rendered = renderSupabaseVariables(template, {
+      RedirectTo: "https://example.test/api/auth/confirm?next=%2Fen%2Faccept-invite",
+      TokenHash: "single-use-hash",
+    });
 
-      expect(rendered).toContain(
-        'href="https://example.test/auth/verify?token=abc&amp;next=%2F"',
-      );
-      expect(rendered).not.toContain("{{ .ConfirmationURL }}");
-    },
-  );
+    expect(rendered.match(/href="https:\/\/example\.test\/api\/auth\/confirm/g))
+      .toHaveLength(2);
+    expect(rendered).toContain(
+      'href="https://example.test/api/auth/confirm?next=%2Fen%2Faccept-invite&amp;token_hash=single-use-hash&amp;type=invite"',
+    );
+    expect(rendered).not.toContain("{{ .ConfirmationURL }}");
+  });
+
+  it("keeps password recovery on the Auth confirmation URL", async () => {
+    const template = await loadTemplate("password-reset.html");
+    const rendered = renderSupabaseVariables(template, {
+      ConfirmationURL: "https://example.test/auth/verify?token=abc&next=%2F",
+    });
+
+    expect(rendered).toContain(
+      'href="https://example.test/auth/verify?token=abc&amp;next=%2F"',
+    );
+    expect(rendered).not.toContain("{{ .ConfirmationURL }}");
+  });
 });

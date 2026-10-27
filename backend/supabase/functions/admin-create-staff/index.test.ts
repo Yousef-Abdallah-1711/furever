@@ -208,11 +208,44 @@ Deno.test("admin-create-staff uses caller authorization for policy RPC and servi
   }
   if (
     new URL(authInvite.url).searchParams.get("redirect_to") !==
-    "https://dashboard.example/en/accept-invite"
+    "https://dashboard.example/api/auth/confirm?next=%2Fen%2Faccept-invite"
   ) {
     throw new Error(
-      "The invite link must return to the configured acceptance route",
+      "The invite link must return through the server-side token-hash callback",
     );
+  }
+});
+
+Deno.test("admin-create-staff preserves the invited locale in the SSR callback", async () => {
+  let redirectTo = "";
+  const handler = createHandler({
+    getEnv,
+    fetch: async (input, init) => {
+      const url = new URL(String(input));
+      if (url.pathname === "/auth/v1/user") return Response.json({ id: actorId });
+      if (url.pathname === "/rest/v1/rpc/create_staff_invitation") {
+        return Response.json(invitationId);
+      }
+      if (url.pathname === "/auth/v1/invite") {
+        redirectTo = url.searchParams.get("redirect_to") ?? "";
+        return Response.json({ id: actorId });
+      }
+      throw new Error(`Unexpected request ${url.pathname} ${init?.method ?? "GET"}`);
+    },
+  });
+  const response = await handler(inviteRequest({
+    email: "vet@example.test",
+    full_name: "Test Vet",
+    clinic_id: clinicId,
+    staff_level: "vet",
+    locale: "ar",
+  }));
+
+  if (
+    response.status !== 201 ||
+    new URL(redirectTo).searchParams.get("next") !== "/ar/accept-invite"
+  ) {
+    throw new Error("The invited locale must be preserved through the SSR callback");
   }
 });
 

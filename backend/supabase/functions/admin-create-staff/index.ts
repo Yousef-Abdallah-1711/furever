@@ -94,7 +94,10 @@ function validUuid(value: unknown): value is string {
   );
 }
 
-function invitationRedirect(getEnv: Dependencies["getEnv"]): string {
+function invitationRedirect(
+  getEnv: Dependencies["getEnv"],
+  locale: "en" | "ar",
+): string {
   const configured = getEnv("DASHBOARD_URL")?.trim() || "http://127.0.0.1:3000";
   const url = new URL(configured);
   const localHttp =
@@ -110,7 +113,9 @@ function invitationRedirect(getEnv: Dependencies["getEnv"]): string {
   ) {
     throw new Error("Invalid dashboard URL configuration");
   }
-  return new URL("/en/accept-invite", url.origin).toString();
+  const callback = new URL("/api/auth/confirm", url.origin);
+  callback.searchParams.set("next", `/${locale}/accept-invite`);
+  return callback.toString();
 }
 
 function errorBody(code: string, message: string) {
@@ -187,6 +192,7 @@ export function createHandler(
       typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const clinicId = body.clinic_id;
     const staffLevel = body.staff_level;
+    const locale = body.locale === undefined ? "en" : body.locale;
     const fullName =
       body.full_name === undefined || body.full_name === null
         ? null
@@ -198,6 +204,7 @@ export function createHandler(
       email.length > 254 ||
       !validUuid(clinicId) ||
       !["manager", "vet", "receptionist"].includes(String(staffLevel)) ||
+      !["en", "ar"].includes(String(locale)) ||
       fullName === undefined ||
       (fullName !== null && fullName.length > 120)
     ) {
@@ -220,7 +227,10 @@ export function createHandler(
       const serviceKey = dependencies
         .getEnv("SUPABASE_SERVICE_ROLE_KEY")
         ?.trim();
-      const redirectTo = invitationRedirect(dependencies.getEnv);
+      const redirectTo = invitationRedirect(
+        dependencies.getEnv,
+        locale as "en" | "ar",
+      );
       if (!baseUrl || !serviceKey) {
         throw new Error("Backend configuration is incomplete");
       }

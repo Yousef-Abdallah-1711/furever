@@ -6,15 +6,18 @@ import { expect, test } from "@playwright/test";
 const mailpitUrl = "http://127.0.0.1:54324";
 const fixtureTag = `d02-browser-${crypto.randomUUID().replace(/-/g, "")}`;
 const managerEmail = `${fixtureTag}-manager@example.test`;
-const inviteeEmail = `${fixtureTag}-invitee@example.test`;
+const inviteeEmail = `${fixtureTag}-invitee-en@example.test`;
+const arabicInviteeEmail = `${fixtureTag}-invitee-ar@example.test`;
 const managerPassword = `Mgr-${crypto.randomUUID()}-Aa1!`;
 const inviteePassword = `Vet-${crypto.randomUUID()}-Aa1!`;
+const arabicInviteePassword = `Vet-${crypto.randomUUID()}-Aa1!`;
 
 let url: string;
 let publicKey: string;
 let serviceKey: string;
 let admin: SupabaseClient;
 let clinicId: string | null = null;
+let acceptedEnglishInvitationLink: string | null = null;
 
 function localSupabaseSettings() {
   const output = execFileSync(
@@ -36,7 +39,7 @@ function localSupabaseSettings() {
   return { apiUrl, anon, service };
 }
 
-async function latestInvitationLink(email: string): Promise<string> {
+async function latestInvitationLink(email: string, locale: "en" | "ar"): Promise<string> {
   const search = new URL("/api/v1/search", mailpitUrl);
   search.searchParams.set("query", `to:"${email}"`);
   const deadline = Date.now() + 20_000;
@@ -60,11 +63,18 @@ async function latestInvitationLink(email: string): Promise<string> {
             .replace(/&amp;/gi, "&")
             .replace(/&quot;/gi, '"')
             .replace(/&#x3D;/gi, "=");
-          const match = /https?:\/\/[^\s"<>]*\/auth\/v1\/verify\?[^\s"<>]+/i.exec(content);
+          const match = /https?:\/\/[^\s"<>]*\/api\/auth\/confirm\?[^\s"<>]+/i.exec(content);
           if (match) {
-            const inviteUrl = new URL(match[0].replace(/[),.;]+$/, ""));
-            inviteUrl.searchParams.set("redirect_to", "http://localhost:3010/en/accept-invite");
-            return inviteUrl.toString();
+            const invitationUrl = new URL(match[0].replace(/[),.;]+$/, ""));
+            if (
+              !["localhost", "127.0.0.1"].includes(invitationUrl.hostname)
+              || invitationUrl.pathname !== "/api/auth/confirm"
+              || invitationUrl.searchParams.get("type") !== "invite"
+              || invitationUrl.searchParams.get("next") !== `/${locale}/accept-invite`
+              || !invitationUrl.searchParams.has("token_hash")
+            ) continue;
+            invitationUrl.host = "localhost:3010";
+            return invitationUrl.toString();
           }
         }
       }
@@ -77,7 +87,7 @@ async function latestInvitationLink(email: string): Promise<string> {
 async function cleanupFixtures() {
   if (!admin) return;
   const userResult = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  const fixtureEmails = new Set([managerEmail, inviteeEmail]);
+  const fixtureEmails = new Set([managerEmail, inviteeEmail, arabicInviteeEmail]);
   const ids = (userResult.data?.users ?? [])
     .filter((user) => user.email && fixtureEmails.has(user.email))
     .map((user) => user.id);
@@ -152,22 +162,25 @@ test.describe("authenticated local invitation acceptance", () => {
       throw new Error("Could not establish the local manager session.");
     }
 
-    const inviteResponse = await fetch(`${url}/functions/v1/admin-create-staff`, {
-      method: "POST",
-      headers: {
-        apikey: publicKey,
-        authorization: `Bearer ${managerSession.data.session.access_token}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        email: inviteeEmail,
-        full_name: "Synthetic D02 Vet",
-        clinic_id: clinicId,
-        staff_level: "vet",
-      }),
-    });
-    if (inviteResponse.status !== 201) {
-      throw new Error(`Local staff invitation returned HTTP ${inviteResponse.status}.`);
+    for (const [email, locale] of [[inviteeEmail, "en"], [arabicInviteeEmail, "ar"]] as const) {
+      const inviteResponse = await fetch(`${url}/functions/v1/admin-create-staff`, {
+        method: "POST",
+        headers: {
+          apikey: publicKey,
+          authorization: `Bearer ${managerSession.data.session.access_token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          full_name: locale === "ar" ? "Synthetic D02 Vet Arabic" : "Synthetic D02 Vet",
+          clinic_id: clinicId,
+          staff_level: "vet",
+          locale,
+        }),
+      });
+      if (inviteResponse.status !== 201) {
+        throw new Error(`Local ${locale} staff invitation returned HTTP ${inviteResponse.status}.`);
+      }
     }
   });
 
@@ -176,7 +189,8 @@ test.describe("authenticated local invitation acceptance", () => {
   });
 
   test("follows the Mailpit invite, accepts it, refreshes staff claims, and navigates", async ({ page }) => {
-    const invitationLink = await latestInvitationLink(inviteeEmail);
+    const invitationLink = await latestInvitationLink(inviteeEmail, "en");
+    acceptedEnglishInvitationLink = invitationLink;
     await page.goto(invitationLink);
     await page.waitForURL(/\/en\/accept-invite/);
     await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
@@ -199,11 +213,72 @@ test.describe("authenticated local invitation acceptance", () => {
       .single();
     expect(membership.error).toBeNull();
     expect(membership.data?.staff_level).toBe("vet");
-    const invitation = await admin.from("staff_invitations")
-      .select("accepted_at,accepted_user_id")
-      .eq("email", inviteeEmail)
+    const accepted = execFileSync(
+      "docker",
+      [
+        "exec", "supabase_db_backend", "psql", "-U", "postgres", "-d", "postgres",
+        "-At", "-v", "ON_ERROR_STOP=1", "-c",
+        `SELECT (accepted_at IS NOT NULL AND accepted_user_id = '${profile.data!.id}')::text FROM public.staff_invitations WHERE email = '${inviteeEmail}';`,
+      ],
+      { encoding: "utf8" },
+    ).trim();
+    expect(accepted).toBe("true");
+  });
+
+  test("rejects a reused invitation link in a fresh browser session", async ({ browser }) => {
+    if (!acceptedEnglishInvitationLink) {
+      throw new Error("The English invitation acceptance test did not produce a link.");
+    }
+    const context = await browser.newContext();
+    try {
+      const page = await context.newPage();
+      await page.goto(acceptedEnglishInvitationLink);
+      await page.waitForURL(/\/en\/accept-invite/);
+      await expect(page.getByRole("alert").first()).toContainText(/invalid|expired/i);
+      await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test("fails closed for an invalid invite token hash", async ({ browser }) => {
+    const context = await browser.newContext();
+    try {
+      const page = await context.newPage();
+      await page.goto(
+        "http://localhost:3010/api/auth/confirm?token_hash=invalid-test-hash&type=invite&next=%2Fen%2Faccept-invite",
+      );
+      await page.waitForURL(/\/en\/accept-invite/);
+      await expect(page.getByRole("alert").first()).toContainText(/invalid|expired/i);
+      await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test("accepts an Arabic invitation with RTL and refreshed clinic staff claims", async ({ page }) => {
+    await page.goto(await latestInvitationLink(arabicInviteeEmail, "ar"));
+    await page.waitForURL(/\/ar\/accept-invite/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByLabel("كلمة المرور", { exact: true })).toBeVisible();
+    await page.getByLabel("كلمة المرور", { exact: true }).fill(arabicInviteePassword);
+    await page.getByLabel("تأكيد كلمة المرور").fill(arabicInviteePassword);
+    await page.getByRole("button", { name: "حفظ كلمة المرور والمتابعة" }).click();
+    await page.waitForURL(/\/ar\/clinic$/);
+
+    const profile = await admin.from("profiles")
+      .select("id,role,status")
+      .eq("email", arabicInviteeEmail)
       .single();
-    expect(invitation.data?.accepted_at).toBeTruthy();
-    expect(invitation.data?.accepted_user_id).toBe(profile.data!.id);
+    expect(profile.error).toBeNull();
+    expect(profile.data).toMatchObject({ role: "clinic_staff", status: "active" });
+    const membership = await admin.from("clinic_staff")
+      .select("staff_level")
+      .eq("clinic_id", clinicId)
+      .eq("user_id", profile.data!.id)
+      .single();
+    expect(membership.error).toBeNull();
+    expect(membership.data?.staff_level).toBe("vet");
   });
 });

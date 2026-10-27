@@ -949,10 +949,15 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   states. **Local Auth/Mailpit integration verified 2026-10-27:** a synthetic invitee followed the delivered
   Auth verification link, set a password, accepted the invitation, retried idempotently, and signed in.
   Browser fail-closed coverage added 2026-10-27: English and Arabic routes show the invalid/expired
-  invitation state without a session, omit password inputs, and preserve Arabic RTL. The authenticated
-  browser attempt reached FurEver's invite screen but displayed the invalid/expired invitation state;
-  password acceptance, role-claim refresh/navigation, and Hostinger delivery remain unverified. This task
-  remains open.
+  invitation state without a session, omit password inputs, and preserve Arabic RTL. **Authenticated local
+  browser verification added 2026-10-27:** a disposable manager/clinic/invitee received the direct SSR
+  token-hash callback link through Mailpit; the browser established the session, set a password, accepted
+  the invite, verified active `clinic_staff` role and clinic membership, and navigated to `/clinic` after
+  refreshed claims. A second disposable invite verified Arabic acceptance and RTL; reused-link and
+  invalid-token browser attempts fail closed. Existing local Edge Function integration verifies
+  cross-clinic denial and manager-role escalation denial. Expired-token browser and other retry/negative
+  scenarios remain open; Hostinger delivery also remains unverified. This task remains partial and
+  unchecked.
 - [x] T211 [P] [D02] Build `/forgot-password` — `web/src/app/[locale]/(auth)/forgot-password/page.tsx`
   (Spec; pattern: Sign in). **Completed 2026-10-27:** bilingual recovery request uses Supabase Auth's
   `resetPasswordForEmail` with a locale-specific `/reset-password` callback and generic success copy;

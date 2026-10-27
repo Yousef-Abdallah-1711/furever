@@ -14,14 +14,14 @@
             <section lang="en" dir="ltr" style="text-align:left;line-height:1.6;">
               <h1 style="font-size:22px;">You are invited to FurEver</h1>
               <p>A clinic team has invited you to join FurEver. Use the secure invitation link to set your password and accept.</p>
-              <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#26734d;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;">Accept invitation</a></p>
+              <p><a href="{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=invite" style="display:inline-block;background:#26734d;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;">Accept invitation</a></p>
               <p>If you were not expecting this invitation, you can ignore this email.</p>
             </section>
             <hr style="border:0;border-top:1px solid #e4e9e5;margin:24px 0;" />
             <section lang="ar" dir="rtl" style="text-align:right;line-height:1.8;font-family:Arial, sans-serif;">
               <h1 style="font-size:22px;">دعوة للانضمام إلى فورإيفر</h1>
               <p>دعتك عيادة للانضمام إلى فورإيفر. استخدم رابط الدعوة الآمن لتعيين كلمة المرور وقبول الدعوة.</p>
-              <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#26734d;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;">قبول الدعوة</a></p>
+              <p><a href="{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=invite" style="display:inline-block;background:#26734d;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;">قبول الدعوة</a></p>
               <p>إذا لم تكن تتوقع هذه الدعوة، يمكنك تجاهل هذه الرسالة.</p>
             </section>
           </td></tr>
