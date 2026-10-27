@@ -65,10 +65,23 @@ Sentry initialization call. If Sentry is used, configure the DSN as a project-sp
 secret named `SENTRY_DSN` and set `ENABLE_SENTRY=true`. A safe placeholder is
 `SENTRY_DSN=<sentry-dsn>`; no DSN is currently configured.
 
-SMTP credentials are configured in Supabase Auth's SMTP settings for each project; they
-are not an Edge Function secret. The SMTP provider remains undecided (T145), so no
-provider-specific credentials or values are documented here. Local development uses
-the Supabase local email inbox.
+SMTP is configured on Supabase Auth, not as an Edge Function secret. For local work,
+fill the ignored `backend/.env` with `SMTP_HOST`,
+`SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_SENDER_EMAIL`, and `SMTP_SENDER_NAME`.
+Then uncomment the SMTP, invite-template, and recovery-template blocks in
+`backend/supabase/config.toml` and restart the local Supabase stack. Keep the values out
+of tracked files and chat. Until that opt-in local configuration is complete, local
+development continues to use Supabase's Mailpit inbox. The login-code template must
+remain unwired while the approved custom OTP/session architecture is unresolved.
+
+For each hosted Supabase project, configure its Auth SMTP settings and email templates
+separately in that project's supported Auth configuration. Hosted projects are not
+changed as part of local setup. The sender domain must be verified with the provider's
+domain-specific DNS records (typically SPF and DKIM; publish DMARC as well). Exact record
+names, types, and values are provider-specific and must come from its domain-verification
+screen. Verify the From address/domain and successful provider verification before
+attempting real inbox delivery. Disable click/link rewriting for Auth messages if the
+provider offers tracking, because it can invalidate Auth links.
 
 ## Google and Apple sign-in providers
 
@@ -177,8 +190,10 @@ environment-specific values are known.
 - **Supabase:** Run the local Supabase stack with the Supabase CLI using `supabase start`.
   Use the local project's generated configuration and keys; do not point local work at a
   hosted staging or production project.
-- **Email:** Use the local Supabase email inbox. It captures test messages locally; no
-  real email is sent.
+- **Email:** By default use the local Supabase email inbox, which captures messages and
+  does not send real mail. A developer may opt into custom local SMTP using the ignored
+  `backend/.env` and the opt-in Auth blocks in `backend/supabase/config.toml` described
+  above. Do not reuse hosted credentials locally.
 - **Push:** Real push credentials are not required locally.
 - **Secrets and configuration:** Supabase supplies its project URL and API keys to local
   Edge Functions. `DASHBOARD_ORIGINS` defaults to the two localhost origins documented

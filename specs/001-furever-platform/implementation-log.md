@@ -2716,3 +2716,25 @@ PASS. The tests mutate only the local test database and use disposable synthetic
 **Files**: `backend/supabase/migrations/20261027140000_create_owner_profiles_for_auth_users.sql`,
 `backend/supabase/tests/018_auth_owner_profile_creation.test.sql`, `specs/001-furever-platform/{tasks.md,
 implementation-log.md}`. No D02 task was marked complete by this batch.
+
+## D02 — local SMTP setup preparation (2026-10-27)
+
+Confirmed that `admin-create-staff` sends invitations through Supabase Auth Admin and the dashboard recovery
+flow uses `resetPasswordForEmail`; neither flow sends directly from an Edge Function. Added an opt-in local
+Auth SMTP configuration scaffold mapping the existing `backend/.env.example` names to SMTP host, port, user,
+password, From address, and sender name. Added local invite/recovery template paths while explicitly leaving
+the login-code template unwired under the approved Option C blocker. Expanded `docs/environments.md` with
+local setup, hosted-project separation, provider-specific DNS verification, and the warning that SMTP does
+not establish custom OTP security.
+
+No SMTP values or provider/domain details were available during this batch, so the local SMTP block remains
+commented and no SMTP connection, email delivery, invitation acceptance, or recovery authentication was
+claimed. Hosted Supabase was not modified. T140, T145, T146, T152, T153, and T210 remain open/partial; the
+D02 verified count remains 54/97 (55.67%).
+
+**Verification**: `pnpm.cmd exec vitest run --config backend/supabase/templates/vitest.config.ts` PASS
+(1 file / 6 tests; Vite config-loader warning); `git diff --check` PASS. No credential values were read or
+printed. No task checkbox was promoted.
+
+**Files**: `backend/supabase/config.toml`, `docs/environments.md`, `specs/001-furever-platform/tasks.md`,
+`specs/001-furever-platform/implementation-log.md`.

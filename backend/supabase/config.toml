@@ -242,20 +242,27 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-# Use a production-ready SMTP server
+# Custom SMTP is intentionally opt-in. Put provider values in ignored
+# backend/.env first, then uncomment this block and restart the local stack.
+# Never copy SMTP credentials into this tracked file.
 # [auth.email.smtp]
 # enabled = true
-# host = "smtp.sendgrid.net"
-# port = 587
-# user = "apikey"
-# pass = "env(SENDGRID_API_KEY)"
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
+# host = "env(SMTP_HOST)"
+# port = "env(SMTP_PORT)"
+# user = "env(SMTP_USER)"
+# pass = "env(SMTP_PASSWORD)"
+# admin_email = "env(SMTP_SENDER_EMAIL)"
+# sender_name = "env(SMTP_SENDER_NAME)"
 
-# Uncomment to customize email template
+# These templates contain English and Arabic sections. Arabic copy remains a
+# draft pending native review. Do not wire login-code.html until the approved
+# custom OTP flow has a proven, non-bypassable Supabase session mechanism.
 # [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# subject = "Your FurEver clinic invitation / دعوة عيادة FurEver"
+# content_path = "./supabase/templates/staff-invite.html"
+# [auth.email.template.recovery]
+# subject = "Reset your FurEver password / إعادة تعيين كلمة مرور FurEver"
+# content_path = "./supabase/templates/password-reset.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
