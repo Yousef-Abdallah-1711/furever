@@ -6,6 +6,34 @@
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial; local dashboard Auth integration is now exercised end to end.
 **Phase status:** D02 remains open. No D03 work has started.
 
+## Session update — local Auth email and staff invitation integration (2026-10-27)
+
+- Activated only the local invite and recovery HTML templates in `backend/supabase/config.toml`. The SMTP
+  block remains disabled because ignored `backend/.env` has a blank `SMTP_PASSWORD`; the exposed chat value
+  was not stored or used. No hosted Supabase configuration was changed.
+- Local Supabase Auth and Mailpit delivered bilingual invitation and recovery messages with no unresolved
+  variables. Recovery link/password update/sign-in passed; recovery link reuse failed as expected; existing
+  and unknown accounts returned the same status; immediate resend was throttled (429) and later resend
+  delivered; temporary invitation and recovery expiry checks passed. Restored local expiry to 3600 seconds.
+- Synthetic clinic manager tests against the running Edge Function passed: same-clinic invite 201 with
+  Mailpit delivery, cross-clinic and manager-role escalation 403, duplicate invitation 409. A synthetic
+  invitee followed the delivered Auth link, set a password, accepted successfully, retried idempotently,
+  and signed in. Synthetic users and D02 clinics were cleaned up; no matching Auth user or clinic fixtures
+  remain.
+- T140/T210 remain partial pending Hostinger delivery and browser acceptance UI verification. T145 remains
+  open pending a freshly rotated password entered directly into ignored `backend/.env`, SMTP AUTH, sender
+  verification, and external inbox proof. T146 hosted settings remain unconfigured. T152/T153 remain
+  partial pending Arabic native review and common-client preview. T120/T138/T139 remain blocked on safe
+  custom-OTP session issuance and proof against public Auth bypass. No task was promoted; D02 remains
+  54/97 verified (55.67%).
+- Tests: template Vitest 1 file / 6 tests PASS; local pgTAP 10 files / 89 assertions PASS; local policy
+  checker 32 policies PASS via `SUPABASE_DB_CONTAINER=supabase_db_backend`; Auth/Mailpit integration checks
+  above PASS; `git diff --check` PASS. The first policy-checker call lacked DB connection configuration
+  and failed with its setup message; the supported container invocation passed. Hostinger SMTP AUTH,
+  external inbox, hosted Auth, native builds, and browser acceptance page were NOT RUN.
+- Starting HEAD and `origin/main` were both `46df76a82658cd2adb57cc1ec1cc8efbd0c0ad3d`. Current changes
+  are not committed yet. Protected audit handoff files remain untracked and untouched.
+
 ## Session update — bilingual email templates (2026-10-27)
 
 - Added English/Arabic RTL HTML artifacts for login code, staff invitation, and password reset under

@@ -577,8 +577,12 @@ environments only, not local dev.
   **Partial 2026-10-27:** creation/cancellation/acceptance RPCs enforce clinic scope and stored role level;
   acceptance derives access only from the pending invitation, and role changes are audited and protected.
   The Edge Function verifies the caller, creates the policy-checked invite before sending through Supabase
-  Auth, and cancels it after a definite delivery failure. Local SMTP/auth delivery and acceptance UI are
-  not runtime-verified; hosted SMTP remains T145's prerequisite. T140 remains open.
+  Auth, and cancels it after a definite delivery failure. **Local Auth/Mailpit integration verified
+  2026-10-27:** a synthetic clinic manager sent and accepted a same-clinic vet invitation; the invite link
+  established a session, password setup and sign-in succeeded, acceptance retry was idempotent, and the
+  Edge Function refused cross-clinic, manager-role escalation, and duplicate invitations (403/403/409).
+  The invitation HTML was actually delivered to Mailpit. Hostinger SMTP delivery, hosted delivery, and the
+  browser acceptance UI remain unverified; T140 remains open.
 - [x] T141 [P] [D02] Edge Function `admin-set-user-status/`, calling `write_audit_log()` for every status
   change. Depends on T130. [AUTH-10][AD-03]
 - [ ] T142 [P] [D02] Edge Function `delete-account/`. [AUTH-08] **Owner decision (2026-10-27):** require
@@ -601,9 +605,11 @@ environments only, not local dev.
   login-code email template (`{{ .Token }}`, not `{{ .ConfirmationURL }}` — research.md §12) in
   `config.toml` and in the staging and production projects. [AUTH-01] **Partial 2026-10-27:** Hostinger
   Email is selected for the local sender `furever@rakmyat.online`; local host/port/user/from/name are set in
-  ignored `backend/.env`. Public DNS currently resolves the Hostinger MX, SPF, all three Hostinger DKIM
-  CNAMEs, and a DMARC record. The mailbox password pasted into chat is treated as exposed and has not been
-  stored or used; rotate it and set the replacement locally before SMTP authentication/delivery checks.
+  ignored `backend/.env`; `SMTP_PASSWORD` is currently blank. Public DNS currently resolves the Hostinger
+  MX, SPF, all three Hostinger DKIM CNAMEs, and a DMARC record. The mailbox password pasted into chat is
+  treated as exposed and has not been stored or used; set a freshly rotated replacement locally before
+  SMTP authentication/delivery checks. Local Auth invite/recovery templates render and deliver through
+  Mailpit, but this does not test Hostinger SMTP.
   Hostinger dashboard verification and hosted Supabase configuration remain unverified/not performed. The
   login-code template stays unwired until the approved custom OTP session/bypass architecture is proven.
 - [ ] T146 [D02] Document and wire required Supabase secrets for every Edge Function above in
@@ -613,7 +619,8 @@ environments only, not local dev.
   wiring and exact hosted origins remain pending. Local SMTP wiring now maps the ignored `backend/.env`
   names `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_SENDER_EMAIL`, and
   `SMTP_SENDER_NAME` to the opt-in Auth SMTP block; SMTP credentials are not Edge Function secrets.
-  Provider values, verified domain/DNS records, and hosted project settings are not yet available.
+  Hostinger connection values and publicly resolvable DNS records are documented, but authenticated SMTP,
+  provider dashboard sender verification, and hosted project settings are not verified/configured.
   T139/T140/T142 are incomplete, and T143 currently exports only schema sections available in D02. Do not
   mark complete or run `supabase secrets set` until the projects and values are available. No credentials
   are included.
@@ -670,15 +677,17 @@ environments only, not local dev.
 - [ ] T152 [D02] Author the 3 bilingual (Arabic and English in the same email, RTL-safe) email templates —
   login code, staff invite, password reset — in `backend/supabase/templates/` (Arabic marked draft, needs
   native review per `spec.md` Open Decisions item 11). Depends on T145.
-  **Partial 2026-10-27:** all three HTML artifacts now contain English LTR and Arabic RTL sections using
-  documented Supabase Auth variables. They are deliberately not wired into Auth configuration: the login
-  template must not create an alternate public-OTP path around approved Option C, and SMTP delivery is
-  unconfigured. Arabic native review and provider setup remain outstanding.
+  **Partial 2026-10-27:** all three HTML artifacts contain English LTR and Arabic RTL sections using
+  documented Supabase Auth variables. Invite and recovery templates are wired into local Auth config and
+  rendered/delivered through Mailpit; the login template remains unwired because it must not create an
+  alternate public-OTP path around approved Option C. Arabic native review and Hostinger delivery remain
+  outstanding.
 - [ ] T153 [D02] Rendering check test for the 3 templates (T152): both languages render correctly in one
   email, RTL markup is valid, no broken layout in common email clients' preview panes.
   **Partial 2026-10-27:** standalone Vitest rendering checks cover all three fixtures, bilingual language/
-  direction sections, placeholder substitution, escaped values, and email-safe table structure. Preview
-  rendering in common email clients has not been run.
+  direction sections, placeholder substitution, escaped values, and email-safe table structure. Local
+  Mailpit Auth messages also rendered both language sections and resolved invite/recovery variables without
+  unresolved placeholders. Preview rendering in common email clients and Arabic native review have not run.
 
 ## Local email inbox test helper (new, 2026-10-18)
 
@@ -916,7 +925,10 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   pattern: Sign in). [CS-01] **Partial 2026-10-27:** bilingual page verifies the invite session, sets the
   password, calls `accept_staff_invitation()`, refreshes the session, requires the refreshed
   `user_role=clinic_staff` claim, then navigates to `/clinic`. Unit coverage verifies sequencing and failure
-  states; live invitation/Auth/SMTP acceptance is not verified, so this task remains open.
+  states. **Local Auth/Mailpit integration verified 2026-10-27:** a synthetic invitee followed the delivered
+  Auth verification link, set a password, accepted the invitation, retried idempotently, and signed in.
+  Browser execution of this page, role-claim refresh/navigation, and Hostinger delivery remain unverified;
+  this task remains open.
 - [x] T211 [P] [D02] Build `/forgot-password` — `web/src/app/[locale]/(auth)/forgot-password/page.tsx`
   (Spec; pattern: Sign in). **Completed 2026-10-27:** bilingual recovery request uses Supabase Auth's
   `resetPasswordForEmail` with a locale-specific `/reset-password` callback and generic success copy;

@@ -255,14 +255,15 @@ otp_expiry = 3600
 # sender_name = "env(SMTP_SENDER_NAME)"
 
 # These templates contain English and Arabic sections. Arabic copy remains a
-# draft pending native review. Do not wire login-code.html until the approved
-# custom OTP flow has a proven, non-bypassable Supabase session mechanism.
-# [auth.email.template.invite]
-# subject = "Your FurEver clinic invitation / دعوة عيادة FurEver"
-# content_path = "./supabase/templates/staff-invite.html"
-# [auth.email.template.recovery]
-# subject = "Reset your FurEver password / إعادة تعيين كلمة مرور FurEver"
-# content_path = "./supabase/templates/password-reset.html"
+# draft pending native review. Invite/recovery use Supabase Auth links. Do not
+# wire login-code.html until approved custom OTP session issuance and
+# non-bypassability are proven.
+[auth.email.template.invite]
+subject = "Your FurEver clinic invitation / دعوة عيادة FurEver"
+content_path = "./supabase/templates/staff-invite.html"
+[auth.email.template.recovery]
+subject = "Reset your FurEver password / إعادة تعيين كلمة مرور FurEver"
+content_path = "./supabase/templates/password-reset.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

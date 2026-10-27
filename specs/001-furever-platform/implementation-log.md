@@ -2764,3 +2764,45 @@ settings only and was not staged.
 **Additional SMTP protocol check**: opened TLS to `smtp.hostinger.com:465`, received the SMTP greeting,
 completed `EHLO`, and closed with `QUIT`. TLS and protocol negotiation passed; SMTP AUTH was deliberately
 not attempted because the only supplied mailbox password must be rotated first.
+
+## D02 — local Auth email and staff invitation integration (2026-10-27)
+
+Activated the local-only bilingual invite and recovery templates in `backend/supabase/config.toml`; kept
+the login-code template unwired under the approved custom OTP security gate. The ignored local
+`backend/.env` remains protected and `SMTP_PASSWORD` is blank, so the Hostinger SMTP block is not active.
+The replacement mailbox credential was not supplied through a secure local-file update during this run;
+the previously exposed chat value was not saved or used. No hosted Supabase setting was changed.
+
+Using the running local Supabase Auth and Mailpit, verified actual invite and recovery email rendering and
+delivery. Messages contained both English and Arabic sections and no unresolved template variables.
+Recovery integration established a session from the link, changed the password, allowed subsequent
+password sign-in, rejected token reuse, and returned the same HTTP status for existing and unknown users.
+Immediate resend returned 429 with no duplicate message; a later request after cooldown delivered. Short
+temporary expiry checks rejected both recovery and invitation links after expiry; local expiry was restored
+to 3600 seconds and Supabase restarted.
+
+The `admin-create-staff` Edge Function was exercised with a synthetic clinic manager: same-clinic vet invite
+returned 201 and reached Mailpit; cross-clinic invite and manager-role escalation returned 403; duplicate
+invite returned 409. A second synthetic invitee followed the delivered verification link, set a password,
+accepted the clinic invitation, retried acceptance idempotently, and signed in. SQL fixtures, test clinics,
+and synthetic Auth users were removed afterward; the current local database has no `d02-*@example.test`
+users or `D02 Clinic *` fixtures. These are local Auth/Mailpit results, not Hostinger SMTP delivery or the
+dashboard browser acceptance page.
+
+T140 and T210 remain open pending hosted/real-provider delivery and browser acceptance integration. T145
+remains open because the SMTP password is blank and Hostinger AUTH/inbox delivery are untested. T146's
+hosted setup remains unconfigured. T152/T153 remain partial pending native Arabic review and common-client
+preview rendering. No D02 task was promoted; verified completion remains 54/97 (55.67%). T120/T138/T139
+remain blocked on a supported refreshable Supabase session mechanism and public Auth bypass resistance.
+
+**Verification**: local Auth invite and recovery requests/delivery/links, expiry/reuse, rate limiting,
+enumeration status equivalence, staff authorization, invitation acceptance and retry, and synthetic cleanup
+passed. `pnpm.cmd exec vitest run --config backend/supabase/templates/vitest.config.ts` PASS (1 file / 6
+tests); `pnpm.cmd --filter backend exec supabase test db --local` PASS (10 files / 89 assertions);
+`SUPABASE_DB_CONTAINER=supabase_db_backend pnpm.cmd db:policy-coverage` PASS (32 policies referenced);
+`git diff --check` PASS. An initial policy-checker invocation without a database connection failed with
+its documented missing-connection message; the supported container invocation then passed. Hostinger SMTP
+AUTH, external inbox delivery, hosted Auth, and browser UI acceptance were NOT RUN.
+
+**Files**: `backend/supabase/config.toml`, `specs/001-furever-platform/tasks.md`,
+`specs/001-furever-platform/implementation-log.md`, `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`.
