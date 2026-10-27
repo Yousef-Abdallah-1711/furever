@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `dddd429` (`feat(D02): add mobile entry screens`), recorded in the checkpoint update.
+**Latest implementation commit:** `5eb87fd` (`feat(D02): add mobile profile screens`).
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -11,7 +11,7 @@
 - **Complete:** T123 launch cities (Cairo, Giza, Alexandria; stable IDs, bilingual, idempotent seed,
   deterministic order; pgTAP coverage).
 - **Complete:** T187 shared Egyptian phone contract, optional empty value, E.164 normalization, auth
-  profile schema, and database constraint/tests. Screens still need to use the shared schema.
+  profile schema, and database constraint/tests. T201 uses the shared optional-phone schema.
 - **Complete:** T186 local standalone policy checker. `pnpm db:policy-coverage` checks the live local
   database and fails nonzero for missing coverage; all 32 current policies have test references. No
   hosted CI gate exists; T074-T076 remain descoped.
@@ -58,6 +58,12 @@
 - **Complete:** T190-T193 provide the mobile Splash, language selection, three-slide onboarding, and welcome
   screens. The entry path was browser-verified. T193 calls the provider modules; Google/Apple native runtime
   remains unverified while T147-T150 are open. T176 Home now uses `/home` to keep `/` available for Splash.
+- **Complete:** T198 Profile reads the signed-in profile and localized city and links to Edit profile,
+  Settings, Help, and About. T199 reads/writes the three existing `notif_prefs` settings under profile RLS.
+  T201 edits name, active city, and optional phone with shared Egyptian-format validation. T202 provides
+  localized expandable FAQs and uses only configured, validated `app-config` support channels. T203 shows
+  the Expo app version. Static export/browser behavior is verified; authenticated profile read/write
+  behavior was not exercised with a real session, and native device behavior is not verified.
 
 The nine owner decisions are recorded in `research.md`, `spec.md`, `plan.md`, and task notes. Approval
 does not mean every decision's implementation is complete.
@@ -81,6 +87,11 @@ does not mean every decision's implementation is complete.
   enabled locally, but hosted settings/credentials and native runtime are unverified.
 - **T172:** hook and tests exist, but the representative `/pets/new` action is owned by D03 and was not
   started. T172 stays open.
+
+- **Screens still open:** T194-T195 remain blocked on the safe OTP/session design (T138/T139); T196 lacks
+  approved legal content/version inputs and the verified auth/onboarding flow; T200 account linking/deletion
+  depends on T179/T180/T142; T204 needs approved Terms/Privacy text and versions. T207/T211 and T213-T216
+  remain to be assessed/implemented where existing supported auth flows permit.
 
 ## Verification evidence
 
@@ -123,6 +134,11 @@ does not mean every decision's implementation is complete.
 - T190-T193 continuation: Expo web export PASS (21 routes); Playwright PASS (6 entry/system tests); mobile Jest
   PASS (14 suites / 37 tests), typecheck PASS, lint PASS (3 pre-existing warnings), token lint PASS, and i18n
   parity PASS (765 keys). Root Splash and tab Home route coexist as `/` and `/home` respectively.
+- T198/T199/T201-T203 continuation: Expo web export PASS (25 routes); full mobile Playwright PASS (11 tests);
+  Jest PASS (14 suites / 37 tests); typecheck PASS; lint PASS (3 existing warnings); design-token check PASS
+  (0 violations); i18n parity PASS (787 keys); Biome and `git diff --check` PASS. New browser tests verify
+  About version display, Help FAQ expansion and missing-contact fallback, and Arabic Help/Edit-profile copy.
+  This did not establish authenticated database writes or native runtime.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 
@@ -137,8 +153,10 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Resolve T138's authoritative email-code path and complete SMTP/template readiness before implementing
-   login, password-reset, or real OTP E2E flows; do not add a client path that bypasses the guard.
+1. Implement T207's dashboard password sign-in and MFA screens using the installed Supabase Auth APIs,
+   preserving the existing middleware role/AAL2 gates; keep email-code mobile sign-in blocked until T138's
+   authoritative safe session path is resolved. Then consider T211 only if its supported recovery flow is
+   available without hosted SMTP.
 2. Define and implement the platform-admin lifecycle contract before completing T208's invite/role/MFA/remove
    actions. Complete T209 after secure profile, password, and MFA management flows are available.
 3. Extend T143 as later-phase data tables land and complete T142 only when trusted backend reauthentication

@@ -2383,3 +2383,36 @@ and `/home`); mobile Playwright PASS (6 tests across entry and system-screen spe
 `index.tsx`), `mobile/app/(tabs)/_layout.tsx`, `mobile/src/features/onboarding/router.ts`,
 `mobile/tests/{d02-entry-screens.spec.ts,serve-static.cjs}`, both locale dictionaries, `tasks.md`, this log,
 and the D02 checkpoint. **Commit**: `dddd429`.
+
+## D02 — T198, T199, T201-T203: mobile profile, preferences, help, and about screens (2026-10-27)
+
+Replaced the placeholder Profile tab with a signed-in profile summary (name, email, localized city) and
+navigation to Edit profile, Settings, Help, and About. The Edit profile form reads the caller's row and
+active cities through the public Supabase client, validates the required name/city and optional Egyptian
+phone with the shared `optionalPhoneSchema`, and updates only `full_name`, `city_id`, and `phone` through
+the existing owner-scoped `profiles_update_self` policy. Settings reads and writes the existing three-key
+`profiles.notif_prefs` JSON field (vaccination reminders, booking updates, offers) through the same RLS
+policy; it uses native `Switch` controls and token-resolved colors. Help expands two localized FAQs and
+displays only support email/phone/WhatsApp values returned by `app-config`; email/phone formats and the
+WhatsApp HTTPS host are checked before opening a platform URL. When support contacts are absent or invalid,
+the screen shows the translated unavailable state. About reads `Constants.expoConfig.version`.
+
+Added the same keys in English and Arabic, with Arabic round-tripped through UTF-8 and locale key parity
+confirmed. Added Playwright coverage for About version display, Help FAQ expansion/fallback, and Arabic
+Help/Edit-profile copy. The initial browser check exposed that the new copy lived under
+`screens.tabsProfile`, while the components first looked up a root `tabsProfile` namespace; corrected all
+lookups to the actual dictionary path before the full suite passed.
+
+**Verification**: mobile Expo web export PASS (25 static routes, including all four new profile routes);
+full mobile Playwright PASS (11 tests, including the D00e/D01 screenshot specs and the new profile spec);
+mobile Jest PASS (14 suites / 37 tests); mobile TypeScript PASS; mobile lint PASS (0 errors, 3 existing
+warnings in unrelated i18n files); direct design-token lint PASS (0 violations across the five screens and
+new Playwright spec); `pnpm i18n:check` PASS (787 matching keys); Biome PASS; `git diff --check` PASS.
+The profile reads and writes were not exercised with a real authenticated Supabase session, and no native
+device/build was available; only static export/browser behavior and static type/policy-contract alignment
+are verified. Generated D01 gallery screenshots were restored after the full suite rewrote them with
+non-deterministic pixel differences.
+
+**Files**: `mobile/app/(tabs)/profile.tsx`, `mobile/app/profile/{settings,edit,help,about}.tsx`,
+`mobile/tests/d02-profile-screens.spec.ts`, both locale dictionaries, `tasks.md`, and this log.
+**Commit**: `5eb87fd`.
