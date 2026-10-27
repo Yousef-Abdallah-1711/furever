@@ -45,6 +45,26 @@
 - Documentation commit `6034e1bccd7eb0ba2b7768992516696b1d9900d1` is pushed. HEAD and `origin/main` both
   equal `6034e1bccd7eb0ba2b7768992516696b1d9900d1` before this checkpoint refresh.
 
+## Session update — Auth owner-profile provisioning and export integration (2026-10-27)
+
+- Local email signup revealed there was no `auth.users` trigger to create `profiles`; the first export call
+  failed with `PROFILE_NOT_FOUND`. Added and locally applied migration
+  `20261027140000_create_owner_profiles_for_auth_users.sql`: email/Google/Apple users receive an owner
+  profile before JWT issuance; a pending staff invitation is left for the existing acceptance RPC.
+- Added pgTAP coverage for email, Google, Apple, pending-invite exclusion, and unsupported providers.
+  Local suite: 10 files / 89 assertions PASS. Verified the first email signup JWT contains
+  `user_role=owner`.
+- Local authenticated export integration PASS with disposable user and synthetic terms/privacy consents and
+  push metadata: current owner data exported, raw push token omitted, future-phase sections identified,
+  `private, no-store` returned. Cleanup removed child rows and Auth user, and confirmed no fixture remained.
+- T143 is runtime-verified for current D02 owner-schema data, but remains partial until pets, records, and
+  bookings exist in later phases and are added to the archive. No D02 task was promoted to verified; count
+  stays 54/97 (55.67%). T138/T139 remain blocked on safe custom-OTP session issuance; T173, T152/T153 remain
+  partial as recorded above.
+- Commit `fac1f584a51071d786e8a07a80f9a1f96f6b42a5` is pushed. HEAD and `origin/main` both equal this hash
+  before this checkpoint refresh. Local Supabase has 24 applied migrations through `20261027140000`.
+- The three protected audit handoff documents remain untouched and unstaged.
+
 ## Completed or advanced in this batch
 
 - **Complete:** T123 launch cities (Cairo, Giza, Alexandria; stable IDs, bilingual, idempotent seed,
