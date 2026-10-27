@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `ec08c70` (`fix(D02): lazy-load Apple sign-in on iOS`).
+**Latest implementation commit:** `5f3ad98` (`feat(D02): add mobile account identity linking`), pending push.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -27,6 +27,13 @@
   schemes. T151 has nonce and availability tests. Provider credentials, UI integration, Android import-path
   verification, and an EAS development build remain outstanding. **Complete:** T151 now verifies Apple
   nonce handling and that the Welcome screen's Android path does not invoke/load the Apple adapter; iOS does.
+- **Complete (code-level):** T179/T180 implement supported native Google token linking for an already
+  authenticated owner and map `identity_already_exists` to `IDENTITY_ALREADY_LINKED`. The Account screen
+  exposes this action only when Google is not linked, reads the current linked identities, provides a
+  localized conflict state, exports the currently supported user data, and signs out. T200 remains partial:
+  deletion awaits the safe coordinated backend contract in T142. Secondary email identity linking remains
+  deferred because its safe attachment sequence is not established. Google credentials and native
+  authenticated runtime were unavailable, so provider linking was not runtime-verified.
 - **Partial:** T142 has a backend helper that checks the signed `amr` authentication timestamp within five
   minutes after Auth verification. Six focused tests pass. The delete endpoint is not implemented because
   the required data/file cleanup and Auth deletion need a safe coordinated lifecycle.
@@ -97,14 +104,15 @@ does not mean every decision's implementation is complete.
 - **T147/T148/T150/T184:** native OAuth config/build remains incomplete. T150 package install recovered;
   the compatible Apple package and Google Sign-In 16.1.5 installed with Expo's SDK 57 resolver. Google/
   Apple credentials, EAS account/build, Android SDK, Java, `adb`, and Maestro CLI are missing or unverified.
-- **T179:** Google linking is approved; secondary email identity linking is deferred. Manual Linking is
-  enabled locally, but hosted settings/credentials and native runtime are unverified.
+- **T179/T180:** supported Google linking and conflict mapping are implemented. Manual Linking is enabled
+  in local config, but hosted settings/credentials and native runtime are unverified. T181 remains open for
+  real provider-backed link/conflict verification; email identity linking is deferred.
 - **T172:** hook and tests exist, but the representative `/pets/new` action is owned by D03 and was not
   started. T172 stays open.
 
 - **Screens still open:** T194-T195 remain blocked on the safe OTP/session design (T138/T139); T196 lacks
-  approved legal content/version inputs and the verified auth/onboarding flow; T200 account linking/deletion
-  depends on T179/T180/T142; T204 needs approved Terms/Privacy text and versions. T213/T215 authenticated
+  approved legal content/version inputs and the verified auth/onboarding flow; T200 remains partial pending
+  T142's safe account-deletion endpoint; T204 needs approved Terms/Privacy text and versions. T213/T215 authenticated
   E2E require test Auth accounts and email/MFA setup, and T216 remains open.
 
 ## Verification evidence
@@ -169,6 +177,11 @@ does not mean every decision's implementation is complete.
   mobile TypeScript PASS; mobile lint PASS (0 errors, 3 existing warnings); token check PASS (0 violations);
   Expo web export PASS (25 static routes) using local-only placeholder Supabase environment values. No native
   Android/iOS execution was performed.
+- T179/T180/T200 continuation: mobile Jest PASS (16 suites / 44 tests, including 5 linking cases); mobile
+  TypeScript and lint PASS (0 errors, 3 existing unrelated warnings); design-token check PASS (0 violations);
+  i18n parity PASS (849 keys); Expo web static export PASS (26 routes, including `/profile/account`) with
+  local-only placeholder Supabase values; `git diff --check` PASS. No live provider credential, Auth session,
+  native linking flow, or export invocation was available.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 

@@ -2554,3 +2554,4 @@ identity, or live export response was available for runtime verification.
 **Files**: `mobile/src/features/account/{linking,linking-core,linking.test}.ts`,
 `mobile/app/profile/account.tsx`, `mobile/app/(tabs)/profile.tsx`, both locale dictionaries,
 `specs/001-furever-platform/{tasks.md,research.md}`, this log, and the D02 progress checkpoint.
+**Commit**: `5f3ad98`.
