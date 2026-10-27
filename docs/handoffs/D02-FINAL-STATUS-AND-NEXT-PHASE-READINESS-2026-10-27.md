@@ -317,5 +317,6 @@ rerun in this final verification.
 
 The protected audit documents were not edited, staged, committed, or pushed. The only implementation test
 change in this verification updates `mobile/tests/d02-profile-screens.spec.ts` so signed-out direct
-`/profile/*` links assert the correct Welcome redirect instead of expecting protected content. This
-documentation commit must be reviewed and pushed normally; no SMTP secrets or hosted settings are involved.
+`/profile/*` links assert the correct Welcome redirect instead of expecting protected content. The test
+correction and this handoff were committed and pushed normally; local and remote `main` matched after push.
+No SMTP secrets or hosted settings were included or changed.
