@@ -3063,3 +3063,43 @@ FAIL; T216 FAIL; D04 BLOCKED. Full A-Q evidence is in
 pushed normally to `origin/main`; `git ls-remote` verified remote `main` matched local
 `2a39c340c09b89dc22643bf22125679cc4e37b7c` at the post-push checkpoint. This closeout note is committed
 separately. Five pre-existing untracked D02 owner documents remain unmodified and unstaged.
+
+## D02/D03 integrated continuation (2026-10-27)
+
+Starting repository was `main` at `843d14c6387afed05a00435b3d4f1ffdfcaa09d2`, equal to `origin/main`,
+with only the five pre-existing untracked owner handoff/audit files. Those five files were preserved.
+
+**OTP architecture review:** inspected the running local GoTrue v2.197.0 image and rechecked current
+Supabase Auth Hooks, rate limits, sessions, Admin `generateLink()`, and self-hosted hook docs. No
+documented email-OTP attempt hook or supported custom-code-to-refreshable-session exchange was found.
+Self-hosting does not add an OTP verifier hook. Upstream GoTrue issue #2819 remains an open proposal for
+per-token failed-attempt enforcement, not a released capability. Recorded A-D findings in
+`docs/decisions/ADR-0001-option-c-session-establishment.md` and `research.md` §19. No auth implementation,
+Auth config, database state, or hosted project was changed. T120 remains open (no live numeric-code
+wrong-attempt test); T138/T139 remain blocked; T216 remains FAIL.
+
+**T172:** the D03 Add Pet final submit uses `useOfflineGuardedAction`; the user sees a disabled reason and
+the handler is suppressed if an offline callback is invoked. The focused test passes, so T172 was marked
+complete. D02 verified count advances from 54/97 to **55/97**; T216 remains FAIL.
+
+**Playwright harness repair:** the default web Playwright config was collecting the authenticated
+invitation suite even though that suite launches a separate server at port 3010 while the regular server
+is on port 3100. Split the package scripts and excluded that suite from the default config. The standard
+suite then passed 11/11, and the dedicated authenticated invitation suite passed 4/4 (English acceptance,
+reused link, invalid token, Arabic acceptance/RTL). Expired Auth-link behavior remains unverified; T210
+remains partial.
+
+**Fresh verification on this continuation:** mobile Jest 22 suites/64 tests; mobile typecheck PASS; mobile
+lint PASS with 3 existing warnings; shared Vitest 5 files/33 tests; web Vitest 8 files/33 tests; web
+typecheck PASS; web lint PASS with 1 existing warning; standard web Playwright 11/11; authenticated web
+Playwright 4/4; mobile static Playwright 11/11; local pgTAP 14 files/152 assertions; policy coverage
+42/42; local Storage integration 20/20; Expo web export 32 static routes; i18n parity 920 keys; token
+build PASS; scoped token lint 0 violations. The first combined web Playwright invocation produced four
+port-mismatch failures; they disappeared after suite isolation, and both final invocations passed.
+
+**Native limits:** `java`, `adb`, Android emulator, EAS CLI, Maestro CLI, Deno, and `JAVA_HOME`/
+`ANDROID_HOME`/`ANDROID_SDK_ROOT` are absent. Expo web export and browser Playwright do not count as native
+acceptance. T236/T237 remain open; T237 and T216 remain FAIL; D03 is still 9 verified, 10 partial, 2
+open; D04 remains blocked. No legal document was approved and no cleanup deletion, schedule, worker, or
+hosted configuration was activated. Full command/evidence inventory is in
+`docs/handoffs/D02-D03-INTEGRATION-SESSION-2026-10-27.md`.

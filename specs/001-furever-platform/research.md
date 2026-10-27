@@ -548,3 +548,29 @@ and secondary email linking remains deferred.
 - **T187 phone validation:** accept Egyptian local mobile numbers with prefixes 010/011/012/015 and
   equivalent `+20` values, normalize to E.164, and reject other country codes, invalid lengths, and
   non-digit formatting.
+
+## 19. T120 current GoTrue/session review (2026-10-27)
+
+The current running local Auth image is `public.ecr.aws/supabase/gotrue:v2.197.0` (CLI 2.121.0).
+Rechecking current Supabase Auth Hooks, rate-limits, sessions, Admin `generateLink()`, and self-hosted
+Auth hooks does not establish an email-OTP verification-attempt hook or a supported exchange from an
+independently verified custom code into a refreshable Supabase Auth session. Self-hosting exposes
+configuration for supported hooks but does not add an OTP verification interception point. The current
+GoTrue verifier source is available at the v2.197.0 tag. An open Auth maintainer issue proposes a
+per-token failed-attempt cap; it describes this missing behavior but is not shipped functionality.
+
+Architecture A (native OTP) fails the approved lockout requirement; B (hooks/server checks) has no
+email-OTP verification hook; C (custom code then Auth session) lacks a documented session exchange; D
+(self-hosted Auth) uses the same GoTrue behavior and is not a fix without unsupported changes. See
+[`ADR-0001`](../../docs/decisions/ADR-0001-option-c-session-establishment.md) for the full evaluation.
+T120 remains open because a valid numeric OTP was not used for the five-wrong-attempt/cancellation
+experiment; prior malformed-token responses do not prove that behavior. T138/T139 remain blocked and no
+implementation or config change is authorized by this research update.
+
+Sources: [Auth Hooks](https://supabase.com/docs/guides/auth/auth-hooks),
+[rate limits](https://supabase.com/docs/guides/auth/rate-limits),
+[user sessions](https://supabase.com/docs/guides/auth/sessions),
+[`generateLink()`](https://supabase.com/docs/reference/javascript/auth-admin-generatelink),
+[self-hosted Auth hooks](https://supabase.com/docs/guides/self-hosting/self-hosted-auth-hooks),
+[GoTrue v2.197.0 verifier](https://github.com/supabase/auth/blob/v2.197.0/internal/api/verify.go),
+[upstream per-token OTP attempt proposal](https://github.com/supabase/auth/issues/2819).
