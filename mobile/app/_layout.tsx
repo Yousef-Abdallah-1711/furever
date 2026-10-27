@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { I18nProvider } from '@/i18n/provider';
 import { Providers } from './_providers';
 import { useTheme } from '@/hooks/useTheme';
@@ -28,9 +29,11 @@ export default function RootLayout() {
   return (
     <Providers>
       <I18nProvider>
-        <ThemedView className={`flex-1 ${theme === 'dark' ? 'dark' : ''}`} dataSet={{ theme }}>
-          <Stack screenOptions={{ headerShown: false }} />
-        </ThemedView>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ThemedView className={`flex-1 ${theme === 'dark' ? 'dark' : ''}`} dataSet={{ theme }}>
+            <Stack screenOptions={{ headerShown: false }} />
+          </ThemedView>
+        </GestureHandlerRootView>
       </I18nProvider>
     </Providers>
   );

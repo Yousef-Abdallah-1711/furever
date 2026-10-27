@@ -1,7 +1,7 @@
 # D02 Owner Decisions and Phase Transition
 
 **Date:** 2026-10-27
-**Status:** Proposal for owner review; no D03 work authorized or started.
+**Status:** Owner amendment recorded 2026-10-27; D03 implementation is authorized under the bounded exception below. D02 remains open and T216 remains failed.
 
 ## OTP architecture verdict
 
@@ -30,7 +30,7 @@ This is an access-blocking request stage, not completed deletion. No worker remo
 | OD-05 | T173, T196, T204 | Final approved bilingual Terms/Privacy content and stable version IDs are absent. | Supply approved texts/IDs; leave profile completion fail-closed; use synthetic docs only in isolated tests. | Owner requested English/Arabic drafts with `terms-v1.0.0`, `privacy-v1.0.0`, and proposed `2026-11-01`; drafts are saved under `docs/legal/drafts/` for owner/legal review only. Production completion remains fail-closed. | Unapproved text cannot establish informed consent. | Production T196/T204 and T216. | Review drafts with Egyptian counsel, complete missing operator/contact/regulatory/provider facts, then explicitly approve both translations, IDs, and date. |
 | OD-06 | T208 | Platform-admin invite, role change, MFA reset and removal contracts do not exist. | Implement audited service-only RPC/Edge Functions with recent MFA and dual approval for high-risk operations; limit to hosted dashboard; defer. | Define audited server-side contracts with active-actor and AAL2 checks before enabling lifecycle mutations. | Self-escalation, lockout, or unaudited privileged access. | T208 privileged lifecycle acceptance. | Approve eligible roles, break-glass procedure, and whether dual approval is required. |
 | OD-07 | T147, T148, T150, T181, T184, T189, T214 | OAuth credentials, EAS/native build, Java/Android SDK/adb and Maestro are unavailable. | Supply prerequisites; defer provider/native acceptance; remove provider requirements from phase gate through formal amendment. | Supply prerequisites and retain the current gate; do not claim native verification. | Provider and native behaviors remain unverified. | OAuth and native D02 acceptance. | Provide credentials/build environment/device access or approve a documented gate amendment. |
-| OD-08 | T216, T217–T237 | D02 exit gate fails, but owner may wish to start limited D03 work. | Path A: finish D02 gate first. Path B: explicitly amend the phase dependency for a restricted subset with safeguards. | Path A. If schedule pressure requires Path B, authorize only schema/model work and tests with no user-facing writes until T216 passes. | Premature app behavior could expose pet data without verified identity/ownership paths. | D03 start and all T216-gated work. | Explicitly approve or reject the Path B amendment before any D03 task begins. |
+| OD-08 | T216, T217–T237 | D02 exit gate fails, but owner may authorize D03 work in parallel. | Path A: finish D02 gate first. Path B: explicitly amend phase sequencing while keeping each D03 task's own dependency and security checks. | Path A was the prior recommendation. **Owner approved a limited phase-entry exception on 2026-10-27 for D03 T217–T237 only.** D02/T216 acceptance remains unchanged; D04 is not authorized. | Premature app behavior could expose pet data without verified identity/ownership paths. Retention remains legally unreviewed. | D03 tasks only, each gated by dependencies and controls; no D04+. Irreversible cleanup activation remains prohibited. | Resolved for D03 by the written owner amendment; T216 remains required for D02 completion and later phase entry. |
 
 ## Phase transition proposal
 
@@ -38,11 +38,13 @@ This is an access-blocking request stage, not completed deletion. No worker remo
 
 Resolve OD-01, obtain OD-05, close supported authenticated profile and invitation flows, finish account cleanup and retention design, obtain native/OAuth prerequisites or a formally amended gate, then execute the exact T216 exit checklist. Preserve D03 as not started until T216 passes.
 
-### Path B — request a limited D03 amendment
+### Owner-approved Path B — bounded parallel D03 development (2026-10-27)
 
-No Path B work is authorized by this proposal. If the owner explicitly amends the dependency, the proposed restricted set is **T217 (breeds schema/seed), T218 (pets schema), and database-only ownership/RLS tests for T218**. T219–T237 remain prohibited until T216 passes. No pet creation UI, onboarding, uploads, health data, sharing, public access, or production migration is included.
+The project owner explicitly authorized development of **D03 T217–T237** while D02 remains incomplete. This is a limited amendment to phase-entry sequencing only. It does not pass or waive T216, mark D02 complete, or authorize D04+. Every D03 task still requires its own dependencies, RLS/security controls, tests, and evidence. D03 may not bypass incomplete D02 onboarding or claim authenticated/native acceptance without the required runtime evidence. No hosted deployment is included.
 
-Required safeguards: owner-scoped `auth.uid()` policies; active-account checks; no anonymous pet reads; service-only seed/admin writes; negative cross-owner and deleted-account tests; local-only disposable fixtures; no hosted deployment; feature branches and a reversible migration plan. Entry criteria: written owner amendment, reviewed schema/data classification, verified D02 access-block policy contract, and passing local RLS tests. Exit criteria: migration and tests reviewed, no user-facing pet path, D02 blockers still visible, and rollback documented. Rollback: revert the migration only before downstream data exists; otherwise ship a forward migration that removes the limited schema without discarding user data. Update `plan.md`, `tasks.md`, phase dependency notes, and this decision before starting.
+**Retention safeguard:** T222/T223 cleanup architecture and isolated tests may be implemented, but scheduled irreversible deletion must remain disabled. The proposed retention schedule is pending Egyptian legal review and is not an approved legal policy. No production cleanup activation, real owner-data deletion, or use of the proposed 30-day period as an approved legal requirement is authorized.
+
+**Decision record:** authority: project owner; date: 2026-10-27; scope: D03 T217–T237 only; D02: open; T216: failed; D03: authorized for limited implementation, not completed; D04: blocked pending required gates or a separate owner decision. The original D02 and D03 acceptance criteria remain intact.
 
 ## Owner responses — 2026-10-27
 
@@ -53,4 +55,4 @@ Required safeguards: owner-scoped `auth.uid()` policies; active-account checks; 
 
 ## Current result
 
-T216 remains **FAIL**. D03 remains **BLOCKED / NOT STARTED**. No task is newly marked complete from the failed authenticated invitation attempt or the account-deletion foundation.
+T216 remains **FAIL** and D02 remains **OPEN**. D03 is **AUTHORIZED FOR LIMITED IMPLEMENTATION** by the owner amendment above; this authorization alone does not complete any D03 task. D04 remains **BLOCKED**. The D02 verified count remains 54/97 until fresh evidence supports a change.

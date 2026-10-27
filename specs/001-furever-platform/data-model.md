@@ -115,6 +115,15 @@ Supabase Auth's identity system.
 | `health_records` | Timeline entries | `pet_id`, `record_type`, `title`, `description`, `recorded_on`, `clinic_id`, `created_by`, `source` (`record_source`), **`created_by_clinic_id`** *(new, nullable)* |
 | `record_attachments` | Files on a record | `record_id`, `path`, `mime`, `size_bytes` |
 
+**D03 pet Storage layout:** `pet-photos` and `pet-documents` are private buckets with a 10 MiB per-object
+limit and bucket-specific MIME allowlists. Client object names use `{authenticated owner UUID}/{pet UUID}/
+{random filename}`. Storage RLS verifies the authenticated owner segment, references a live pet row owned by
+that user, and calls the same active-profile/current-consent guard as pet-table access. Authenticated owners
+can read, add, and remove only objects under their active pets; anonymous access and overwrite/update are
+denied. A soft-deleted pet or suspended/deleted/incomplete account loses Storage access immediately. Future
+D04 clinic access must extend these policies against appointment and record ownership before clinic reads
+are enabled.
+
 ## Clinics and booking
 
 | Table | Purpose | Key columns |
@@ -138,16 +147,21 @@ Supabase Auth's identity system.
 | `audit_logs` | Admin/clinic actions + admin health-data reads | `actor_id`, `action`, `entity`, `entity_id`, `diff jsonb` |
 | `storage_cleanup_queue` *(new, 2026-10-19, `/speckit-analyze` finding C1)* | Paths awaiting deletion through the Storage API | `bucket`, `path`, `queued_at`, `done_at` — service-role only; see "Purge mechanism" below |
 
-**Purge mechanism (new, 2026-10-19)**: a `security definer` function `purge_soft_deleted()` hard-deletes
-`pets`/`profiles` rows (and, from D04 onward, `vaccinations`/`health_records`/`record_attachments`, via
-cascade) where `deleted_at` is more than 30 days old, writing one `audit_logs` row per run via
-`write_audit_log()`; a daily `pg_cron` job (03:00 `Africa/Cairo`, off-peak) calls it. It also deletes
+**Purge mechanism (new, 2026-10-19; activation gated by owner amendment 2026-10-27)**: the planned
+`security definer` function `purge_soft_deleted()` hard-deletes `pets`/`profiles` rows (and, from D04
+onward, `vaccinations`/`health_records`/`record_attachments`, via cascade) where `deleted_at` is more than
+30 days old, writing one `audit_logs` row per run via `write_audit_log()`; its planned daily `pg_cron` job
+(03:00 `Africa/Cairo`, off-peak) must remain disabled until the proposed retention policy receives
+Egyptian legal review and final owner approval. T222/T223 may implement idempotent cleanup and dry-run tests;
+they are not complete while irreversible scheduling remains disabled. The 30-day period is not approved
+as a legal requirement. The function also plans to delete
 `otp_attempts` rows older than 7 days (an assumption — `spec.md`'s Assumptions). Because Supabase's own
 docs state that Storage objects can only be removed through the Storage API, never a SQL `DELETE`, the
 purge function does not touch `storage.objects` directly — it enqueues the `photo_path`/`document_path`/
 attachment paths of every row it purges into `storage_cleanup_queue`, and a separate Edge Function
-(`purge-storage-objects/`, invoked every 15 minutes via `pg_cron`+`pg_net`) drains that queue through
-`storage.remove()` in batches of ≤1000. `appointments` is **not** covered — it has no `deleted_at` column
+(`purge-storage-objects/`, planned for every 15 minutes via `pg_cron`+`pg_net`, but disabled until legal
+review and owner approval) drains that queue through `storage.remove()` in batches of ≤1000.
+`appointments` is **not** covered — it has no `deleted_at` column
 (its lifecycle is the `status` enum), so there is nothing for this mechanism to purge there.
 
 **Generic audit mechanism (new)**: a shared `security definer` function

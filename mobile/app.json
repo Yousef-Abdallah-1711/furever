@@ -43,7 +43,15 @@
       ],
       "@sentry/react-native",
       "@react-native-community/datetimepicker",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow FurEver to choose a pet photo.",
+          "cameraPermission": "Allow FurEver to take a pet photo.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

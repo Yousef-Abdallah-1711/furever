@@ -389,15 +389,19 @@ Auth OTP endpoints cannot bypass its enforcement; `verify-otp-guard` (T139) must
 
 ### D03 — Pets and passport
 
+**Owner-approved phase-entry exception (2026-10-27):** the project owner authorized D03 development (T217–T237) in parallel with incomplete D02. This changes phase-entry sequencing only: D02 remains open, T216 remains failed, D03 tasks retain their individual dependencies and security/verification criteria, and D04+ remain blocked absent a separate owner decision. In particular, the T222/T223 cleanup architecture may be prepared and tested, but scheduled irreversible deletion must stay disabled pending Egyptian legal review and final retention approval. This exception does not change the original D03 exit criteria below.
+
 **Stories**: PET-01 to 03, PET-05.
 **Screens**: My pets, Add pet (4 steps), Edit pet, Document viewer (owner mobile).
 **Backend**: `pets` table + RLS; `pet-photos`/`pet-documents` storage buckets + path-prefix policies; breeds
 seed (40+ cat/dog breeds, bilingual) wired into onboarding's pet step (PRD amendment 5 — pet creation is
 part of first-run onboarding here, reusing the Add pet screens); `delete_pet` RPC (soft-delete only in this
 phase — no `appointments` table exists yet to cancel; extended in D06). **New, remediation pass (finding
-C1)**: `purge_soft_deleted()` (`pg_cron`, daily, off-peak Cairo) hard-deletes `pets`/`profiles` rows 30
-days after `deleted_at`, plus a `storage_cleanup_queue` + Edge Function since Storage objects can only be
-removed through the Storage API, never SQL (official Supabase docs) — D04 extends the cascade to
+C1)**: `purge_soft_deleted()` is designed for a daily, off-peak Cairo `pg_cron` run that hard-deletes
+`pets`/`profiles` rows 30 days after `deleted_at`, plus a `storage_cleanup_queue` + Edge Function since
+Storage objects can only be removed through the Storage API, never SQL (official Supabase docs). Under
+the owner amendment recorded below, implement dry-run/retry support only; keep both destructive schedules
+disabled pending Egyptian legal review and final owner approval. D04 extends the cascade to
 `vaccinations`/`health_records`/`record_attachments`; `appointments` (D06) is excluded, since it has no
 `deleted_at` column.
 **Tests**: pgTAP — owner-only pet access, soft-delete behavior via `delete_pet`, the purge job's 30-day

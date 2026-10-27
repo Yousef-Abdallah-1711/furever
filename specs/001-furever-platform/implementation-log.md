@@ -2961,3 +2961,60 @@ not run. Three protected audit/handoff files and the prior untracked session rep
 ## D02 invitation locale and negative browser coverage ? 2026-10-27
 
 Added an optional validated `locale` (`en` or `ar`) to `admin-create-staff`; the server-generated callback preserves that locale and both callback destinations are allowlisted locally. The authenticated local Playwright suite now passes 4/4 for English acceptance, Arabic RTL acceptance, invalid-token failure, and reused-link failure in a fresh browser context. The acceptance cases verify refreshed clinic staff role and clinic membership, and the English case verifies invitation acceptance and `/en/clinic` navigation. Synthetic users and clinic rows are cleaned after the run. Existing local Edge Function integration covers cross-clinic and manager-role escalation denial. T210 remains partial pending expired-token browser and remaining retry/negative evidence. Deno unit tests were not run because Deno is unavailable; no task was marked complete.
+
+## D03 — owner phase-entry exception and first pet data batch (2026-10-27)
+
+The project owner authorized development of D03 T217–T237 while D02 remains open. Recorded the bounded amendment in the owner decision register, `plan.md`, and `tasks.md`: T216 remains failed, D02 remains open at its historical 54/97 verified baseline, and D04+ remain blocked. T222/T223 cleanup design and isolated tests may proceed, but no destructive schedule or live-data deletion may be activated before Egyptian legal review and final owner approval. The D03 checkpoint does not itself authorize D04.
+
+Implemented the T217 bilingual breed catalog and T218 pet table in migrations. The catalog seeds 44 stable cat/dog breed IDs with English/Arabic labels, public read access to active catalog entries, active-account administrative writes, and the existing audit trigger. Pet rows use authenticated identity as the default owner, composite breed/species referential integrity, owner-only RLS, soft-delete visibility filtering, and the existing active-account boundary. Direct pet data access additionally requires an active owner profile, city, current bilingual legal-document configuration, and matching Terms/Privacy consent versions; this prevents the new tables from bypassing the existing fail-closed D02 onboarding/legal gate. Client grants cannot set `owner_id` or `deleted_at`, cannot hard-delete rows, and cannot write system timestamps. No synthetic consent/config data was deployed; pgTAP uses transaction-scoped fixtures and rolls them back.
+
+The first local pgTAP run exposed fixture authorization and public-policy issues; these were fixed through normal forward migrations and a corrected test setup. Final `pnpm.cmd --filter backend exec supabase test db --local` passed 13 files / 140 assertions. The new T217/T218/T226 tests cover the 44-row bilingual catalog, reference uniqueness, anonymous catalog reads, admin-only writes, audit trigger evidence, owner-only pet reads/updates/inserts, owner-ID spoof prevention, invalid and cross-species breed rejection, deleted-pet hiding, and suspended/deleted/incomplete-account denial. `pnpm.cmd db:policy-coverage` passed for all 41 public policies, including each new breed/pet policy; `git diff --check` passed. Pnpm emitted its pre-existing virtual-store/no-TTY install warnings but ran the command successfully. No local database reset, hosted project change, deployment, Storage bucket, cleanup worker, UI, or native E2E work occurred in this batch.
+
+T217, T218, and T226 are marked complete and verified. T219–T225, T227–T237 remain open. T222/T223's scheduled destructive behavior remains blocked by the retention/legal gate. D03 is in progress, not complete; T237 does not pass; D04 is not authorized.
+
+## D03 continuation — soft delete, schemas, translations, and private Storage (2026-10-27)
+
+Completed T221 with a security-definer `delete_pet(p_pet_id)` RPC. It requires the current caller's active, completed owner profile and current consent versions, locks the owned pet row, returns the same not-found error for missing and cross-owner IDs, and idempotently marks a pet deleted. The D03 function does not touch appointments, which do not exist until D06. Client SQL grants do not permit direct writes to `deleted_at` or hard deletion.
+
+Completed T230/T231 with shared pet create/update/entity and breed Zod schemas, focused validation tests, and bilingual screen copy. The schema validates the database enums, date/UUID shapes, positive weight values, name constraints, localized breed labels, and rejects empty updates. The new Arabic screen copy is listed as draft in `packages/i18n/draft-keys.json` pending native review. The i18n catalog now has 891 matching English/Arabic keys.
+
+Completed T219/T220 with private `pet-photos` and `pet-documents` buckets, 10 MiB per-object caps, MIME allowlists, and Storage RLS for `{auth.uid()}/{pet UUID}/{random filename}` paths. The policy checks the referenced pet's real owner and active/deleted state and calls the D02 completed-profile/current-consent gate; it does not trust the path as an owner credential. Anonymous access and object updates/upserts are denied. Authenticated owners may delete their own active-pet objects through the Storage API. Clinic access is not granted here; D04 must extend it through the appointment/record relationship before clinic reads are enabled.
+
+Added `backend/supabase/scripts/verify-pet-storage-local.mjs` and ran it against local Supabase with two disposable owners, pets, and actual Storage API requests. It passed 20 checks: authorized photo/PDF uploads and downloads; anonymous and cross-owner read/write denial; rejection of another pet ID under the caller's folder; overwrite/upsert denial; disallowed MIME and >10 MiB rejection in both buckets; cross-owner delete leaves the object intact; suspended/deleted accounts and soft-deleted pets lose access; owner deletion succeeds. The script restores the previous local legal-config value and removes synthetic objects, consent rows, and Auth users. Consent fixtures must be deleted before Auth users because the existing consent FK deliberately preserves evidence; this ordering was added after the first cleanup attempt exposed that constraint. No production or hosted resources were accessed.
+
+**Final verification for this continuation:** pgTAP remains PASS at 13 files / 143 assertions; shared Vitest PASS at 5 files / 33 tests; shared TypeScript check PASS; i18n parity PASS at 891 keys and i18n Vitest PASS at 1/1; local Storage API integration PASS at 20/20. The earlier D03 policy-coverage check passed for 41 public policies; Storage policies are separately exercised through the live local Storage API script because the checker enumerates public Postgres policies only. T217/T218/T219/T220/T221/T226/T230/T231 are complete and verified. T222/T223 remain blocked from scheduled destructive activation pending legal review and final owner approval; T224/T225/T227–T229/T232–T237 remain open. D03 remains incomplete and D04 remains unauthorized.
+
+## D03 continuation - mobile pet flows and attachment handling (2026-10-27)
+
+Implemented the D03 mobile foundations and screens: offline-aware My Pets with persisted React Query data,
+four-step Add Pet, owner Edit Pet with soft delete and appointment-contact warning, protected document route,
+image/document selection and resizing, private Storage upload with MIME/size checks and retry, short-lived
+signed downloads, native image pinch gesture, and a PDF handoff to the system browser. The latter does not
+meet the task's in-app PDF preview requirement. The web upload progress is staged rather than byte-level.
+No native development build or authenticated UI acceptance was available, so T224/T225/T232-T235 remain
+partial and unchecked.
+
+Updated the Expo SDK 57 compatible image picker, image manipulator, and document picker dependencies. The
+first export attempt failed because the static renderer requires public Supabase settings; the successful
+rerun used dummy local-only public settings in process memory, made no network call, and exported 32 routes,
+including `/pets`, `/pets/new`, `/pets/[id]/edit`, and `/documents/[...path]`. This confirms bundling and
+route generation only, not authenticated runtime behavior.
+
+The existing local pgTAP assertions verify `delete_pet` soft-delete visibility, idempotent retry, and
+cross-owner/missing-ID indistinguishability; T227 is now checked. No purge SQL, Storage cleanup queue,
+worker, schedule, or deletion of real account data was added. T222/T223 and T228/T229 remain open pending
+implementation plus legal review/final retention approval. T236/T237 were not run because Maestro/native
+build tooling is unavailable; T237 does not pass. D04 remains blocked.
+
+**Verification**: mobile TypeScript PASS; mobile Jest 19 suites / 59 tests PASS; mobile lint 0 errors
+(3 existing warnings); shared Vitest 5 files / 33 tests PASS; i18n parity PASS at 919 keys; D03-scoped
+design-token lint 0 violations; pgTAP 13 files / 143 assertions PASS; public-policy coverage 41/41
+referenced PASS; actual local Storage API integration 20/20 PASS with disposable fixtures cleaned; Expo
+web export PASS with 32 routes; `git diff --check` PASS. No database reset, hosted Supabase/SMTP access,
+deployment, native runtime, or destructive cleanup operation occurred. The global design-token lint still
+reports 20 unrelated pre-existing violations outside the D03-scoped files; no unrelated files were changed.
+
+**Task status**: 9/21 D03 tasks complete and verified (T217-T221, T226-T227, T230-T231); 6 tasks have
+partial code but lack one or more acceptance items/runtime verification (T224-T225, T232-T235); 6 remain
+open/not run (T222-T223, T228-T229, T236-T237). D02 remains 54/97 at the historical baseline, T216 FAIL;
+D03 is IN PROGRESS; D04 is BLOCKED.

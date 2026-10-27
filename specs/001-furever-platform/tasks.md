@@ -990,14 +990,16 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 
 # Delivery Phase D03 — Pets and passport
 
+**Owner-approved phase-entry exception (2026-10-27):** D03 T217–T237 may be developed while D02 remains open. This is not a D02/T216 pass: retain D02's original acceptance criteria and failed status, enforce every task's dependencies and security controls, and do not begin D04+. T222/T223 cleanup code and isolated tests may be prepared, but irreversible scheduled deletion must remain disabled until retention receives legal review and final owner approval. Do not claim those cleanup tasks complete while scheduled behavior is disabled.
+
 ## Backend (breeds before pets)
 
-- [ ] T217 [D03] Migration: `breeds` table + RLS + seed (40+ cat/dog breeds, bilingual) + the admin-write
+- [x] T217 [D03] Migration: `breeds` table + RLS + seed (40+ cat/dog breeds, bilingual) + the admin-write
   audit trigger (same pattern as T131/T132). [PET-01]
-- [ ] T218 [D03] Migration: `pets` table + RLS. Depends on T217 (FK to `breeds`). [PET-01]
-- [ ] T219 [P] [D03] Storage bucket `pet-photos` + path-prefix policy. [PET-01]
-- [ ] T220 [P] [D03] Storage bucket `pet-documents` + path-prefix policy. [PET-05]
-- [ ] T221 [D03] RPC `delete_pet(p_pet_id)` — soft-delete only (no `appointments` yet). Depends on T218.
+- [x] T218 [D03] Migration: `pets` table + RLS. Depends on T217 (FK to `breeds`). [PET-01]
+- [x] T219 [P] [D03] Storage bucket `pet-photos` + path-prefix policy. [PET-01]
+- [x] T220 [P] [D03] Storage bucket `pet-documents` + path-prefix policy. [PET-05]
+- [x] T221 [D03] RPC `delete_pet(p_pet_id)` — soft-delete only (no `appointments` yet). Depends on T218.
   [PET-03]
 
 ## Data lifecycle: purge job (new, remediation pass — constitution IV, FR-013/PET-03)
@@ -1009,27 +1011,41 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   Also deletes `otp_attempts` rows where `updated_at < now() - interval '7 days'` in the same run — **7
   days is an assumption, recorded in `spec.md`'s Assumptions**, since no lock lasts more than 15 minutes
   and nothing else reads this table once a code cycle completes; revisit if fraud-pattern analysis ever
-  needs a longer window. Depends on T218 (pets), T130 (`write_audit_log`, from D02). [PET-03]
+  needs a longer window. **Under the 2026-10-27 owner phase amendment, implement idempotent cleanup logic
+  and dry-run/test support, but leave the cron schedule disabled and never hard-delete live data until the
+  retention policy receives Egyptian legal review and final owner approval. T222 remains partial while
+  scheduled deletion is disabled.** Not implemented in this session: no purge function, schedule, or live-
+  data deletion was added. Depends on T218 (pets), T130 (`write_audit_log`, from D02). [PET-03]
 - [ ] T223 [D03] Migration: `storage_cleanup_queue` table + RLS (service-role only: `bucket`, `path`,
   `queued_at`, `done_at`) + Edge Function `purge-storage-objects/` that reads undone rows and calls the
   Storage API's `remove()` in batches of ≤1000 (confirmed from official Supabase docs: **deleting via SQL
   never removes the object from the bucket — it must go through the Storage API**), marking each row
-  `done_at` on success. Schedule the Edge Function via `pg_cron` + `pg_net` every 15 minutes. `T222`'s
+  `done_at` on success. Prepare the `pg_cron` + `pg_net` schedule in a disabled/non-deployed form; do not
+  activate irreversible object deletion before retention receives Egyptian legal review and final owner
+  approval. T223 remains partial while scheduled deletion is disabled. `T222`'s
   purge enqueues the `photo_path`/`document_path` of every purged pet into this queue for the
-  `pet-photos`/`pet-documents` buckets. Depends on T222, T219, T220. [PET-03]
+  `pet-photos`/`pet-documents` buckets. Not implemented in this session: no queue, removal worker, or
+  schedule was added. Depends on T222, T219, T220. [PET-03]
 
 ## Shared attachment handling (point 7)
 
 - [ ] T224 [D03] Build the shared `mobile/src/components/AttachmentUpload.tsx` (image/document picker,
   `expo-image-manipulator` resize, 10 MB + MIME checks, upload progress, retry on failure).
+  **Partial 2026-10-27:** image/document selection, resize, size/MIME checks, private upload, staged
+  progress, and retry are implemented. Unit tests cover file-policy limits; native picker/upload runtime
+  and true byte-level upload progress are not verified. Web reports staged progress only.
 - [ ] T225 [D03] Build the shared `mobile/src/components/AttachmentViewer.tsx` (opens a private file via
   signed URL, pinch-to-zoom for images, PDF preview). Used by Document viewer (T235) and D04's Add
-  vaccination/Add record/Passport share screens.
+  vaccination/Add record/Passport share screens. **Partial 2026-10-27:** private 5-minute signed URLs
+  and native image pinch interaction are implemented; PDFs open through the system browser rather than an
+  in-app preview, and no native runtime was exercised.
 
 ## pgTAP
 
-- [ ] T226 [P] [D03] pgTAP: owner-only `pets` access. [PET-01]
-- [ ] T227 [P] [D03] pgTAP: `delete_pet` soft-deletes correctly. [PET-03]
+- [x] T226 [P] [D03] pgTAP: owner-only `pets` access. [PET-01]
+- [x] T227 [P] [D03] pgTAP: `delete_pet` soft-deletes correctly. [PET-03] **Verified 2026-10-27** in
+  `021_d03_breeds_pets_access.test.sql`: owned pet becomes hidden after soft delete, repeated delete is
+  idempotent, and cross-owner/missing IDs share the not-found result.
 - [ ] T228 [P] [D03] pgTAP: `purge_soft_deleted()` (T222) removes a pet/profile row whose `deleted_at`
   is exactly 30 days (or older) in the past, and leaves a row at 29 days untouched. [PET-03]
 - [ ] T229 [P] [D03] pgTAP: a `purge_soft_deleted()` (T222) run writes an `audit_logs` row via
@@ -1037,35 +1053,48 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 
 ## Shared schemas, i18n
 
-- [ ] T230 [D03] Add pet Zod schemas. [PET-01][PET-02]
-- [ ] T231 [D03] Add pet keys to `packages/i18n`. [PET-01..05]
+- [x] T230 [D03] Add pet Zod schemas. [PET-01][PET-02]
+- [x] T231 [D03] Add pet keys to `packages/i18n`. [PET-01..05]
 
 ## Screens (4)
 
-- [ ] T232 [P] [D03] Build `/(tabs)/pets` My pets — `mobile/app/(tabs)/pets.tsx` (Built). **Reference
+- [ ] T232 [P] [D03] Build `/(tabs)/pets` My pets — `mobile/app/(tabs)/pets.tsx` (Built). **Partial
+  implementation 2026-10-27:** persisted React Query list, offline banner, cached-list retention after a
+  refetch error, and pet cards are implemented. Expo web export includes `/pets`; no authenticated/native
+  runtime evidence. **Reference
   implementation, remediation pass**: the first list screen to wire `OfflineBanner` (T171) above the
   list and read from the React Query cache (T169) so it still renders offline; later screens follow this
   pattern. [PET-01][PET-02][PET-03][PLT-03]
 - [ ] T233 [P] [D03] Build `/pets/new` Add pet (4 steps) — `mobile/app/pets/new.tsx` (Built; uses T224 for
   the photo step). **Reference implementation, remediation pass**: its final-step submit button uses
   `useOfflineGuardedAction` (T172) so it is disabled with a reason when offline, instead of silently
-  queuing or failing. [PET-01][PLT-03]
+  queuing or failing. [PET-01][PLT-03] **Partial implementation 2026-10-27:** the four-step form,
+  shared-schema validation, offline guard, create mutation, and optional photo upload are implemented;
+  exported route compiles, but no authenticated/native interaction was run.
 - [ ] T234 [P] [D03] Build `/pets/[id]/edit` Edit pet — `mobile/app/pets/[id]/edit.tsx` (Spec; pattern:
-  Add pet). [PET-02]
+  Add pet). [PET-02] **Partial implementation 2026-10-27:** owner edit, offline guarded save/delete, and
+  upcoming-bookings contact-clinic warning are implemented. No authenticated/native runtime was run; the
+  D04 timeline-based weight history is not available and is not claimed.
 - [ ] T235 [P] [D03] Build `/documents/[path]` Document viewer — `mobile/app/documents/[path].tsx` (Spec;
-  pattern: Passport share; uses T225). [PET-05]
+  pattern: Passport share; uses T225). [PET-05] **Partial implementation 2026-10-27:** catch-all route,
+  protected layout, path validation, signed URL and image viewing are implemented. PDF in-app preview and
+  native route execution remain unverified; PDFs currently open in the system browser.
 
 ## E2E
 
 - [ ] T236 [D03] Maestro: with the device offline (airplane mode or a mocked network layer), open My
   pets (T232) and confirm the cached list still renders with `OfflineBanner` (T171) showing; then open
   Add pet (T233) and confirm its submit button is disabled with a reason instead of silently failing. This
-  is D08's T381 (PLT-03 verification)'s first real reference case. [PLT-03]
+  is D08's T381 (PLT-03 verification)'s first real reference case. [PLT-03] **Not run:** Maestro and an
+  EAS/native development build are unavailable here; static export is not a substitute for device evidence.
 - [ ] T237 [D03] Maestro: add/edit/delete a pet, including during onboarding, then run as D03's
   **Checkpoint**: confirm a pet can be created, edited, and soft-deleted with the upcoming-bookings
   warning text (full cancellation lands in D06); confirm `purge_soft_deleted()` (T222) and the storage
-  cleanup queue (T223) exist and pass their pgTAP tests (T228/T229). Gate for D04.
-  [PET-01][PET-02][PET-03]
+  cleanup queue (T223) exist and pass their pgTAP tests (T228/T229). This checkpoint does not authorize
+  D04: its entry remains blocked by D02/T216 and requires a separate owner decision under the 2026-10-27
+  phase amendment.
+  [PET-01][PET-02][PET-03] **Not run / FAIL as a checkpoint:** native Maestro acceptance and T222/T223
+  cleanup infrastructure/tests are incomplete. D04 remains blocked.
 
 ---
 
