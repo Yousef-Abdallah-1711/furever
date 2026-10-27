@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `9377748` (`fix(D02): enable local dashboard auth flow`), pending push.
+**Latest implementation commit:** `9377748` (`fix(D02): enable local dashboard auth flow`), pushed and synchronized in checkpoint commit `e6d855d`.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial; local dashboard Auth integration is now exercised end to end.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -207,10 +207,35 @@ does not mean every decision's implementation is complete.
 
 ## Recommended next sequence
 
-1. Preserve T208 as partial: the super-admin directory is implemented, but platform-admin invite/role/MFA-reset/
-   removal actions have no backend contract. Keep mobile email-code sign-in and T194-T197 blocked until T138/T139's
-   authoritative safe session path is resolved; do not create an alternate session issuer or bypass lockout.
-3. Extend T143 as later-phase data tables land and complete T142 only when trusted backend reauthentication
-   and the coordinated deletion lifecycle are implemented.
-4. Keep native OAuth/E2E tasks partial until provider credentials, EAS, Android/Java, and test devices are
-   available. Do not mark D02 complete until T216's end-to-end gate is genuinely satisfied.
+1. Resolve the authoritative email OTP/session design before T138/T139, T155, T194/T195, or T213. Supabase's
+   public OTP endpoints have not been proven to enforce the approved lockout, and no supported session issuance
+   mechanism is established. Do not issue sessions through an insecure workaround or weaken lockout.
+2. Configure a hosted SMTP provider/domain (T145), then finish T140/T152/T153/T210 and dependent T146 work.
+   No SMTP credentials or verified domain are available.
+3. Obtain approved Terms/Privacy copy and version identifiers (T204); complete T196 only with the consent
+   contract and authentication path established. T197 also depends on pet onboarding owned by D03; do not start D03.
+4. Provide Google/Apple credentials, an EAS account/build environment, Android SDK/Java/adb and Maestro CLI to
+   complete T147/T148/T150/T181/T184/T189/T214. Keep provider/native runtime claims open until actually tested.
+5. Keep T142/T200 open until the coordinated deletion lifecycle is implemented; extend T143 as future-phase data
+   tables land. T208 stays partial until platform-admin lifecycle RPC/Edge Function contracts exist. T216 remains
+   the final D02 gate and must stay open until its complete checklist passes.
+
+## Remaining unchecked D02 task IDs and blockers
+
+| Tasks | Blocker |
+| --- | --- |
+| T120, T138, T139, T155, T194, T195, T213 | Safe custom OTP lockout/session issuance is unresolved; T213 also needs Maestro/native prerequisites. |
+| T140, T145, T152, T153, T210 | SMTP provider and verified domain are unavailable; invite/template delivery cannot be truthfully verified. |
+| T142, T200 | Coordinated account deletion and trusted cleanup contract are not implemented. |
+| T143 | Current-schema export exists; later-phase tables and full runtime coverage are outstanding. |
+| T146 | Hosted projects/origins/secrets and dependent Edge Functions are not provisioned. |
+| T147, T148, T150, T181, T184, T214 | Provider credentials and native development build/device prerequisites are unavailable. |
+| T172 | Representative `/pets/new` action belongs to D03; D03 has not started. |
+| T173 | Route guard code is partial until remaining onboarding destinations and authenticated mobile integration are complete. |
+| T182 | Cloudflare Turnstile site/secret keys are unavailable. |
+| T185 | `sign_up_completed` awaits the verified auth completion handler; preference events are implemented. |
+| T189 | Maestro CLI, Java, Android SDK/adb, and native runtime are unavailable. |
+| T196, T204 | Consent flow needs approved Terms/Privacy content and version identifiers; T196 also needs the safe auth entry path. |
+| T197 | Summary depends on completed pet setup (D03) and the preceding auth/profile flow. |
+| T208 | Directory is implemented; platform-admin invite, role change, MFA reset, and removal lack backend contracts. |
+| T216 | Final end-to-end gate depends on the above OTP, SMTP, legal, native, and later-phase work. |
