@@ -550,23 +550,25 @@ environments only, not local dev.
 - [x] T135 [D02] Extend `custom_access_token_hook` (D00b skeleton) to inject `profiles.role` as
   `user_role` (research.md §8). Enabled the local Auth hook in `backend/supabase/config.toml` with the
   supported `pg-functions://postgres/public/custom_access_token_hook` URI. Local password sign-in
-  verified that a super-admin JWT receives `user_role`. Depends on T124. [AD-01]
+  verified that a super-admin JWT receives `user_role`. Supporting migration
+  `20261027140000_create_owner_profiles_for_auth_users.sql` now creates an owner profile on email/Google/
+  Apple Auth user insertion before token claims are assembled, while pending clinic invites remain owned by
+  `accept_staff_invitation()`. Depends on T124. [AD-01]
 - [x] T136 [P] [D02] RPC `record_otp_attempt(p_identifier, p_outcome)` (2026-10-18 — was
   `p_phone`). Depends on T134. [AUTH-01]
 - [x] T137 [P] [D02] RPC `get_otp_lock_status(p_identifier)` (2026-10-18 — was `p_phone`). Depends on
   T134. [AUTH-01]
-- [ ] T138 [D02] **New (this fix pass)**: harden the direct-Auth path per T120's spike result and the
-  owner decision recorded in `research.md`'s "Is the email-code guard bypassable?" section (a Send Email
-  hook, a custom-code generate/hash/verify design, or Auth rate-limit/captcha configuration — whichever was
-  chosen). Depends on T120. If the owner decision is still pending when D02 reaches this point, stop and
-  escalate rather than building T139 on a guard that the direct path can bypass.
-  **Owner approved Option C on 2026-10-27.** Implementation is gated on confirming a supported,
-  non-bypassable Supabase session-establishment path. The public native OTP endpoints remain reachable;
-  no custom OTP/session code may ship until that incompatibility is resolved.
-- [ ] T139 [D02] Edge Function `verify-otp-guard/`, **rewritten for email (2026-10-18)**: exposes
-  `send-code` and `verify-code` actions keyed by a normalized email identifier, with per-email and per-IP
-  send throttling and an identical response for a known vs. unknown email (no account enumeration). Only
-  enforceable once T138 closes or restricts the direct path (`contracts/edge-functions.md`). Depends on
+- [ ] T138 [D02] **New (this fix pass)**: enforce the approved custom email-code security policy from T120.
+  **Owner approved Option C on 2026-10-27**: custom code generation, protected storage, server-side
+  verification/expiry/attempt limits/cancellation/lockout/throttling, no enumeration, replay and concurrency
+  resistance, and a supported normal-session path that cannot be bypassed through public Supabase Auth OTP
+  endpoints. No implementation may ship until that session and bypass proof exists. This is a technical
+  gate; the policy decision is resolved. Depends on T120. See `research.md` §17-18.
+- [ ] T139 [D02] Edge Function `verify-otp-guard/`: implement T138's approved Option C with `send-code` and
+  `verify-code` actions, keyed rate limits, generic no-enumeration responses, expiry, attempt/cancellation
+  lockout, replay protection, concurrency safety, and supported refreshable Supabase session issuance.
+  Do not call public Supabase email OTP primitives for this flow. **Blocked:** no supported session path or
+  proof against independent public `/auth/v1/otp` and `/auth/v1/verify` calls is established. Depends on
   T136, T137, T138. [AUTH-01]
 - [ ] T140 [P] [D02] Edge Function `admin-create-staff/` (sends the invite email — needs SMTP, T145).
   [CS-01][CS-10] **Owner decision 2026-10-27: Option B approved.** Clinic managers may invite vets and
@@ -590,7 +592,10 @@ environments only, not local dev.
   GET exports the caller's own profile, consent rows, and push-device metadata through the public key and
   caller bearer token so RLS remains active; response is non-cacheable and does not expose raw push tokens.
   Pets, vaccinations, health records/attachments, and appointments are explicitly reported unavailable
-  until their later-phase tables exist. Remains open for complete data coverage and runtime integration.
+  until their later-phase tables exist. **Local integration verified 2026-10-27** using a disposable owner:
+  signup created its profile, then the authenticated export returned profile, terms/privacy consents, and
+  push-device metadata without the raw token, with `private, no-store`; the synthetic user and rows were
+  removed. Remains open until later-phase owner data exists and is added to the export.
 - [x] T144 [P] [D02] Edge Function `app-config/`. [PLT-01][PLT-02]
 - [ ] T145 [D02] **Replaces the Twilio provider task (2026-10-18)**: configure custom SMTP and the
   login-code email template (`{{ .Token }}`, not `{{ .ConfirmationURL }}` — research.md §12) in

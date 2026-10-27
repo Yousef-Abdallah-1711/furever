@@ -2683,3 +2683,36 @@ and the service-only OTP ledger RPCs do not themselves enforce the policy.
 [Auth Admin `generateLink()`](https://supabase.com/docs/reference/javascript/auth-admin-generatelink), and
 [User sessions](https://supabase.com/docs/guides/auth/sessions); `git diff --check` PASS. No authentication
 implementation was attempted because the supported session path remains unproven.
+
+## D02 — owner profile provisioning and local export integration (2026-10-27)
+
+A disposable local email signup exposed that `auth.users` had no trigger to create its required `profiles`
+row: the signed-in user's `export-my-data` call returned `PROFILE_NOT_FOUND`. Added migration
+`20261027140000_create_owner_profiles_for_auth_users.sql`. It creates an active owner profile for Auth
+providers `email`, `google`, and `apple`, carries a nonblank provider `full_name`, and uses a fixed owner
+role/status. It skips any address with a pending server-created staff invitation so
+`accept_staff_invitation()` remains the only path that provisions clinic roles. It ignores client metadata
+as authority and leaves unsupported providers without an implicit owner profile (protected routes fail
+closed).
+
+Added pgTAP coverage for email, Google, and Apple profile creation, pending invitation exclusion, and an
+unsupported provider. Applied the migration incrementally to the local Supabase database; no hosted project
+was targeted. Local integration with a disposable email user then created terms/privacy consent rows and a
+synthetic push-device row through that user's authenticated RLS session. `export-my-data` returned the
+owner profile, both consents, and device metadata, omitted the raw push token, listed absent later-phase
+sections, and returned `private, no-store`. Cleanup removed child rows before the Auth user and verified no
+matching synthetic account remained. A separate local signup confirmed the first issued access token already
+contains `user_role=owner`, then removed and verified deletion of that fixture.
+
+T143 is runtime-verified for the current D02 owner schema but remains partial because the contract also
+requires pets, health records, and bookings that do not exist until later delivery phases. No task checkbox
+or D02 verified count changed.
+
+**Verification**: `pnpm.cmd --filter backend exec supabase migration up --local` PASS (migration
+`20261027140000`); `pnpm.cmd --filter backend exec supabase test db --local` PASS (10 files / 89 assertions);
+authenticated local `export-my-data` integration PASS with fixture cleanup verified; `git diff --check`
+PASS. The tests mutate only the local test database and use disposable synthetic users.
+
+**Files**: `backend/supabase/migrations/20261027140000_create_owner_profiles_for_auth_users.sql`,
+`backend/supabase/tests/018_auth_owner_profile_creation.test.sql`, `specs/001-furever-platform/{tasks.md,
+implementation-log.md}`. No D02 task was marked complete by this batch.
