@@ -42,8 +42,8 @@
   proof. The contracts now state that `verify-otp-guard` is not implemented and the current OTP ledger RPCs
   alone do not enforce the lockout.
 - No OTP code was shipped and no security requirement was weakened. T120/T138/T139 stay open.
-- At the start of this documentation batch, HEAD and `origin/main` were both
-  `c3c78666c4a238d262b6c0352d04e9808f03a54b`; these documentation updates are pending commit/push.
+- Documentation commit `6034e1bccd7eb0ba2b7768992516696b1d9900d1` is pushed. HEAD and `origin/main` both
+  equal `6034e1bccd7eb0ba2b7768992516696b1d9900d1` before this checkpoint refresh.
 
 ## Completed or advanced in this batch
 
