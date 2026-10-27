@@ -224,7 +224,7 @@ does not mean every decision's implementation is complete.
 
 | Tasks | Blocker |
 | --- | --- |
-| T120, T138, T139, T155, T194, T195, T213 | Safe custom OTP lockout/session issuance is unresolved; T213 also needs Maestro/native prerequisites. |
+| T120, T138, T139, T155, T194, T195, T213 | Current official Auth Hooks docs show no email-OTP verification interceptor; `generateLink()` is not documented to mint a refreshable session. Exact wrong-code experiment still needs a numeric-code template. Preserve the lockout; T213 also needs Maestro/native prerequisites. |
 | T140, T145, T152, T153, T210 | SMTP provider and verified domain are unavailable; invite/template delivery cannot be truthfully verified. |
 | T142, T200 | Coordinated account deletion and trusted cleanup contract are not implemented. |
 | T143 | Current-schema export exists; later-phase tables and full runtime coverage are outstanding. |

@@ -2599,3 +2599,24 @@ provider, email/SMTP, native-device, or Maestro verification was performed.
 **Files**: `backend/supabase/config.toml`, `docs/environments.md`, `web/src/components/auth/DashboardMfaScreen.tsx`,
 `web/src/app/[locale]/(admin)/admin/page.tsx`, `specs/001-furever-platform/{tasks.md,implementation-log.md}`,
 and `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`. **Commit**: `9377748`.
+
+## D02 — T120 OTP hook/session path research update (2026-10-27)
+
+Re-checked current official Supabase Auth Hooks, rate-limits, MFA verification-attempt, and session docs while
+auditing remaining blockers. The documented hook inventory has no email-OTP verification-attempt hook; the
+password and MFA verification hooks do not inspect email OTP attempts. The custom access-token hook runs only
+before issuing a token after Auth accepted the code, and the Send Email hook only controls delivery. Current
+rate limits remain IP-based for `/auth/v1/verify` and per-user resend cooldown for `/auth/v1/otp`, which do not
+enforce this project's per-code and per-email lockout rules. The Sessions guide describes sessions as created
+by sign-in and returning access/refresh tokens; `auth.admin.generateLink()` is documented as generating a
+link/token, with no documented admin API shown to mint a normal refreshable session from an independently
+verified custom code.
+
+This narrows the supported-hook investigation but does not resolve the approved custom-code design's session
+issuance requirement. Kept T120, T138, and T139 open: the exact five-wrong-code experiment remains untested
+because the local Auth template is still link-only, and no supported authoritative custom-code-to-session path
+has been established. No OTP implementation or policy change was made. Sources and the technical limits are
+recorded in `research.md` section 17 with official Supabase links.
+
+**Files**: `specs/001-furever-platform/{research.md,tasks.md,implementation-log.md}` and
+`docs/handoffs/D02-PROGRESS-CHECKPOINT.md`. **Commit**: pending.

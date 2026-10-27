@@ -402,6 +402,24 @@ and secondary email linking remains deferred.
   or rate limits, and it cannot intercept or override the verify step at all. This option is useful for
   template/provider control (which this project already needs for bilingual templates, T147) but it is
   **not a mitigation** for the bypass question.
+- **Current Auth Hook inventory does not provide an email-OTP verification interceptor** (checked against
+  Supabase's official Auth Hooks documentation on 2026-10-27): available hooks include Before User Created,
+  Custom Access Token, Send SMS, Send Email, MFA Verification Attempt, and Password Verification Attempt.
+  The latter verification hooks concern MFA and password respectively (and the docs currently list them as
+  Teams/Enterprise plan features); neither receives email-OTP wrong attempts. The Custom Access Token hook
+  runs before token issuance, after an OTP has already been accepted, so it cannot implement the required
+  per-code failed-attempt counter. The Send Email hook changes delivery only. This confirms there is no
+  documented Supabase Auth hook that can enforce the five-wrong-attempt cancellation on the public email OTP
+  verify endpoint. It does not prove no future/platform-specific capability exists; re-check before the
+  design decision is finalized.
+- **Session issuance remains unproven**: the official Sessions guide describes an Auth session as created
+  when a user signs in and the app receives both access and refresh tokens; `generateLink()` is documented
+  as generating an action link/token, not as a direct session-minting API. Redeeming its token through
+  `/auth/v1/verify` would still use a public verification endpoint. The docs do not establish a service-role
+  API that accepts a separately checked custom code and returns a normal refreshable Supabase Auth session.
+  Do not treat a service-role generated link, custom-signed JWT, or hand-written Auth internals as a proven
+  session path. T138/T139 remain blocked until a supported route is identified and proven to preserve the
+  approved lockout against direct public endpoint calls.
 - **Does `auth.admin.generateLink()` close this?** Partially, and only for the send side.
   `supabase.auth.admin.generateLink()` is a **service-role-only** Admin API method
   (`https://supabase.com/docs/reference/javascript/auth-admin-generatelink`) that can mint a sign-in
@@ -463,7 +481,10 @@ and secondary email linking remains deferred.
   the owner ultimately picks** — D02 should not proceed past it with the decision still open (see
   `plan.md`'s Open Question 3).
 - Sources: [Supabase Auth: Rate Limits](https://supabase.com/docs/guides/auth/rate-limits),
+  [Supabase Auth Hooks](https://supabase.com/docs/guides/auth/auth-hooks),
   [Supabase Auth: Send Email Hook](https://supabase.com/docs/guides/auth/auth-hooks/send-email-hook),
+  [Supabase Auth: MFA Verification Attempt Hook](https://supabase.com/docs/guides/auth/auth-hooks/mfa-verification-hook),
+  [Supabase Auth: User Sessions](https://supabase.com/docs/guides/auth/sessions),
   [Supabase Auth: Enable CAPTCHA Protection](https://supabase.com/docs/guides/auth/auth-captcha),
   [Supabase CLI config reference (`auth.email.otp_length`)](https://supabase.com/docs/guides/local-development/cli/config),
   [JavaScript: signInWithOtp](https://supabase.com/docs/reference/javascript/auth-signinwithotp),
