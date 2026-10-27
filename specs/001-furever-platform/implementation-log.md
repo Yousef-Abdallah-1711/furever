@@ -3058,3 +3058,8 @@ or authenticated pet-flow acceptance. Java, Android SDK/emulator, EAS CLI, Maest
 folders are unavailable; T236/T237 were not run. D03 stays at 9 verified, 10 partial, and 2 open; T237
 FAIL; T216 FAIL; D04 BLOCKED. Full A-Q evidence is in
 `docs/handoffs/D03-COMPLETION-SESSION-2026-10-27.md`.
+
+**Git closeout:** implementation commit `9975c34`; task/log and A-Q report commit `2a39c34`. Both were
+pushed normally to `origin/main`; `git ls-remote` verified remote `main` matched local
+`2a39c340c09b89dc22643bf22125679cc4e37b7c` at the post-push checkpoint. This closeout note is committed
+separately. Five pre-existing untracked D02 owner documents remain unmodified and unstaged.

@@ -147,7 +147,7 @@ Some Pnpm invocations printed the repository's existing ignored-build/virtual-st
 
 ## O. Git commits and remote verification
 
-Implementation commit: `9975c34` (`feat(D03): improve pet attachments and safe retention`). The progress/task updates and this A-Q report are committed separately after the implementation review. The final session closeout records their documentation commit and post-push `origin/main` comparison. Protected pre-existing untracked files remain unstaged.
+Implementation commit: `9975c34` (`feat(D03): improve pet attachments and safe retention`). The task/log updates and this A-Q report were committed in `2a39c34` (`docs(D03): record completion session evidence`). The push succeeded normally; immediately afterward `git ls-remote origin refs/heads/main` returned `2a39c340c09b89dc22643bf22125679cc4e37b7c`, matching local HEAD at that checkpoint. A final documentation closeout records this verification. The five pre-existing untracked D02 audit/handoff files remain unstaged.
 
 ## P. Owner decisions and prerequisites required
 
