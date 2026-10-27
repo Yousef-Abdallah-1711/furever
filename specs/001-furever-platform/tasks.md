@@ -591,7 +591,11 @@ environments only, not local dev.
   shared Edge Function helper validates signed-token `amr` freshness after Auth verification and rejects
   expired sessions, stale/missing/future events, subject mismatch, and cross-account targets; focused
   tests cover forged client timestamps. The delete endpoint remains open until transactional account-data,
-  storage, and Auth-user cleanup is designed and verified.
+  storage, and Auth-user cleanup is designed and verified. **Safety review 2026-10-27:** Supabase documents
+  that deleting an Auth user revokes refresh sessions but does not invalidate an already issued access JWT
+  before its expiry; Storage objects must be removed through the Storage API before Auth deletion. Consent
+  and audit retention are not specified. No partial deletion endpoint was added because immediate API
+  revocation and retention semantics are not yet established.
 - [ ] T143 [P] [D02] Edge Function `export-my-data/`. [AUTH-09] **Partial (2026-10-27):** authenticated
   GET exports the caller's own profile, consent rows, and push-device metadata through the public key and
   caller bearer token so RLS remains active; response is non-cacheable and does not expose raw push tokens.
@@ -939,8 +943,9 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   `user_role=clinic_staff` claim, then navigates to `/clinic`. Unit coverage verifies sequencing and failure
   states. **Local Auth/Mailpit integration verified 2026-10-27:** a synthetic invitee followed the delivered
   Auth verification link, set a password, accepted the invitation, retried idempotently, and signed in.
-  Browser execution of this page, role-claim refresh/navigation, and Hostinger delivery remain unverified;
-  this task remains open.
+  Browser fail-closed coverage added 2026-10-27: English and Arabic routes show the invalid/expired
+  invitation state without a session, omit password inputs, and preserve Arabic RTL. Authenticated browser
+  execution, role-claim refresh/navigation, and Hostinger delivery remain unverified; this task remains open.
 - [x] T211 [P] [D02] Build `/forgot-password` — `web/src/app/[locale]/(auth)/forgot-password/page.tsx`
   (Spec; pattern: Sign in). **Completed 2026-10-27:** bilingual recovery request uses Supabase Auth's
   `resetPasswordForEmail` with a locale-specific `/reset-password` callback and generic success copy;

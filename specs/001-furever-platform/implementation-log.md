@@ -2880,3 +2880,38 @@ clean-at-start versions after verification. No hosted configuration or secrets w
 
 **Files**: `mobile/tests/d02-profile-screens.spec.ts`, `specs/001-furever-platform/{tasks.md,
 implementation-log.md}`, `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`, and the new dated readiness handoff.
+
+## D02 — invitation acceptance fail-closed browser checks and deletion safety review (2026-10-27)
+
+Added Playwright coverage for the dashboard `/accept-invite` route with no authenticated invitation
+session. English and Arabic checks verify the unavailable-invitation alert, absence of password fields, and
+Arabic `lang`/RTL direction. The page's authenticated acceptance sequence remains as implemented: update
+password, accept through the backend RPC, refresh, verify the `clinic_staff` claim, then navigate. This
+browser batch does not verify a real invite session, claim refresh, role assignment in the browser, or
+external email delivery. T210 remains partial and unchecked.
+
+The T142 lifecycle investigation confirmed two official Supabase constraints: deleting an Auth user removes
+refresh-session capability but an already-issued access JWT remains usable until its expiry unless API
+operations validate its session; Storage objects must be removed through the Storage API before Auth user
+deletion. Product retention semantics for consent and audit data remain unspecified. No endpoint, state
+transition, or destructive operation was added because those constraints prevent claiming immediate access
+revocation and complete deletion safely with the current contract. T142/T200 remain open; the existing
+five-minute signed-AMR freshness helper is preserved. Supabase Auth OTP documentation and hook/session
+references likewise do not establish a supported refreshable session minting path for independently
+verified Option C codes, so the OTP implementation remains blocked.
+
+**Verification**: `pnpm.cmd --filter web exec playwright test
+tests/d02-invitation-acceptance.spec.ts` PASS (1 file / 2 browser tests; local Next.js and local Supabase
+configuration; no authenticated session). Full checks also passed: mobile Jest 18 suites / 57 tests and
+typecheck; web Vitest 8 files / 33 tests, TypeScript, and Playwright 11/11; shared Vitest 4 files / 24 tests;
+i18n Vitest 1/1 and parity (850 keys); database pgTAP 11 files / 100 assertions; template Vitest 1 file / 6
+tests; policy coverage 32/32; component props 0 drift across 18 components / 36 port files; mobile static
+Playwright 11/11; Expo web export 29 routes; mobile and web lint with 0 errors (3 existing mobile warnings
+and 1 existing web warning); and `git diff --check`. The first Expo export lacked process-local Supabase
+settings and failed; the rerun used local public settings in process memory and passed. Deno tests were not
+run because `deno` is not installed. An initial browser-test attempt exposed two incorrect test assumptions
+(English heading copy and the Next.js route-announcer alert); selectors were corrected and the final run
+passed. No task checkbox or D02 verified count changed.
+
+**Files**: `web/tests/d02-invitation-acceptance.spec.ts`, `specs/001-furever-platform/tasks.md`, and
+`specs/001-furever-platform/implementation-log.md`.
