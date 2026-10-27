@@ -499,8 +499,11 @@ environments only, not local dev.
   No dependency; run first in D02 so the result shapes T140/T141 below.
   **Research update 2026-10-27 (still partial):** current Supabase Auth Hooks docs list no email-OTP
   verification-attempt hook; password/MFA hooks do not cover email OTP, and `generateLink()` is not
-  documented as a session-minting API. Exact wrong-code behavior remains untested because the local template
-  is link-only. See `research.md` section 17; keep T120/T138/T139 open and do not bypass lockout.
+  documented as a session-minting API. The running local Auth image is GoTrue v2.197.0; upstream's open
+  per-token OTP failed-attempt proposal describes the same missing native control. Exact wrong-code behavior
+  remains untested because the local template is link-only. Architecture A-D evaluation is recorded in
+  `docs/decisions/ADR-0001-option-c-session-establishment.md`; see `research.md` section 17. Keep
+  T120/T138/T139 open and do not bypass lockout.
 - [x] T121 [D02] **Spike (new, remediation pass)**: confirm Supabase Auth's automatic email/Google
   identity-linking behavior against this project's actual Auth settings (resolves `plan.md` Open Question
   2), and confirm whether **Manual Linking** needs enabling for the Account screen's "Add Google"/"Add
@@ -757,12 +760,13 @@ environments only, not local dev.
   `web/src/components/OfflineBanner.tsx` — composed from the existing `Banner` component (T082) +
   `useNetworkStatus` (T170), showing the explanatory offline text from `packages/i18n` when offline and
   nothing when online. Depends on T170. [PLT-03]
-- [ ] T172 [D02] Build the shared "disabled with a reason" pattern for network-dependent actions — a
+- [x] T172 [D02] Build the shared "disabled with a reason" pattern for network-dependent actions — a
   `useOfflineGuardedAction` hook wrapping a handler so the bound `Button`/`IconButton` renders `disabled`
   with a reason sub-label when offline (`useNetworkStatus`, T170) — and wire it into one representative
   action (`/pets/new` Add pet's submit button is the first screen to use it; the real wiring task is D03's
-  My pets/Add pet screens below). D02 hook/tests are implemented; keep T172 open until D03 wires the
-  representative action. Depends on T170. [PLT-03]
+  My pets/Add pet screens below). **Verified 2026-10-27:** T233 wires the hook into Add Pet's final submit;
+  offline presses are suppressed, the disabled reason is rendered, and the focused hook test and mobile
+  typecheck pass. Depends on T170. [PLT-03]
 
 ## Route guards, onboarding orchestration, shells (infrastructure — not counted as Screen Coverage rows)
 
