@@ -843,8 +843,8 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 - [ ] T197 [P] [D02] Build the Setup Summary screen `mobile/app/onboarding/summary.tsx` (Built —
   `FurEver Design System/ui_kits/mobile-entry/e-onboard2.babel`; review-your-setup screen with per-step
   Edit buttons; present in the kit, present in `spec.md`'s Screen Coverage). [AUTH-01][PET-01]
-- [ ] T198 [P] [D02] Build `/(tabs)/profile` Profile — `mobile/app/(tabs)/profile.tsx` (Built). [AUTH-05][AUTH-07]
-- [ ] T199 [P] [D02] Build `/profile/settings` Settings — `mobile/app/profile/settings.tsx` (Built).
+- [x] T198 [P] [D02] Build `/(tabs)/profile` Profile — `mobile/app/(tabs)/profile.tsx` (Built). [AUTH-05][AUTH-07]
+- [x] T199 [P] [D02] Build `/profile/settings` Settings — `mobile/app/profile/settings.tsx` (Built).
   **Re-tagged, remediation pass**: wires the three `notif_prefs` toggles (vaccination reminders, booking
   updates, offers — T255's schema) that NTF-02/FR-035 requires; this screen was previously tagged only
   `[AUTH-05]` despite `spec.md`'s own Screen Coverage already listing NTF-02 here. [AUTH-05][NTF-02]
@@ -855,10 +855,10 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   sign-in" (T179/T180 implement their logic; this task builds the buttons, their i18n keys, and
   loading/success/conflict states — see `design/overrides.md`'s new rows).
   [AUTH-06][AUTH-07][AUTH-08][AUTH-09]
-- [ ] T201 [P] [D02] Build `/profile/edit` Edit profile — `mobile/app/profile/edit.tsx` (Spec; pattern:
+- [x] T201 [P] [D02] Build `/profile/edit` Edit profile — `mobile/app/profile/edit.tsx` (Spec; pattern:
   Complete profile; optional phone field). [AUTH-04]
-- [ ] T202 [P] [D02] Build `/profile/help` Help — `mobile/app/profile/help.tsx` (Spec; pattern: Profile).
-- [ ] T203 [P] [D02] Build `/profile/about` About — `mobile/app/profile/about.tsx` (Spec; pattern:
+- [x] T202 [P] [D02] Build `/profile/help` Help — `mobile/app/profile/help.tsx` (Spec; pattern: Profile).
+- [x] T203 [P] [D02] Build `/profile/about` About — `mobile/app/profile/about.tsx` (Spec; pattern:
   Profile).
 - [ ] T204 [P] [D02] Build `/legal/terms`, `/legal/privacy` — `mobile/app/legal/[doc].tsx` (Spec;
   pattern: Profile). [AUTH-04]

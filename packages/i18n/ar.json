@@ -179,9 +179,21 @@
         "unnamed": "لم يُضف الاسم",
         "nameWithYou": "{name} (أنت)",
         "mutationsUnavailable": "إضافة المسؤولين وتغيير الأدوار وإعادة ضبط المصادقة متعددة العوامل وإزالة الحسابات غير متاحة هنا بعد.",
-        "columns": { "name": "الاسم", "email": "البريد الإلكتروني", "role": "الدور", "status": "الحالة" },
-        "roles": { "admin": "مسؤول", "super_admin": "مسؤول النظام الأعلى" },
-        "statuses": { "active": "نشط", "suspended": "موقوف", "deleted": "محذوف" }
+        "columns": {
+          "name": "الاسم",
+          "email": "البريد الإلكتروني",
+          "role": "الدور",
+          "status": "الحالة"
+        },
+        "roles": {
+          "admin": "مسؤول",
+          "super_admin": "مسؤول النظام الأعلى"
+        },
+        "statuses": {
+          "active": "نشط",
+          "suspended": "موقوف",
+          "deleted": "محذوف"
+        }
       },
       "settings": {
         "title": "إعداداتي",
@@ -826,7 +838,29 @@
       "legal": "القانوني",
       "about": "عن التطبيق",
       "profile": "حسابي",
-      "sarahAhmed": "سارة أحمد"
+      "sarahAhmed": "سارة أحمد",
+      "profileLoadError": "تعذر تحميل بياناتك. حاول مرة أخرى.",
+      "profileNameFallback": "ملفك الشخصي",
+      "profileSaveError": "تعذر حفظ التغييرات. حاول مرة أخرى.",
+      "saveChanges": "حفظ التغييرات",
+      "settingsError": "تعذر تحديث تفضيلات الإشعارات. حاول مرة أخرى.",
+      "vaccination_reminders": "تذكيرات التطعيمات",
+      "booking_updates": "تحديثات الحجز",
+      "offers": "العروض والأخبار",
+      "helpDescription": "اعثر على إجابات سريعة وبيانات التواصل المتاحة لدعم فيرإيفر.",
+      "faqLanguageQuestion": "كيف أغيّر لغة التطبيق؟",
+      "faqLanguageAnswer": "افتح الملف الشخصي، ثم الإعدادات، واختر اللغة التي تفضلها.",
+      "faqProfileQuestion": "كيف أعدّل بياناتي؟",
+      "faqProfileAnswer": "افتح الملف الشخصي واختر تعديل البيانات لتحديث اسمك أو مدينتك أو رقم هاتفك الاختياري.",
+      "contactSupport": "تواصل مع الدعم",
+      "supportEmail": "البريد الإلكتروني: {email}",
+      "supportPhone": "الهاتف: {phone}",
+      "supportWhatsapp": "افتح دعم واتساب",
+      "noSupportContacts": "بيانات التواصل مع الدعم غير متاحة حاليًا.",
+      "contactOpenError": "تعذر فتح وسيلة التواصل على هذا الجهاز.",
+      "aboutDescription": "أدوات لرعاية الحيوانات الأليفة وللأشخاص الذين يحبونها.",
+      "appVersion": "إصدار التطبيق",
+      "versionUnavailable": "غير متاح"
     },
     "welcome": {
       "welcomeToFurEver": "أهلاً بيك في فيرايفر!",

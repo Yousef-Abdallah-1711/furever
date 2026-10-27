@@ -179,9 +179,21 @@
         "unnamed": "Name not provided",
         "nameWithYou": "{name} (you)",
         "mutationsUnavailable": "Inviting administrators, changing roles, resetting MFA, and removing accounts are not available here yet.",
-        "columns": { "name": "Name", "email": "Email", "role": "Role", "status": "Status" },
-        "roles": { "admin": "Administrator", "super_admin": "Super administrator" },
-        "statuses": { "active": "Active", "suspended": "Suspended", "deleted": "Deleted" }
+        "columns": {
+          "name": "Name",
+          "email": "Email",
+          "role": "Role",
+          "status": "Status"
+        },
+        "roles": {
+          "admin": "Administrator",
+          "super_admin": "Super administrator"
+        },
+        "statuses": {
+          "active": "Active",
+          "suspended": "Suspended",
+          "deleted": "Deleted"
+        }
       },
       "settings": {
         "title": "My settings",
@@ -826,7 +838,29 @@
       "legal": "Legal",
       "about": "About",
       "profile": "Profile",
-      "sarahAhmed": "Sarah Ahmed"
+      "sarahAhmed": "Sarah Ahmed",
+      "profileLoadError": "Couldn't load your profile. Try again.",
+      "profileNameFallback": "Your profile",
+      "profileSaveError": "Your changes could not be saved. Try again.",
+      "saveChanges": "Save changes",
+      "settingsError": "Notification preferences couldn't be updated. Try again.",
+      "vaccination_reminders": "Vaccination reminders",
+      "booking_updates": "Booking updates",
+      "offers": "Offers and news",
+      "helpDescription": "Find quick answers and the support contacts configured for FurEver.",
+      "faqLanguageQuestion": "How do I change the app language?",
+      "faqLanguageAnswer": "Open Profile, then Settings, and choose your preferred language.",
+      "faqProfileQuestion": "How do I update my profile?",
+      "faqProfileAnswer": "Open Profile and choose Edit profile to update your name, city, or optional phone number.",
+      "contactSupport": "Contact support",
+      "supportEmail": "Email: {email}",
+      "supportPhone": "Phone: {phone}",
+      "supportWhatsapp": "Open WhatsApp support",
+      "noSupportContacts": "Support contact details are not available yet.",
+      "contactOpenError": "This contact option could not be opened on this device.",
+      "aboutDescription": "Care tools for pets and the people who love them.",
+      "appVersion": "App version",
+      "versionUnavailable": "Unavailable"
     },
     "welcome": {
       "welcomeToFurEver": "Welcome to FurEver!",
