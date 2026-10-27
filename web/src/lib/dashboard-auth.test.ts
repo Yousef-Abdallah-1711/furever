@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
-import { prepareTotp, signInDashboard, verifyTotp } from "./dashboard-auth";
+import {
+  prepareTotp,
+  requestDashboardPasswordReset,
+  signInDashboard,
+  verifyTotp,
+} from "./dashboard-auth";
 
 function fakeClient(auth: Record<string, unknown>) {
   return { auth } as unknown as SupabaseClient;
@@ -40,6 +45,38 @@ describe("dashboard sign-in", () => {
     expect(await signInDashboard(client, "x@example.test", "wrong")).toEqual({
       ok: false,
     });
+  });
+});
+
+describe("dashboard password recovery", () => {
+  it("uses Supabase Auth's recovery email API with the same localized callback", async () => {
+    const resetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
+    const client = fakeClient({ resetPasswordForEmail });
+    await expect(
+      requestDashboardPasswordReset(
+        client,
+        "staff@example.test",
+        "https://dashboard.example.test/en/reset-password",
+      ),
+    ).resolves.toBe(true);
+    expect(resetPasswordForEmail).toHaveBeenCalledWith("staff@example.test", {
+      redirectTo: "https://dashboard.example.test/en/reset-password",
+    });
+  });
+
+  it("returns failure without exposing Auth error details", async () => {
+    const client = fakeClient({
+      resetPasswordForEmail: vi.fn().mockResolvedValue({
+        error: new Error("private auth detail"),
+      }),
+    });
+    await expect(
+      requestDashboardPasswordReset(
+        client,
+        "staff@example.test",
+        "https://dashboard.example.test/en/reset-password",
+      ),
+    ).resolves.toBe(false);
   });
 });
 

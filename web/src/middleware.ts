@@ -7,6 +7,7 @@ const intl = createMiddleware(routing);
 const publicRoutes = new Set([
   "login",
   "forgot-password",
+  "reset-password",
   "accept-invite",
   "no-access",
   "mfa",

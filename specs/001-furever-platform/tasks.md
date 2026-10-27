@@ -887,8 +887,12 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   password, calls `accept_staff_invitation()`, refreshes the session, requires the refreshed
   `user_role=clinic_staff` claim, then navigates to `/clinic`. Unit coverage verifies sequencing and failure
   states; live invitation/Auth/SMTP acceptance is not verified, so this task remains open.
-- [ ] T211 [P] [D02] Build `/forgot-password` — `web/src/app/[locale]/(auth)/forgot-password/page.tsx`
-  (Spec; pattern: Sign in).
+- [x] T211 [P] [D02] Build `/forgot-password` — `web/src/app/[locale]/(auth)/forgot-password/page.tsx`
+  (Spec; pattern: Sign in). **Completed 2026-10-27:** bilingual recovery request uses Supabase Auth's
+  `resetPasswordForEmail` with a locale-specific `/reset-password` callback and generic success copy;
+  the callback accepts only a Supabase `PASSWORD_RECOVERY` session and updates the password through
+  `updateUser`. Request/route tests, browser route checks, typecheck, and production build pass. SMTP
+  delivery remains unverified under T145; Turnstile is separate and remains open under T182.
 - [x] T212 [P] [D02] Build `/no-access` - `web/src/app/[locale]/(auth)/no-access/page.tsx` (Spec; pattern:
   Sign in). [AD-01] Verified 2026-10-27: bilingual page explains lack of clinic-portal access and offers sign-out;
   the session is cleared before redirecting to sign-in. Unit tests cover success and failure behavior; both

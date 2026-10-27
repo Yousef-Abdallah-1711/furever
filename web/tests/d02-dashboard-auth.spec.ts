@@ -27,3 +27,33 @@ test("MFA route returns signed-out users to dashboard login", async ({
   await page.goto("/en/mfa");
   await expect(page).toHaveURL(/\/en\/login$/);
 });
+
+test("password recovery form renders without revealing account state", async ({
+  page,
+}) => {
+  await page.goto("/en/forgot-password");
+  await expect(
+    page.getByRole("heading", { name: "Forgot password?" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Email address")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Send reset link" }),
+  ).toBeDisabled();
+});
+
+test("password recovery routes are localized and publicly reachable", async ({
+  page,
+}) => {
+  await page.goto("/ar/forgot-password");
+  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(
+    page.getByRole("heading", { name: "نسيت كلمة المرور؟" }),
+  ).toBeVisible();
+
+  await page.goto("/en/reset-password");
+  await expect(
+    page.getByRole("heading", { name: "Choose a new password" }),
+  ).toBeVisible();
+  await expect(page.getByText("Checking your secure session…")).toBeVisible();
+});

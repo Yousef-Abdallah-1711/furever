@@ -29,6 +29,17 @@ export async function signInDashboard(
   return { ok: true, destination: "/no-access" };
 }
 
+export async function requestDashboardPasswordReset(
+  client: SupabaseClient,
+  email: string,
+  redirectTo: string,
+): Promise<boolean> {
+  const { error } = await client.auth.resetPasswordForEmail(email, {
+    redirectTo,
+  });
+  return !error;
+}
+
 export type TotpSetup =
   | { kind: "verify"; factorId: string }
   | { kind: "enroll"; factorId: string; qrCode: string; secret: string };

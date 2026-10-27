@@ -2454,3 +2454,27 @@ runtime check was performed.
 `web/src/components/auth/{DashboardLoginForm,DashboardMfaScreen}.tsx`,
 `web/src/lib/dashboard-auth.ts` and test, `web/src/middleware.ts`, the web screenshot/auth specs, both locale
 dictionaries, updated D00e login screenshots, `tasks.md`, and this log. **Commit**: `d00253e`.
+
+## D02 — T211: dashboard password recovery (2026-10-27)
+
+Added a bilingual `/forgot-password` form that calls Supabase Auth's supported
+`resetPasswordForEmail` API with a locale-preserving `/reset-password` callback. The response copy is
+generic for success so the page does not disclose whether an email is registered. Added the supporting
+`/reset-password` route because the recovery callback would otherwise have no destination: it waits for
+Supabase's `PASSWORD_RECOVERY` auth event, validates matching passwords with the local six-character Auth
+minimum, calls `updateUser({ password })`, and signs out before returning to login. The middleware public
+route allowlist now includes both recovery routes. Added focused unit coverage for the recovery API
+arguments/error handling and browser coverage for English and Arabic routes, RTL, and the no-session
+state.
+
+**Verification**: web unit suite PASS (7 files / 28 tests); focused dashboard-auth Playwright PASS (5 tests);
+web TypeScript check PASS; production web build PASS with `/[locale]/forgot-password` and
+`/[locale]/reset-password` in the route manifest; Biome PASS; `pnpm i18n:check` PASS (825 keys);
+`git diff --check` PASS. Email delivery was not exercised: T145's SMTP provider/domain is unavailable.
+Turnstile remains unconfigured and T182 stays open. A real recovery email/session was not used.
+
+**Files**: `web/src/app/[locale]/(auth)/{forgot-password,reset-password}/page.tsx`,
+`web/src/components/auth/{DashboardForgotPasswordForm,DashboardResetPasswordScreen,DashboardLoginForm}.tsx`,
+`web/src/lib/dashboard-auth.ts` and test, `web/src/middleware.ts`,
+`web/tests/d02-dashboard-auth.spec.ts`, both locale dictionaries, `tasks.md`, and this log.
+**Commit**: pending.

@@ -188,7 +188,24 @@
         "mfaCodeError": "That code could not be verified. Check it and try again.",
         "mfaVerifying": "Verifying…",
         "mfaConfirmEnrollment": "Verify and finish setup",
-        "mfaVerify": "Verify and continue"
+        "mfaVerify": "Verify and continue",
+        "forgotTitle": "Forgot password?",
+        "forgotDescription": "Enter the email address for your invited dashboard account.",
+        "forgotSent": "If an account matches that address, a reset link will be sent. Check your inbox and spam folder.",
+        "forgotError": "We could not request a reset email right now. Try again.",
+        "forgotSending": "Sending reset link…",
+        "forgotSubmit": "Send reset link",
+        "resetTitle": "Choose a new password",
+        "resetInvalid": "This password reset link is invalid or has expired. Request a new reset link.",
+        "resetSavedSignOutError": "Your password changed, but this session could not be signed out. Retry sign out before continuing.",
+        "signOutAndContinue": "Sign out and continue",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm new password",
+        "passwordMismatch": "The passwords do not match.",
+        "resetError": "We could not update this password. Request a new reset link or try again.",
+        "resetSaving": "Updating password…",
+        "resetSubmit": "Update password",
+        "passwordTooShort": "Use at least 6 characters."
       }
     },
     "admin": {

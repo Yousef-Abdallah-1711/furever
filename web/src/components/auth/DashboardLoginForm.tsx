@@ -6,7 +6,7 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { ShellControls } from "@/components/ShellControls";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { signInDashboard } from "@/lib/dashboard-auth";
 import { createClient } from "@/lib/supabase/browser";
 
@@ -67,6 +67,12 @@ export function DashboardLoginForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
+          <Link
+            href="/forgot-password"
+            className="text-end text-fs-caption text-primary underline"
+          >
+            {t("forgotTitle")}
+          </Link>
           {error ? (
             <p className="text-fs-caption text-danger" role="alert">
               {t("loginError")}
