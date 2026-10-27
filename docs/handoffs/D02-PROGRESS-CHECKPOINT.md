@@ -16,9 +16,21 @@
   client preview checks remain outstanding. Login template was not configured because it could expose the
   public Supabase OTP route around the approved Option C policy.
 - No D02 task is promoted to verified by this batch. D02 remains 54/97 verified (55.67%).
-- At checkpoint time HEAD remains `73b20f520ce1819c9b6588fe0faa2e49a2d7b138`, equal to `origin/main`;
-  these implementation and tracking edits are not yet committed or pushed. The three audit handoff files
-  remain untouched and unstaged.
+
+## Session update — mobile guard soft-deletion check (2026-10-27)
+
+- T173 now reads `profiles.deleted_at` and routes any non-null deletion timestamp to `/welcome`, even if
+  the profile status still reads active. Extracted profile-state mapping and added tests for deleted/missing
+  rows, profile completion, and required consent types.
+- Verification: mobile Jest 16 suites / 46 tests PASS; mobile typecheck PASS; mobile lint PASS with 0
+  errors and 3 pre-existing warnings in unrelated i18n files; `git diff --check` PASS.
+- T173 remains partial because `/complete-profile` is missing and authenticated app transitions have not
+  been exercised. No additional task was promoted to verified; D02 remains 54/97 (55.67%).
+- Commits pushed: `af22556914bfa382de47bb041f274c00c76166fc` (T152/T153 artifacts) and
+  `32aadcbbf99732a71de0dc06ec837ec3607c1ac5` (T173 deletion guard). Latest code HEAD and `origin/main`
+  are both `32aadcbbf99732a71de0dc06ec837ec3607c1ac5` before this checkpoint-only edit.
+- The three protected audit handoff files remain untouched and unstaged. The only untracked workspace
+  files are those three preserved audit documents.
 
 ## Completed or advanced in this batch
 
