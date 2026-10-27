@@ -57,6 +57,7 @@
         "nameRequired": "أدخل اسمك",
         "cityRequired": "اختر مدينتك",
         "termsAcceptanceRequired": "وافق على الشروط وسياسة الخصوصية للمتابعة",
+        "legalDocumentsUnavailable": "لم تُعتمد الشروط وسياسة الخصوصية بعد. لا يمكنك المتابعة حتى يتوفر النص العربي والإنجليزي وإصداراتهما.",
         "invalidPhone": "أدخل رقم هاتف صالحًا",
         "savingProfile": "جارٍ حفظ البيانات…",
         "profileSaved": "تم حفظ البيانات"

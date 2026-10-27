@@ -1,4 +1,5 @@
 [
+  "screens.auth.profile.legalDocumentsUnavailable",
   "screens.account.account",
   "screens.account.addEmailSignIn",
   "screens.account.addGoogleAccount",

@@ -1,9 +1,30 @@
 # D02 Progress Checkpoint
 
+## Session update — T196/T204 profile completion and legal viewer (2026-10-27)
+
+- Added `/complete-profile` and `/legal/[doc]` mobile routes. The completion route loads the
+  authenticated profile, active cities, and current bilingual legal configuration. Optional phone
+  validation uses the shared Egyptian schema.
+- Added `complete_owner_profile`, which requires an explicit acceptance flag, validates current
+  Terms/Privacy versions and bilingual content, and atomically updates the owner profile plus both
+  consent rows. A forward migration removes its earlier weaker signature. Added idempotency,
+  stale-version, invalid-phone, missing-acceptance, and legacy-signature-removal pgTAP coverage.
+- No owner-approved legal copy/version identifiers have been supplied. Missing configuration keeps
+  completion disabled; no consent is recorded. T196/T204 remain partial and T173 remains partial pending
+  authenticated transition/runtime proof.
+- Local migrations applied; pgTAP 11 files / 100 assertions PASS, including the legacy-signature removal
+  and authenticated/anonymous execute grants; mobile tests 18 suites / 57 tests PASS; mobile typecheck
+  PASS; mobile lint PASS (0 errors, 3 existing
+  i18n warnings); i18n parity 850 keys PASS; Expo static export 29 routes PASS. These checks must be
+  rerun after any later route or configuration change. Static export preceded the final RPC parameter
+  addition. No authenticated native/browser profile completion was run.
+- SMTP remains unchanged: ignored `backend/.env` password is blank; no Hostinger AUTH or external inbox
+  delivery. OTP/session architecture remains blocked. Verified D02 count stays 54/97 (55.67%).
+
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `beb494e3a0ca370a39b1ae4d18377806bcfa8e03` (`test(D02): verify local auth email and staff invites`), pushed and synchronized.
-**Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial; local dashboard Auth and invitation email integration are exercised, while Hostinger delivery remains blocked on the SMTP password.
+**Latest implementation commit:** `f3be531f15da736c8478d9e63ea9763c4788015c` (`fix(D02): guard direct mobile profile routes`), pushed and synchronized.
+**Checkpoint status:** T173 guards direct profile routes; profile completion and bilingual legal viewer are implemented partially with a fail-closed legal configuration requirement. Local dashboard Auth/invitation email integration is exercised; Hostinger SMTP AUTH and delivery remain unverified.
 **Phase status:** D02 remains open. No D03 work has started.
 
 ## Session update — local Auth email and staff invitation integration (2026-10-27)

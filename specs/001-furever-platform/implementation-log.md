@@ -2833,3 +2833,34 @@ AUTH, external inbox delivery, hosted Auth, and browser UI acceptance were NOT R
 
 **Files**: `backend/supabase/config.toml`, `specs/001-furever-platform/tasks.md`,
 `specs/001-furever-platform/implementation-log.md`, `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`.
+
+## D02 — T196/T204 profile completion and legal documents (2026-10-27)
+
+Added the mobile `/complete-profile` and `/legal/[doc]` routes. The profile screen requires an authenticated
+owner, loads the current profile and active cities, validates optional phone input with the shared Egyptian
+phone schema, and shows the configured Terms and Privacy versions. The legal viewer renders the selected
+bilingual text and version from `app_config.legal_documents`; missing or malformed config is unavailable.
+
+Added `complete_owner_profile`, which updates the owner profile and records both consent versions in one
+transaction. It validates owner state, name, active city, optional E.164 phone, explicit acceptance, complete
+bilingual content, and the current Terms/Privacy version IDs. A follow-up migration drops the earlier
+signature that could record consent without the explicit acceptance argument, then creates/replaces the
+restricted six-argument function. Same-version retries are idempotent. No legal text or version IDs are
+owner-approved/configured, so the screen remains fail-closed and no task is complete. T196/T204 remain
+partial; T173 remains partial pending authenticated/native route transition evidence.
+
+**Verification**: local migrations up PASS; local pgTAP 11 files / 100 assertions PASS (including legacy
+signature absence, authenticated/anonymous grants, explicit acceptance, valid and stale versions, optional
+phone validation, persistence, and idempotent retry); mobile Jest 18 suites / 57 tests PASS; mobile typecheck PASS; mobile lint PASS with
+0 errors and 3 existing warnings; i18n parity 850 keys PASS. Expo static export had previously passed for
+29 routes before the explicit-acceptance argument change; it was not rerun after that small interface-only
+change. No authenticated browser/native profile completion or owner-approved legal content was available.
+pnpm emitted existing virtual-store/TTY warnings before commands; the requested scripts still executed.
+
+**Files**: `backend/supabase/migrations/20261027150000_complete_owner_profile.sql`,
+`backend/supabase/migrations/20261027160000_require_explicit_profile_consent.sql`,
+`backend/supabase/tests/019_complete_owner_profile.test.sql`, `mobile/app/(auth)/complete-profile.tsx`,
+`mobile/app/legal/[doc].tsx`, `mobile/src/features/onboarding/legal-documents.ts`,
+`mobile/src/features/onboarding/legal-documents.test.ts`, `packages/i18n/{en.json,ar.json,draft-keys.json}`,
+`specs/001-furever-platform/{tasks.md,implementation-log.md,contracts/rpc-functions.md}`, and
+`docs/{environments.md,handoffs/D02-PROGRESS-CHECKPOINT.md}`.

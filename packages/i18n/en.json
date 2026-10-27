@@ -57,6 +57,7 @@
         "nameRequired": "Enter your name",
         "cityRequired": "Select your city",
         "termsAcceptanceRequired": "Accept the Terms and Privacy Policy to continue",
+        "legalDocumentsUnavailable": "Approved Terms and Privacy documents are not configured yet. You cannot continue until the bilingual text and versions are available.",
         "invalidPhone": "Enter a valid phone number",
         "savingProfile": "Saving profile…",
         "profileSaved": "Profile saved"

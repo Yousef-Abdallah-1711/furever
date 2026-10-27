@@ -770,8 +770,9 @@ environments only, not local dev.
   guard into a reusable layout and applied it to both `(tabs)` and every `/profile/*` route, closing direct
   deep-link rendering into profile/account/settings screens. Runtime loading tests cover missing/failed
   sessions, profile/consent/config failures, incomplete profiles, maintenance, minimum version, and valid
-  access. Expo web static export now includes the guarded profile routes. Keep open until
-  `/complete-profile` exists and authenticated app navigation is exercised.
+  access. Expo web static export now includes the guarded profile routes. `/complete-profile` and
+  `/legal/[doc]` now exist; keep open until authenticated transition behavior and native app navigation
+  are exercised.
 - [x] T174 [D02] Web route guard (extends T167/T168): same five states for the dashboard. Depends on T167.
   **Scope note**: implements signed-out (T167), role gate (T167), suspended/deleted (→ `/no-access`), and
   admin MFA. Per the 2026-10-27 T183 decision, maintenance no longer redirects authorized users; T183's
@@ -876,7 +877,12 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   email-code wording [resend timer, "change email", spam-folder hint] and rework the prototype's 3-attempt
   UI to 5 — `design/overrides.md`). [AUTH-01]
 - [ ] T196 [P] [D02] Build `/complete-profile` — `mobile/app/(auth)/complete-profile.tsx` (Built, design
-  change needed: phone field becomes optional — `design/overrides.md`). [AUTH-04]
+  change needed: phone field becomes optional — `design/overrides.md`). [AUTH-04] **Partial 2026-10-27:**
+  loads the authenticated owner profile, active cities, and bilingual legal config; optional phone uses the
+  shared Egyptian schema. A security-definer RPC saves profile fields and both consent versions atomically
+  only after explicit acceptance and current configured versions are supplied. Legal content/version IDs
+  are not owner-approved/configured, so completion remains fail-closed; authenticated native acceptance is
+  untested.
 - [ ] T197 [P] [D02] Build the Setup Summary screen `mobile/app/onboarding/summary.tsx` (Built —
   `FurEver Design System/ui_kits/mobile-entry/e-onboard2.babel`; review-your-setup screen with per-step
   Edit buttons; present in the kit, present in `spec.md`'s Screen Coverage). [AUTH-01][PET-01]
@@ -899,7 +905,9 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 - [x] T203 [P] [D02] Build `/profile/about` About — `mobile/app/profile/about.tsx` (Spec; pattern:
   Profile).
 - [ ] T204 [P] [D02] Build `/legal/terms`, `/legal/privacy` — `mobile/app/legal/[doc].tsx` (Spec;
-  pattern: Profile). [AUTH-04]
+  pattern: Profile). [AUTH-04] **Partial 2026-10-27:** bilingual viewer reads `app_config.legal_documents`
+  and displays the configured version. No approved Terms/Privacy text or version IDs are available; missing
+  or malformed config renders unavailable and cannot satisfy T196.
 - [x] T205 [P] [D02] Build `/force-update` - `mobile/app/force-update.tsx` (Spec; pattern: Splash). [PLT-01]
   Verified 2026-10-27: reads `min_mobile_version.version`, shows installed/required versions, and gives update
   guidance. Expo web export and Playwright route test pass; unit tests cover version parsing. Native device/build was

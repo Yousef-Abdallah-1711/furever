@@ -199,6 +199,11 @@ environment-specific values are known.
   does not send real mail. A developer may opt into custom local SMTP using the ignored
   `backend/.env` and the opt-in Auth blocks in `backend/supabase/config.toml` described
   above. Do not reuse hosted credentials locally.
+- **Legal content:** T196/T204 read `app_config.legal_documents` with `terms` and `privacy`
+  objects. Each object must include an owner-approved `version`, `content_en`, and `content_ar`.
+  Do not seed placeholder legal text or record consent until the approved copy and version IDs
+  are supplied. The profile-completion RPC validates the configured versions and saves both
+  consent rows with the profile update in one transaction.
 - **Push:** Real push credentials are not required locally.
 - **Secrets and configuration:** Supabase supplies its project URL and API keys to local
   Edge Functions. `DASHBOARD_ORIGINS` defaults to the two localhost origins documented
