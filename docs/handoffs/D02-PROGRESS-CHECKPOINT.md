@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** pending T209 settings commit.
+**Latest implementation commit:** pending T151 platform import-path commit.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
@@ -25,7 +25,8 @@
 - **Partial:** T147/T148 native Google/Apple sign-in adapters and pure cores are implemented. T150's
   compatible packages were installed and Expo config was checked with absent and synthetic Google URL
   schemes. T151 has nonce and availability tests. Provider credentials, UI integration, Android import-path
-  verification, and an EAS development build remain outstanding.
+  verification, and an EAS development build remain outstanding. **Complete:** T151 now verifies Apple
+  nonce handling and that the Welcome screen's Android path does not invoke/load the Apple adapter; iOS does.
 - **Partial:** T142 has a backend helper that checks the signed `amr` authentication timestamp within five
   minutes after Auth verification. Six focused tests pass. The delete endpoint is not implemented because
   the required data/file cleanup and Auth deletion need a safe coordinated lifecycle.
@@ -164,6 +165,10 @@ does not mean every decision's implementation is complete.
   1 existing warning); Biome PASS; i18n parity PASS (847 keys); production web build PASS with the guarded
   settings route in the manifest; `git diff --check` PASS. No authenticated profile/password/MFA action was
   exercised.
+- T151 continuation: focused loader Jest PASS (2 tests); full mobile Jest PASS (15 suites / 39 tests);
+  mobile TypeScript PASS; mobile lint PASS (0 errors, 3 existing warnings); token check PASS (0 violations);
+  Expo web export PASS (25 static routes) using local-only placeholder Supabase environment values. No native
+  Android/iOS execution was performed.
 - Real authenticated mobile and dashboard runtime flows, EAS build, Maestro, and hosted service checks:
   not run.
 

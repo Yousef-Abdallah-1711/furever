@@ -636,12 +636,13 @@ environments only, not local dev.
   **Partial 2026-10-27:** compatible packages installed and Apple capability/plugin configured. Google
   config plugin is added only when `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` is set; no client ID is available,
   so the value and generated native config remain unverified. EAS/dev build is still required.
-- [ ] T151 [P] [D02] Unit tests: Apple nonce round-trip (the SHA-256 hash of the raw nonce sent to
+- [x] T151 [P] [D02] Unit tests: Apple nonce round-trip (the SHA-256 hash of the raw nonce sent to
   `signInWithIdToken` matches the hashed nonce sent to `AppleAuthentication.signInAsync`); the Apple
   module is never reachable on Android (`Platform.OS === 'ios'` gate, asserted by mocking `Platform.OS`
   both ways and checking the module import/render path). [AUTH-03]
-  **Partial 2026-10-27:** nonce round-trip and native-availability guard have focused unit coverage;
-  Android screen import-path assertion remains pending T193/T194 integration.
+  **Completed 2026-10-27:** nonce round-trip and native-availability guard have focused unit coverage;
+  the Welcome screen now dynamically loads the Apple adapter only on iOS. A loader test proves the Android
+  path does not invoke the module loader, while iOS does. Native device execution remains T184/T214 work.
 
 ## Email templates (new, 2026-10-18)
 

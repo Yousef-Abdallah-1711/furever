@@ -2477,7 +2477,7 @@ Turnstile remains unconfigured and T182 stays open. A real recovery email/sessio
 `web/src/components/auth/{DashboardForgotPasswordForm,DashboardResetPasswordScreen,DashboardLoginForm}.tsx`,
 `web/src/lib/dashboard-auth.ts` and test, `web/src/middleware.ts`,
 `web/tests/d02-dashboard-auth.spec.ts`, both locale dictionaries, `tasks.md`, and this log.
-**Commit**: pending.
+**Commit**: `654be13`.
 
 ## D02 — T209: dashboard personal settings (2026-10-27)
 
@@ -2506,4 +2506,22 @@ enrollment/removal, and visual behavior inside an authenticated dashboard were n
 `web/src/app/[locale]/(admin)/admin/settings/page.tsx`,
 `web/src/lib/dashboard-settings.ts` and test, `web/tests/d02-dashboard-auth.spec.ts`, both locale dictionaries,
 `tasks.md`, and this log.
-**Commit**: pending.
+**Commit**: `9544aa8`.
+
+## D02 — T151: keep the Apple native module off Android's import path (2026-10-27)
+
+The Welcome screen hid the Apple button on Android but statically imported
+`features/auth/apple-signin`, which still made Metro resolve/load the native module for that platform. Replaced
+that import with `loadAppleSignIn(Platform.OS)`: the loader returns before invoking its dynamic module import
+unless the platform is iOS. Added focused tests asserting the Android path never calls the loader and the
+iOS path does. The existing Apple nonce round-trip and availability tests remain unchanged. Added a mobile
+`.tmp-*` ignore for the generated temporary web-export verification output.
+
+**Verification**: focused Jest PASS (loader: 2 tests); full mobile Jest PASS (15 suites / 39 tests);
+mobile TypeScript PASS; mobile lint PASS (0 errors, 3 existing warnings); design-token lint PASS (0
+violations); Expo web static export PASS (25 routes) using local-only placeholder Supabase environment
+values because this checkout has no mobile `.env.local`. This validates bundling and lazy chunk routing only,
+not Android/iOS native execution. `git diff --check` PASS.
+
+**Files**: `mobile/app/welcome.tsx`, `mobile/src/features/auth/apple-signin-loader.ts` and test,
+`mobile/.gitignore`, `tasks.md`, this log. **Commit**: pending.
