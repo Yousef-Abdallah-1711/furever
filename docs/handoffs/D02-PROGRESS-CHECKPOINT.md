@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** pending password-recovery batch commit.
+**Latest implementation commit:** `654be13` (`feat(D02): add dashboard password recovery`).
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
