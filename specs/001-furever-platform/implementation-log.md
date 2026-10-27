@@ -2915,3 +2915,33 @@ passed. No task checkbox or D02 verified count changed.
 
 **Files**: `web/tests/d02-invitation-acceptance.spec.ts`, `specs/001-furever-platform/tasks.md`, and
 `specs/001-furever-platform/implementation-log.md`.
+
+## D02 continuation — deletion access block and blocker decision package (2026-10-27)
+
+Added a forward-only account-deletion foundation: durable private request state, active-account RLS checks
+for D02 authenticated data, a deleted-profile refresh-token guard, a service-only request RPC, a service-only
+pre-cleanup cancellation RPC, and active-actor checks on sensitive status/audit/invitation retry helpers.
+The `delete-account` Edge Function verifies the bearer with Auth, requires a signed AMR event within five
+minutes, accepts no caller-supplied target, records the request transactionally, and returns `202` without
+claiming that storage or Auth-user cleanup has completed. Local integration output was
+`signup=PASS deletion_status=202 request_state=access_blocked old_token_profile_rows=0 refresh_status=500`;
+the synthetic user and rows were removed after verification. D02 pgTAP now passes 12 files / 122
+assertions; Edge Function Vitest passes 1 file / 5 tests.
+
+The authenticated Mailpit browser harness was added, including synthetic manager/invite fixtures and cleanup.
+The actual local invitation reached the FurEver page but returned the invalid/expired invitation state
+before a session was established. An existing unrelated service occupied port 3000, so the harness uses
+the configured localhost:3010 redirect. T210 remains partial; no acceptance, role refresh, or navigation is
+claimed. Existing local pnpm warnings about virtual-store configuration appeared during the run.
+
+OTP architecture is classified as blocked for the approved external Option C code: documented `verifyOtp`
+exchanges Supabase-issued OTP/token hashes, the access-token hook modifies tokens only at Supabase issuance,
+and neither `generateLink` nor third-party JWT verification establishes the required external-code-to-normal-
+refreshable-session bridge while preserving lockout. The decision register and Path A/Path B transition
+proposal are in `docs/handoffs/D02-OWNER-DECISIONS-AND-PHASE-TRANSITION.md`.
+
+**Status:** no D02 task newly completed, no D03 work started, T216 remains FAIL. T142 advanced but remains
+partial until owner-approved retention rules, Storage cleanup, Auth-user cleanup, retry/worker behavior, and
+future-table access gating are designed and verified. Profile completion remains protected by the existing
+explicit-consent/version RPC and its synthetic pgTAP negative cases; authenticated native UI acceptance was
+not run. Three protected audit/handoff files and the prior untracked session report remain untouched.

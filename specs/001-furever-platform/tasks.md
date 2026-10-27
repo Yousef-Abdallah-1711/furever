@@ -590,12 +590,15 @@ environments only, not local dev.
   client-provided timestamp. Reject when the session cannot prove freshness. **Partial 2026-10-27:**
   shared Edge Function helper validates signed-token `amr` freshness after Auth verification and rejects
   expired sessions, stale/missing/future events, subject mismatch, and cross-account targets; focused
-  tests cover forged client timestamps. The delete endpoint remains open until transactional account-data,
-  storage, and Auth-user cleanup is designed and verified. **Safety review 2026-10-27:** Supabase documents
-  that deleting an Auth user revokes refresh sessions but does not invalidate an already issued access JWT
-  before its expiry; Storage objects must be removed through the Storage API before Auth deletion. Consent
-  and audit retention are not specified. No partial deletion endpoint was added because immediate API
-  revocation and retention semantics are not yet established.
+  tests cover forged client timestamps. **Partial implementation 2026-10-27:** `delete-account` verifies
+  the bearer with Auth, requires the signed AMR event within five minutes, accepts no target ID, and calls
+  a service-only transaction that records a durable request, marks the profile deleted, writes audit
+  evidence, and immediately blocks authenticated D02 table access through active-account RLS predicates.
+  The token hook rejects refreshes for deleted profiles. A service-only cancellation RPC reverses a request
+  before cleanup starts. Local DB assertions, Edge Function unit tests, and a disposable Auth-user local
+  integration verified the access-blocked response, denial of the old token's profile read, and denied
+  refresh. This is a reversible access-block/request stage, not full deletion: Storage/Auth-user cleanup,
+  retention policy, and extension to future D03+ data remain open.
 - [ ] T143 [P] [D02] Edge Function `export-my-data/`. [AUTH-09] **Partial (2026-10-27):** authenticated
   GET exports the caller's own profile, consent rows, and push-device metadata through the public key and
   caller bearer token so RLS remains active; response is non-cacheable and does not expose raw push tokens.
@@ -887,7 +890,8 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   shared Egyptian schema. A security-definer RPC saves profile fields and both consent versions atomically
   only after explicit acceptance and current configured versions are supplied. Legal content/version IDs
   are not owner-approved/configured, so completion remains fail-closed; authenticated native acceptance is
-  untested.
+  untested. The RPC has pgTAP synthetic-document coverage for atomic profile/consent writes, idempotency,
+  stale versions, invalid phone, and missing explicit acceptance.
 - [ ] T197 [P] [D02] Build the Setup Summary screen `mobile/app/onboarding/summary.tsx` (Built —
   `FurEver Design System/ui_kits/mobile-entry/e-onboard2.babel`; review-your-setup screen with per-step
   Edit buttons; present in the kit, present in `spec.md`'s Screen Coverage). [AUTH-01][PET-01]
@@ -901,8 +905,9 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   Google; the "Add phone" linking action is removed — `design/overrides.md`). The supported Google
   account-link action, linked email/Google/Apple methods, conflict state, current-schema data export,
   and sign-out are implemented. Secondary email identity linking is deferred because its supported
-  attachment flow is unverified. Account deletion remains blocked on T142's safe backend contract;
-  T200 remains partial until deletion and its supported backend behavior are available. [AUTH-06]
+  attachment flow is unverified. Account deletion now has a local access-block/request endpoint, but the
+  UI, cancellation messaging, retention policy, and asynchronous cleanup lifecycle remain open; T200 stays
+  partial. [AUTH-06]
   [AUTH-07][AUTH-08][AUTH-09]
 - [x] T201 [P] [D02] Build `/profile/edit` Edit profile — `mobile/app/profile/edit.tsx` (Spec; pattern:
   Complete profile; optional phone field). [AUTH-04]
@@ -944,8 +949,10 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   states. **Local Auth/Mailpit integration verified 2026-10-27:** a synthetic invitee followed the delivered
   Auth verification link, set a password, accepted the invitation, retried idempotently, and signed in.
   Browser fail-closed coverage added 2026-10-27: English and Arabic routes show the invalid/expired
-  invitation state without a session, omit password inputs, and preserve Arabic RTL. Authenticated browser
-  execution, role-claim refresh/navigation, and Hostinger delivery remain unverified; this task remains open.
+  invitation state without a session, omit password inputs, and preserve Arabic RTL. The authenticated
+  browser attempt reached FurEver's invite screen but displayed the invalid/expired invitation state;
+  password acceptance, role-claim refresh/navigation, and Hostinger delivery remain unverified. This task
+  remains open.
 - [x] T211 [P] [D02] Build `/forgot-password` — `web/src/app/[locale]/(auth)/forgot-password/page.tsx`
   (Spec; pattern: Sign in). **Completed 2026-10-27:** bilingual recovery request uses Supabase Auth's
   `resetPasswordForEmail` with a locale-specific `/reset-password` callback and generic success copy;

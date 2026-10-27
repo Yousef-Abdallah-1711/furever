@@ -1,5 +1,25 @@
 # D02 Progress Checkpoint
 
+## Latest continuation — 2026-10-27
+
+- Starting branch/HEAD was `main` / `f255be1822cd307082145c901e1259f6687bc1e0`, synchronized with `origin/main`.
+- Account deletion advanced to a **reversible access-block/request stage**: service-only request/cancel RPCs,
+  durable private state, D02 authenticated RLS gating, deleted-profile refresh rejection, and an Edge Function
+  that enforces Auth-verified signed AMR freshness. Local synthetic integration observed HTTP 202, zero profile
+  rows via the old token, and refresh rejection. Storage/Auth-user cleanup and retention policy remain open;
+  T142/T200 remain partial.
+- OTP Option C is classified unsupported with the current contract. The owner decision register and formal
+  Path A/B proposal are in `D02-OWNER-DECISIONS-AND-PHASE-TRANSITION.md`. Path A is recommended. Path B is
+  only a proposal and requires explicit written authorization; no D03 work was started.
+- Authenticated invitation browser harness reached the FurEver invitation route but Auth did not establish a
+  session; the page showed invalid/expired. T210 remains partial and no browser acceptance, claim refresh, or
+  navigation is claimed. An unrelated service owns port 3000; the local test uses allowlisted localhost:3010.
+- D02 count remains 54/97 verified (55.67%); T216 **FAIL**; D03 **BLOCKED / NOT STARTED**. No tasks newly
+  completed. Protected audit/handoff files and the prior session report remain unmodified/untracked.
+- Fresh targeted verification: local pgTAP 12 files / 122 assertions; deletion Edge Function Vitest 1 file /
+  5 tests; deletion local Auth integration PASS. The attempted authenticated invite browser test failed as
+  described above. See the latest implementation-log entry for commands and detail.
+
 ## Final D02 closeout verification — 2026-10-27
 
 - Reconfirmed `main` at starting HEAD/remote `b8bc68a3ac17ae97b4fee947e69ec86d662d31b9`. D02 remains
@@ -396,9 +416,9 @@ does not mean every decision's implementation is complete.
 
 | Tasks | Blocker |
 | --- | --- |
-| T120, T138, T139, T155, T194, T195, T213 | Current official Auth Hooks docs show no email-OTP verification interceptor; `generateLink()` is not documented to mint a refreshable session. Exact wrong-code experiment still needs a numeric-code template. Preserve the lockout; T213 also needs Maestro/native prerequisites. |
-| T140, T145, T152, T153, T210 | Hostinger details are known, but ignored `backend/.env` has no SMTP password; AUTH, sender/DNS verification, external inbox delivery, and browser acceptance remain unverified. |
-| T142, T200 | Coordinated account deletion and trusted cleanup contract are not implemented. |
+| T120, T138, T139, T155, T194, T195, T213 | Option C is classified unsupported with the current contract: `verifyOtp` exchanges Supabase-issued OTP/token hashes, and the hooks do not intercept arbitrary code verification. Choose Supabase-owned OTP or approve a revised auth contract; preserve lockout. T213 also needs Maestro/native prerequisites. |
+| T140, T145, T152, T153, T210 | Hostinger details are known, but ignored `backend/.env` has no SMTP password; AUTH, sender/DNS verification, external inbox delivery, and authenticated browser acceptance remain unverified. Browser attempt showed invalid/expired before session establishment. |
+| T142, T200 | Reversible access-block/request stage now exists and local Auth integration passes. Owner-approved retention rules, Storage/Auth cleanup worker, retry lifecycle, UI/cancellation messaging, and future-table access gating remain. |
 | T143 | Current-schema export exists; later-phase tables and full runtime coverage are outstanding. |
 | T146 | Hosted projects/origins/secrets and dependent Edge Functions are not provisioned. |
 | T147, T148, T150, T181, T184, T214 | Provider credentials and native development build/device prerequisites are unavailable. |
@@ -407,7 +427,7 @@ does not mean every decision's implementation is complete.
 | T182 | Cloudflare Turnstile site/secret keys are unavailable. |
 | T185 | `sign_up_completed` awaits the verified auth completion handler; preference events are implemented. |
 | T189 | Maestro CLI, Java, Android SDK/adb, and native runtime are unavailable. |
-| T196, T204 | Profile/legal routes and atomic consent RPC exist; owner-approved Terms/Privacy content and version IDs are missing, and T196 also needs the safe auth entry path/runtime. |
+| T196, T204 | Profile/legal routes and atomic consent RPC exist; synthetic-document database tests pass. Owner-approved Terms/Privacy content and version IDs are missing; authenticated native UI/runtime acceptance and safe OTP entry remain. |
 | T197 | Summary depends on completed pet setup (D03) and the preceding auth/profile flow. |
 | T208 | Directory is implemented; platform-admin invite, role change, MFA reset, and removal lack backend contracts. |
 | T216 | Final end-to-end gate depends on the above OTP, SMTP, legal, native, and later-phase work. |
