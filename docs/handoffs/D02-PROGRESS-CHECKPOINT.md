@@ -2,8 +2,8 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** `9377748` (`fix(D02): enable local dashboard auth flow`), pushed and synchronized in checkpoint commit `e6d855d`.
-**Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial; local dashboard Auth integration is now exercised end to end.
+**Latest implementation commit:** `beb494e3a0ca370a39b1ae4d18377806bcfa8e03` (`test(D02): verify local auth email and staff invites`), pushed and synchronized.
+**Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial; local dashboard Auth and invitation email integration are exercised, while Hostinger delivery remains blocked on the SMTP password.
 **Phase status:** D02 remains open. No D03 work has started.
 
 ## Session update — local Auth email and staff invitation integration (2026-10-27)
@@ -31,8 +31,10 @@
   above PASS; `git diff --check` PASS. The first policy-checker call lacked DB connection configuration
   and failed with its setup message; the supported container invocation passed. Hostinger SMTP AUTH,
   external inbox, hosted Auth, native builds, and browser acceptance page were NOT RUN.
-- Starting HEAD and `origin/main` were both `46df76a82658cd2adb57cc1ec1cc8efbd0c0ad3d`. Current changes
-  are not committed yet. Protected audit handoff files remain untracked and untouched.
+- Starting HEAD and `origin/main` were both `46df76a82658cd2adb57cc1ec1cc8efbd0c0ad3d`. Commit
+  `beb494e3a0ca370a39b1ae4d18377806bcfa8e03` was pushed; `git ls-remote` confirmed `origin/main` matches
+  HEAD. The three protected audit handoff files remain untracked and untouched; `backend/.env` remains
+  ignored.
 
 ## Session update — bilingual email templates (2026-10-27)
 
