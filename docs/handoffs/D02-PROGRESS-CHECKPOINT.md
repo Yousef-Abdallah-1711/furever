@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** pending T151 platform import-path commit.
+**Latest implementation commit:** `ec08c70` (`fix(D02): lazy-load Apple sign-in on iOS`).
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial.
 **Phase status:** D02 remains open. No D03 work has started.
 
