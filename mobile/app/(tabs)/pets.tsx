@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { petQueryKeys, listMyPets, listBreeds } from '@/features/pets/data';
 import { useLocale } from '@/hooks/useLocale';
 import { supabase } from '@/lib/supabase';
+import { useOwnerId } from '@/features/pets/useOwnerId';
 
 function PetPhoto({ path, name }: { path: string | null; name: string }) {
   const { t } = useTranslation();
@@ -34,7 +35,13 @@ function PetPhoto({ path, name }: { path: string | null; name: string }) {
 export default function PetsTabScreen() {
   const { t } = useTranslation();
   const { locale } = useLocale();
-  const pets = useQuery({ queryKey: petQueryKeys.all, queryFn: listMyPets });
+  const owner = useOwnerId();
+  const pets = useQuery({
+    queryKey: petQueryKeys.list(owner.data ?? 'signed-out'),
+    queryFn: listMyPets,
+    enabled: Boolean(owner.data),
+    meta: { persist: true },
+  });
   const breeds = useQuery({ queryKey: ['pets', 'breeds', 'all'], queryFn: async () => {
     const species = ['cat', 'dog', 'bird', 'rabbit', 'other'] as const;
     const catalogs = await Promise.all(species.map((item) => listBreeds(item)));
@@ -46,10 +53,10 @@ export default function PetsTabScreen() {
     <ScrollView className="flex-1 bg-background" contentContainerClassName="gap-sp-5 px-sp-5 py-sp-5">
       <ScreenHeader title={t('screens.pets.myPets')} right={<Button size="s" icon="plus" onClick={() => router.push('/pets/new')}>{t('screens.pets.addPet')}</Button>} />
       <OfflineBanner />
-      {pets.isPending ? (
+      {owner.isPending || pets.isPending ? (
         <View className="gap-sp-3"><Skeleton w="100%" h={88} /><Skeleton w="100%" h={88} /></View>
-      ) : pets.isError && !pets.data ? (
-        <EmptyState icon="triangle-alert" title={t('screens.pets.loadError')} action={t('screens.pets.retry')} onAction={() => void pets.refetch()} tone="danger" />
+      ) : owner.isError || !owner.data || (pets.isError && !pets.data) ? (
+        <EmptyState icon="triangle-alert" title={t('screens.pets.loadError')} action={t('screens.pets.retry')} onAction={() => void (owner.isError || !owner.data ? owner.refetch() : pets.refetch())} tone="danger" />
       ) : pets.data.length === 0 ? (
         <EmptyState icon="paw-print" title={t('screens.pets.noPetsYet')} body={t('screens.pets.addYourFirstPetToStartAHealthPassport')} action={t('screens.pets.addPet')} onAction={() => router.push('/pets/new')} />
       ) : (

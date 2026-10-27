@@ -16,6 +16,7 @@ import { getPet, listBreeds, petQueryKeys, softDeletePet, updatePet } from '@/fe
 import { useLocale } from '@/hooks/useLocale';
 import { useOfflineGuardedAction } from '@/hooks/useOfflineGuardedAction';
 import { supabase } from '@/lib/supabase';
+import { useOwnerId } from '@/features/pets/useOwnerId';
 
 export default function EditPetScreen() {
   const { id: rawId } = useLocalSearchParams<{ id: string | string[] }>();
@@ -23,7 +24,8 @@ export default function EditPetScreen() {
   const { t } = useTranslation();
   const { locale } = useLocale();
   const queryClient = useQueryClient();
-  const petQuery = useQuery({ queryKey: petQueryKeys.detail(id ?? ''), queryFn: () => getPet(id!), enabled: Boolean(id) });
+  const owner = useOwnerId();
+  const petQuery = useQuery({ queryKey: petQueryKeys.detail(owner.data ?? 'signed-out', id ?? ''), queryFn: () => getPet(id!), enabled: Boolean(id && owner.data) });
   const [changes, setChanges] = useState<PetUpdateInput>({});
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,8 +82,8 @@ export default function EditPetScreen() {
   });
 
   const update = <K extends keyof PetUpdateInput>(key: K, value: PetUpdateInput[K]) => setChanges((current) => ({ ...current, [key]: value }));
-  if (petQuery.isPending) return <View className="flex-1 items-center justify-center bg-background"><Text className="text-fs-body text-text-secondary">{t('common.loading')}</Text></View>;
-  if (petQuery.isError || !petQuery.data || !form || !id) return <View className="flex-1 justify-center bg-background px-sp-5"><EmptyState icon="triangle-alert" title={t('screens.pets.documentUnavailable')} tone="danger" action={t('screens.pets.backToPets')} onAction={() => router.replace('/(tabs)/pets')} /></View>;
+  if (owner.isPending || (owner.data && petQuery.isPending)) return <View className="flex-1 items-center justify-center bg-background"><Text className="text-fs-body text-text-secondary">{t('common.loading')}</Text></View>;
+  if (owner.isError || !owner.data || petQuery.isError || !petQuery.data || !form || !id) return <View className="flex-1 justify-center bg-background px-sp-5"><EmptyState icon="triangle-alert" title={t('screens.pets.documentUnavailable')} tone="danger" action={t('screens.pets.backToPets')} onAction={() => router.replace('/(tabs)/pets')} /></View>;
 
   const gender = petGenderSchema.parse(form.gender ?? petQuery.data.gender);
   const breedOptions = [
@@ -106,14 +108,16 @@ export default function EditPetScreen() {
         const previousPath = petQuery.data.photo_path;
         try {
           await updatePet(id, { photo_path: path });
-          await queryClient.invalidateQueries({ queryKey: petQueryKeys.all });
-          await queryClient.invalidateQueries({ queryKey: petQueryKeys.detail(id) });
-          if (previousPath) await supabase.storage.from('pet-photos').remove([previousPath]);
-          await petQuery.refetch();
         } catch (uploadError) {
           await supabase.storage.from('pet-photos').remove([path]);
           throw uploadError;
         }
+        if (previousPath) await supabase.storage.from('pet-photos').remove([previousPath]);
+        await Promise.allSettled([
+          queryClient.invalidateQueries({ queryKey: petQueryKeys.all }),
+          queryClient.invalidateQueries({ queryKey: petQueryKeys.detail(owner.data ?? '', id) }),
+          petQuery.refetch(),
+        ]);
       }} />
       <Button block disabled={saveAction.disabled} loading={saveMutation.isPending} onClick={saveAction.onPress}>{t('common.saveChanges')}</Button>
       {saveAction.disabledReason ? <Text className="text-fs-caption text-text-secondary">{t('screens.pets.offlineSubmitReason')}</Text> : null}

@@ -1,12 +1,7 @@
 import type { Breed, Pet, PetCreateInput, PetUpdateInput } from '@furever/shared';
 import { breedSchema, petCreateSchema, petSchema, petUpdateSchema } from '@furever/shared';
 import { supabase } from '@/lib/supabase';
-
-export const petQueryKeys = {
-  all: ['pets'] as const,
-  breeds: (species: string) => ['pets', 'breeds', species] as const,
-  detail: (id: string) => ['pets', 'detail', id] as const,
-};
+export { petQueryKeys } from './query-keys';
 
 export async function listMyPets(): Promise<Pet[]> {
   const { data, error } = await supabase

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Image, Platform, Text, View } from 'react-native';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -11,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 
 export function AttachmentViewer({ path }: { path: string }) {
   const { t } = useTranslation();
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const isPdf = path.toLowerCase().endsWith('.pdf');
   const scale = useSharedValue(1);
   const animatedImageStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
@@ -33,26 +35,46 @@ export function AttachmentViewer({ path }: { path: string }) {
   });
 
   if (signed.isPending) return <Text accessibilityRole="progressbar" className="text-fs-body text-text-secondary">{t('common.loading')}</Text>;
-  if (signed.isError || !signed.data) return <Text accessibilityRole="alert" className="text-fs-body text-text-secondary">{t('screens.pets.documentUnavailable')}</Text>;
+  if (signed.isError || !signed.data) {
+    return (
+      <View className="items-center gap-sp-3">
+        <Text accessibilityRole="alert" className="text-fs-body text-text-secondary">{t('screens.pets.documentUnavailable')}</Text>
+        <Button variant="outline" onClick={() => void signed.refetch()}>{t('screens.pets.retry')}</Button>
+      </View>
+    );
+  }
 
   if (isPdf) {
     return (
       <View className="items-center gap-sp-4 rounded-r-card bg-surface p-sp-6">
         <Icon name="file-text" size={40} />
         <Text className="text-center text-fs-body text-text-primary">{t('screens.pets.pdfReady')}</Text>
-        <Button onClick={() => {
-          void WebBrowser.openBrowserAsync(signed.data);
+        <Button onClick={async () => {
+          const refreshed = await signed.refetch();
+          const url = refreshed.data ?? signed.data;
+          await WebBrowser.openBrowserAsync(url);
         }}>{t('screens.pets.openPdf')}</Button>
       </View>
     );
   }
 
-  const image = <Image accessibilityLabel={t('screens.pets.documentPreview')} source={{ uri: signed.data }} className="aspect-square w-full" resizeMode="contain" />;
+  if (imageLoadFailed) {
+    return (
+      <View className="items-center gap-sp-3">
+        <Text accessibilityRole="alert" className="text-fs-body text-text-secondary">{t('screens.pets.documentUnavailable')}</Text>
+        <Button variant="outline" onClick={async () => {
+          const refreshed = await signed.refetch();
+          if (refreshed.data) setImageLoadFailed(false);
+        }}>{t('screens.pets.retry')}</Button>
+      </View>
+    );
+  }
+  const image = <Image accessibilityLabel={t('screens.pets.documentPreview')} onError={() => setImageLoadFailed(true)} source={{ uri: signed.data }} className="aspect-square w-full" resizeMode="contain" />;
   if (Platform.OS === 'web') return image;
   return (
     <View className="overflow-hidden rounded-r-card bg-surface-secondary">
       <GestureDetector gesture={pinch}>
-        <Animated.Image accessibilityLabel={t('screens.pets.documentPreview')} source={{ uri: signed.data }} className="aspect-square w-full" resizeMode="contain" style={animatedImageStyle} />
+        <Animated.Image accessibilityLabel={t('screens.pets.documentPreview')} onError={() => setImageLoadFailed(true)} source={{ uri: signed.data }} className="aspect-square w-full" resizeMode="contain" style={animatedImageStyle} />
       </GestureDetector>
     </View>
   );

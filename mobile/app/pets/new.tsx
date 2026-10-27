@@ -66,14 +66,17 @@ export default function AddPetScreen() {
             petId={created.id}
             kind="photo"
             onUploaded={async (path) => {
+              let updated: Pet;
               try {
-                const updated = await updatePet(created.id, { photo_path: path });
-                setCreated(updated);
-                await queryClient.invalidateQueries({ queryKey: petQueryKeys.all });
+                updated = await updatePet(created.id, { photo_path: path });
               } catch (uploadError) {
                 await (await import('@/lib/supabase')).supabase.storage.from('pet-photos').remove([path]);
                 throw uploadError;
               }
+              setCreated(updated);
+              await Promise.allSettled([
+                queryClient.invalidateQueries({ queryKey: petQueryKeys.all }),
+              ]);
             }}
           />
           <Button variant="outline" onClick={() => router.replace('/(tabs)/pets')}>{t('screens.pets.done')}</Button>

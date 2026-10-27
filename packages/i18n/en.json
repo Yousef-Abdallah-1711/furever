@@ -953,6 +953,7 @@
       "fileTooLarge": "Choose a file smaller than 10 MB.",
       "pickFileError": "The file could not be selected. Try again.",
       "uploadFile": "Upload securely",
+      "cancelUpload": "Cancel upload",
       "retryUpload": "Retry upload",
       "uploadError": "Upload failed. Your file is still selected; try again.",
       "uploadComplete": "Upload complete",
