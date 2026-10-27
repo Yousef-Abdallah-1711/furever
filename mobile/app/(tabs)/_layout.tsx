@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 import { Icon } from "@/components/Icon";
-import { type GuardRoute, getProtectedRouteRedirect } from "@/lib/route-guard";
+import {
+  getProfileGuardState,
+  type GuardRoute,
+  getProtectedRouteRedirect,
+} from "@/lib/route-guard";
 import { supabase } from "@/lib/supabase";
 
 type AppConfigResponse = {
@@ -34,7 +38,7 @@ async function loadGuardRedirect(): Promise<GuardRoute> {
     ] = await Promise.all([
       supabase
         .from("profiles")
-        .select("status,full_name,city_id")
+        .select("status,deleted_at,full_name,city_id")
         .eq("id", userResult.user.id)
         .maybeSingle(),
       supabase
@@ -54,20 +58,10 @@ async function loadGuardRedirect(): Promise<GuardRoute> {
       });
     }
 
-    const types = new Set((consentRows ?? []).map((row) => row.type));
-    const profileState =
-      profile.status === "suspended"
-        ? "suspended"
-        : profile.status === "deleted"
-          ? "deleted"
-          : profile.status !== "active"
-            ? "unknown"
-            : profile.full_name?.trim() &&
-                profile.city_id &&
-                types.has("terms") &&
-                types.has("privacy")
-              ? "complete"
-              : "incomplete";
+    const profileState = getProfileGuardState(
+      profile,
+      (consentRows ?? []).map((row) => row.type),
+    );
 
     const config = configResult.data?.app_config;
     const maintenance = config?.maintenance;

@@ -14,6 +14,34 @@ export type GuardRoute =
   | "/maintenance"
   | null;
 
+export type GuardProfile = {
+  status: unknown;
+  deleted_at?: unknown;
+  full_name?: unknown;
+  city_id?: unknown;
+};
+
+/** Treat soft-deleted or malformed profile state as unavailable. */
+export function getProfileGuardState(
+  profile: GuardProfile | null,
+  consentTypes: Iterable<string>,
+): RouteGuardState["profile"] {
+  if (!profile) return "unknown";
+  if (profile.status === "suspended") return "suspended";
+  if (profile.status === "deleted" || profile.deleted_at != null)
+    return "deleted";
+  if (profile.status !== "active") return "unknown";
+  const consents = new Set(consentTypes);
+  return typeof profile.full_name === "string" &&
+      profile.full_name.trim().length > 0 &&
+      typeof profile.city_id === "string" &&
+      profile.city_id.length > 0 &&
+      consents.has("terms") &&
+      consents.has("privacy")
+    ? "complete"
+    : "incomplete";
+}
+
 function parseVersion(value: unknown): [number, number, number] | null {
   if (typeof value !== "string" || !/^\d+\.\d+\.\d+$/.test(value)) return null;
   const parts = value.split(".").map(Number);

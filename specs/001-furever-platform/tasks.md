@@ -740,10 +740,11 @@ environments only, not local dev.
   **Owner decisions (2026-10-27):** suspended/deleted/missing or expired sessions route to `/welcome`;
   minimum supported version is `app_config.min_mobile_version` with `{version: "x.y.z"}`; maintenance
   routes to the maintenance screen. Authorization/config uncertainty must keep protected routes hidden
-  without loops. **Partial 2026-10-27:** the tab layout now validates the Supabase user, active profile,
-  required terms/privacy consent rows, public app config, maintenance state, and minimum version before
-  rendering protected tabs. Focused route-decision tests pass. Keep open until redirect target screens
-  exist and the auth/profile/config transitions are exercised through the app.
+  without loops. **Partial 2026-10-27:** the tab layout validates the Supabase user, active profile,
+  soft-deletion timestamp, required terms/privacy consent rows, public app config, maintenance state, and
+  minimum version before rendering protected tabs. Focused route-decision and profile-state tests pass.
+  Keep open until redirect target screens exist and the auth/profile/config transitions are exercised
+  through the app.
 - [x] T174 [D02] Web route guard (extends T167/T168): same five states for the dashboard. Depends on T167.
   **Scope note**: implements signed-out (T167), role gate (T167), suspended/deleted (→ `/no-access`), and
   admin MFA. Per the 2026-10-27 T183 decision, maintenance no longer redirects authorized users; T183's

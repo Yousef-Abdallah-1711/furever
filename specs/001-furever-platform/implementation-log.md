@@ -2643,3 +2643,23 @@ was run.
 **Files**: `backend/supabase/templates/{login-code,staff-invite,password-reset}.html`,
 `backend/supabase/templates/{templates.test.ts,vitest.config.ts}`, `specs/001-furever-platform/{tasks.md,
 implementation-log.md}`. No template was configured for delivery.
+
+## D02 — T173 mobile guard soft-deletion check (2026-10-27)
+
+The protected-tab profile query did not select `profiles.deleted_at`; it only checked `status`. Added the
+soft-deletion timestamp to the RLS-scoped profile read and extracted profile-state mapping into a pure
+helper. A non-null deletion timestamp now routes the user to the existing `/welcome` guard destination even
+if status remains `active`. The helper also keeps missing profiles and malformed/unknown statuses closed,
+and requires a nonblank name, city, and both consent types before treating a profile as complete.
+
+T173 stays partial: `/complete-profile` remains absent, and no app-level authenticated/config transition
+was exercised. Unit coverage verifies the new data mapping and existing route decisions; it is not a native
+or authenticated integration pass.
+
+**Verification**: `pnpm.cmd --filter mobile test` PASS (16 suites / 46 tests);
+`pnpm.cmd --filter mobile typecheck` PASS; `pnpm.cmd --filter mobile lint` PASS with 0 errors and 3
+existing warnings in unrelated i18n files; `git diff --check` PASS. No device/emulator or authenticated
+mobile runtime was available.
+
+**Files**: `mobile/app/(tabs)/_layout.tsx`, `mobile/src/lib/route-guard.ts`,
+`mobile/src/lib/route-guard.test.ts`, `specs/001-furever-platform/{tasks.md,implementation-log.md}`.
