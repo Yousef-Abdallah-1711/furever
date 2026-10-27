@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-27
 **Branch:** `main`
-**Latest implementation commit:** pending this local Auth integration batch; prior implementation `5f3ad98` is pushed and synchronized.
+**Latest implementation commit:** `9377748` (`fix(D02): enable local dashboard auth flow`), pending push.
 **Checkpoint status:** T143 export endpoint is implemented for current-schema data and remains partial; local dashboard Auth integration is now exercised end to end.
 **Phase status:** D02 remains open. No D03 work has started.
 

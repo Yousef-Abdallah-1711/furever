@@ -2598,4 +2598,4 @@ provider, email/SMTP, native-device, or Maestro verification was performed.
 
 **Files**: `backend/supabase/config.toml`, `docs/environments.md`, `web/src/components/auth/DashboardMfaScreen.tsx`,
 `web/src/app/[locale]/(admin)/admin/page.tsx`, `specs/001-furever-platform/{tasks.md,implementation-log.md}`,
-and `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`. **Commit**: pending.
+and `docs/handoffs/D02-PROGRESS-CHECKPOINT.md`. **Commit**: `9377748`.
