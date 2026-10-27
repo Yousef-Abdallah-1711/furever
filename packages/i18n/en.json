@@ -128,7 +128,9 @@
         "exportData": "Export my data",
         "preparingExport": "Preparing your data export…",
         "exportReady": "Your data export is ready to share.",
-        "exportFailed": "Couldn't export your data. Try again."
+        "exportFailed": "Couldn't export your data. Try again.",
+        "exportDataDescription": "Your current export includes profile, consent, and push-device metadata. Other records will be added as their data tables become available.",
+        "logOutError": "Could not sign out. Please try again."
       },
       "support": {
         "accountSuspended": "This account is suspended. Contact support."

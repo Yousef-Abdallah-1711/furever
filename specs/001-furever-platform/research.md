@@ -278,6 +278,12 @@ sources only. Sources are linked inline for every other finding.
 - **Official sources**: [Supabase Auth: Identity Linking](https://supabase.com/docs/guides/auth/auth-identity-linking),
   [Supabase Auth: Anonymous sign-ins](https://supabase.com/docs/guides/auth/auth-anonymous),
   [JavaScript API reference: updateUser](https://supabase.com/docs/reference/javascript/auth-updateuser),
+
+**T179 implementation finding (2026-10-27)**: the official [Identity Linking guide](https://supabase.com/docs/guides/auth/auth-identity-linking)
+documents native mobile OAuth linking by passing the provider token to `linkIdentity({ provider, token })`;
+the app uses this supported form for Google after requiring an authenticated owner. It does not establish
+a safe secondary email-identity attachment sequence, so the owner-approved scope is Google linking only
+and secondary email linking remains deferred.
   [Supabase CLI config reference](https://supabase.com/docs/guides/local-development/cli/config).
 
 ## 14. Apple private relay email (new, 2026-10-18)

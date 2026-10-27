@@ -759,21 +759,16 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
 
 ## Account linking (new, remediation pass — AUTH-06/FR-006)
 
-- [ ] T179 [D02] Build the Account-screen linking actions in `mobile/src/features/account/linking.ts`:
-  "Add Google account" calls Supabase's `linkIdentity({ provider: 'google' })` (Manual Linking, gated on
-  T122); "Add email sign-in" re-uses `verify-otp-guard`'s `send-code`/`verify-code` actions for the
-  owner's chosen email while already signed in (it must **not** call Supabase Auth's OTP endpoints
-  directly, same rule as AUTH-01) — confirm against official Supabase Identity Linking docs which call
-  shape actually attaches the resulting identity to the already-signed-in user, since manual linking of a
-  non-OAuth (email) identity is not fully documented and may need the Admin API instead of a plain client
-  call; record the finding as a one-line note in `research.md` §13 if it differs from this description.
-  Depends on T121, T122. [AUTH-06]
-  **Owner decision 2026-10-27:** implement supported Google OAuth identity linking only; defer secondary
-  email identity linking because its attachment to an existing Google-only account is unverified. Do not
-  advertise the unsupported email-link action.
-- [ ] T180 [D02] Map a link-conflict response (the identity already belongs to a different account) to
-  the new `IDENTITY_ALREADY_LINKED` error code (`contracts/error-codes.md`) and show the "clear message"
-  AUTH-06 requires; wire this into T179's two actions. Depends on T179. [AUTH-06]
+- [x] T179 [D02] Build the supported Account-screen identity linking path in
+  `mobile/src/features/account/linking.ts`: Google native ID-token linking calls Supabase
+  `linkIdentity({ provider: 'google', token })` after requiring an authenticated user and configured
+  Google web client ID. Official Identity Linking docs support native OAuth token linking. Secondary
+  email identity linking remains deferred because its attachment to an existing Google-only user is
+  unverified; no direct Auth OTP endpoint is used. Finding recorded in `research.md` §13. Depends on
+  T121, T122. [AUTH-06]
+- [x] T180 [D02] Map Supabase's `identity_already_exists` Google-link conflict to the
+  `IDENTITY_ALREADY_LINKED` app error code (`contracts/error-codes.md`) and show the localized clear
+  message required by AUTH-06. Depends on T179. [AUTH-06]
 - [ ] T181 [D02] Maestro: link Google to an email-only account and link email to a Google-only account,
   both succeeding without creating a second account; then repeat linking the same Google identity to a
   second account and confirm `IDENTITY_ALREADY_LINKED` (T180) shows the clear message. Depends on
@@ -851,11 +846,12 @@ Batch 10 was committed as `30eaa00`; the follow-up implementation-log correction
   `[AUTH-05]` despite `spec.md`'s own Screen Coverage already listing NTF-02 here. [AUTH-05][NTF-02]
 - [ ] T200 [P] [D02] Build `/profile/account` Account — `mobile/app/profile/account.tsx` (Built, design
   change needed: linked methods show email/code and Google [and Apple, read-only] instead of phone and
-  Google; the "Add phone" linking action is removed — `design/overrides.md`). **Enriched, remediation
-  pass**: the removed "Add phone" action is replaced by two new ones, "Add Google account" and "Add email
-  sign-in" (T179/T180 implement their logic; this task builds the buttons, their i18n keys, and
-  loading/success/conflict states — see `design/overrides.md`'s new rows).
-  [AUTH-06][AUTH-07][AUTH-08][AUTH-09]
+  Google; the "Add phone" linking action is removed — `design/overrides.md`). The supported Google
+  account-link action, linked email/Google/Apple methods, conflict state, current-schema data export,
+  and sign-out are implemented. Secondary email identity linking is deferred because its supported
+  attachment flow is unverified. Account deletion remains blocked on T142's safe backend contract;
+  T200 remains partial until deletion and its supported backend behavior are available. [AUTH-06]
+  [AUTH-07][AUTH-08][AUTH-09]
 - [x] T201 [P] [D02] Build `/profile/edit` Edit profile — `mobile/app/profile/edit.tsx` (Spec; pattern:
   Complete profile; optional phone field). [AUTH-04]
 - [x] T202 [P] [D02] Build `/profile/help` Help — `mobile/app/profile/help.tsx` (Spec; pattern: Profile).

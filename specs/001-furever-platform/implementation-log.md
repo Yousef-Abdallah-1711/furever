@@ -2525,3 +2525,32 @@ not Android/iOS native execution. `git diff --check` PASS.
 
 **Files**: `mobile/app/welcome.tsx`, `mobile/src/features/auth/apple-signin-loader.ts` and test,
 `mobile/.gitignore`, `tasks.md`, this log. **Commit**: `ec08c70`.
+
+## D02 — T179/T180 and T200 Account screen (2026-10-27)
+
+Implemented the supported mobile Google identity-link path using the native Google ID token with
+Supabase `linkIdentity({ provider: 'google', token })`. It first confirms there is an authenticated
+Supabase user and a configured Google web client ID, treats account-picker cancellation as a no-op,
+does not expose raw provider errors, and maps `identity_already_exists` to
+`IDENTITY_ALREADY_LINKED`. The Profile tab now links to `/profile/account`; the Account screen reads
+the current user's email and Auth identities, displays email/Google/Apple linkage, offers Google only
+when absent, provides localized linked/conflict/error states, invokes the existing current-schema
+`export-my-data` function and native share sheet, and signs out to Welcome. Export copy states its
+present scope. No secondary email identity action is advertised because Supabase's documented APIs do
+not establish how to attach that separate identity safely to an existing Google-only owner. Account
+deletion is not offered because T142's coordinated deletion contract is not implemented.
+
+Research §13 now records the official native token-based OAuth linking shape and the remaining email
+identity uncertainty. T179 and T180 are checked complete. T200 remains open/partial until the supported
+deletion behavior is available; T181 remains open for real provider-backed linking/conflict verification.
+
+**Verification**: focused linking Jest PASS (5 tests); mobile TypeScript PASS; mobile lint PASS (0 errors,
+3 existing warnings in unrelated i18n files); i18n parity PASS (849 matching keys); design-token lint PASS
+(0 violations); Expo web static export PASS (26 routes, including `/profile/account`) with local-only
+placeholder Supabase env values; Biome PASS; `git diff --check` PASS. These checks validate code shape and
+static route bundling only. No Google credential, authenticated Supabase session, native device, linked
+identity, or live export response was available for runtime verification.
+
+**Files**: `mobile/src/features/account/{linking,linking-core,linking.test}.ts`,
+`mobile/app/profile/account.tsx`, `mobile/app/(tabs)/profile.tsx`, both locale dictionaries,
+`specs/001-furever-platform/{tasks.md,research.md}`, this log, and the D02 progress checkpoint.

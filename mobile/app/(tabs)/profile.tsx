@@ -99,6 +99,11 @@ export default function ProfileTabScreen() {
           onClick={() => router.push("/profile/settings")}
         />
         <ListRow
+          icon="shield"
+          label={t("screens.tabsProfile.account")}
+          onClick={() => router.push("/profile/account")}
+        />
+        <ListRow
           icon="circle-help"
           label={t("screens.tabsProfile.help")}
           onClick={() => router.push("/profile/help")}
